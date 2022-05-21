@@ -14,4 +14,6 @@ pgc++ $inout $utils $model $geom $eik eikonalTest.cpp $flags -o test.exe
 
 rm *.o *.exe
 
-python3 analitycTest.py 
+python3 analyticTest.py 
+
+rm pod* fim* *.txt

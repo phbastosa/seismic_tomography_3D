@@ -11,60 +11,79 @@ int main(int argc, char **argv)
 
     auto eikonal = Eikonal3D();
      
-    eikonal.eikonalPath = "";
-    eikonal.arrivalsPath = "";
+    // Setting model 
+
+    eikonal.m3D.nx = 441;
+    eikonal.m3D.ny = 441;
+    eikonal.m3D.nz = 23;
+
+    eikonal.m3D.nb = 2;
+
+    eikonal.m3D.dx = 50.0f;
+    eikonal.m3D.dy = 50.0f;
+    eikonal.m3D.dz = 50.0f;
+
+    eikonal.m3D.init();
+
+    eikonal.m3D.vp = new float[eikonal.m3D.nPointsB];
+
+    eikonal.m3D.vpPath = "refractiveModel_23x441x441_50m.bin";
+
+    eikonal.m3D.readAndExpandVP();
+
+    // Setting geometry
+
+    eikonal.g3D.circles.xc = 11000.0f;
+    eikonal.g3D.circles.yc = 11000.0f;
+    eikonal.g3D.circles.ds = 50.0f;
+    
+    eikonal.g3D.circles.offsets = {1e4f};
+
+    eikonal.g3D.sElev = 10.0f;
+
+    eikonal.g3D.setCircularShots();
+
+    eikonal.g3D.SW.x = 11000.0f; eikonal.g3D.SW.y = 11000.0f;    
+    eikonal.g3D.NW.x = 11000.0f; eikonal.g3D.NW.y = 11000.0f;    
+    eikonal.g3D.SE.x = 11000.0f; eikonal.g3D.SE.y = 11000.0f;    
+
+    eikonal.g3D.nrx = 1; 
+    eikonal.g3D.nry = 1; 
+    eikonal.g3D.rElev = 10.0f;
+
+    eikonal.g3D.setGridNodes();
+
+    eikonal.g3D.setReciprocity();
+
+    eikonal.g3D.nodesPath = "nodes_n" + InOut::toString(eikonal.g3D.nr) + ".txt";
+    eikonal.g3D.shotsPath = "shots_n" + InOut::toString(eikonal.g3D.ns) + ".txt";
+
+    eikonal.g3D.exportPositions();
+
+    // Shots loop
 
     eikonal.exportTimesVolume = true;
     eikonal.exportFirstArrivals = true;
 
-    // Setting model 
 
-    auto m3D = Model3D();
+    eikonal.eikonalPath = "podvin_";
+    eikonal.arrivalsPath = "podvin_";
 
-    m3D.nx = 201;
-    m3D.ny = 201;
-    m3D.nz = 45;
+    eikonal.allocateVolumes();    
 
-    m3D.nb = 2;
-
-    m3D.dx = 25.0f;
-    m3D.dy = 25.0f;
-    m3D.dz = 25.0f;
-
-    m3D.init();
-
-    m3D.vp = new float[m3D.nPointsB];
-
-    m3D.readAndExpandVP("refractiveModel_45x201x201_25m.bin");
-
-    // Setting geometry
-
-    auto geom = Geometry3D();
-
-    Utils::point2D SW, NW, SE;
-
-    SW.x = 100.0f; SW.y = 2500.0f;    
-    NW.x = 100.0f; NW.y = 2500.0f;    
-    SE.x = 100.0f; SE.y = 2500.0f;    
-
-    geom.setOBNS(SW,NW,SE,1,1,25.0f);
-
-    SW.x = 4900.0f; SW.y = 100.0f;    
-    NW.x = 4900.0f; NW.y = 4900.0f;    
-    SE.x = 4900.0f; SE.y = 100.0f;    
-
-    geom.setOBNR(SW,NW,SE,1,481,25.0f);
-
-    geom.exportPositions("shots.txt","nodes.txt");
-
-    // Shots loop
-
-    eikonal.allocateVolumes(m3D);    
-
-    for (int shot = 0; shot < geom.ns; shot++)
+    for (int shot = 0; shot < eikonal.g3D.ns; shot++)
     {
         eikonal.shotId = shot;
-        eikonal.podvin3D(m3D, geom);
+        eikonal.podvin3D();
+    }
+
+    eikonal.eikonalPath = "fim_";
+    eikonal.arrivalsPath = "fim_";
+
+    for (int shot = 0; shot < eikonal.g3D.ns; shot++)
+    {
+        eikonal.shotId = shot;
+        eikonal.fim3D();
     }
 
     eikonal.deleteVolumes();

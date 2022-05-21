@@ -1,148 +1,94 @@
+# include <cmath>
 # include "geometry.hpp"
 
 # include "../inout/inout.hpp"
 # include "../utils/utils.hpp"
 
-void Geometry3D::setOBNS(Utils::point2D SW, Utils::point2D NW, Utils::point2D SE, float nsx, float nsy, float depth)
+void Geometry3D::setGridShots()
 {
-    std::vector<float> x;
-    std::vector<float> y;
+    ns = nsx * nsy;
 
-    this->ns = nsx * nsy;
+    shots = new Position[ns];
 
-    this->shots = new position[this->ns];
+    shots->x = new float[ns];
+    shots->y = new float[ns];
+    shots->z = new float[ns];
 
-    this->shots->x = new float[this->ns];
-    this->shots->y = new float[this->ns];
-    this->shots->z = new float[this->ns];
+    std::vector<float> x = Utils::linspace(SW.x, SE.x, nsx);
+    std::vector<float> y = Utils::linspace(SW.y, NW.y, nsy);
 
-    if (nsx == 1 && nsy == 1)
+    for (int k = 0; k < y.size(); k++)
     {
-        this->shots->x[0] = SW.x;
-        this->shots->y[0] = SW.y;
-        this->shots->z[0] = depth;
-    }
-    else if (nsx == 1)
-    {
-        float yi = SW.y;
-        float yf = NW.y;
-
-        y = Utils::linspace(yi, yf, nsy);
-
-        for (int p = 0; p < nsy; p++) 
+        for (int j = 0; j < x.size(); j++)
         {
-            this->shots->x[p] = SW.x;   
-            this->shots->y[p] = y[p];
-            this->shots->z[p] = depth;    
+            shots->x[j + k*x.size()] = x[j];
+            shots->y[j + k*x.size()] = y[k];
+            shots->z[j + k*x.size()] = sElev;
         }
-    }
-    else if (nsy == 1)
-    {
-        float xi = SW.x;
-        float xf = SE.x;
-
-        x = Utils::linspace(xi, xf, nsx);
-
-        for (int p = 0; p < nsx; p++) 
-        {
-            this->shots->x[p] = x[p];   
-            this->shots->y[p] = SW.y;
-            this->shots->z[p] = depth;    
-        }
-    }
-    else
-    {
-        float xi = SW.x;
-        float xf = SE.x;
-        
-        float yi = SW.y;
-        float yf = NW.y;
-
-        x = Utils::linspace(xi, xf, nsx);
-        y = Utils::linspace(yi, yf, nsy);
-
-        for (int k = 0; k < y.size(); k++)
-        {
-            for (int j = 0; j < x.size(); j++)
-            {
-                this->shots->x[j + k*x.size()] = x[j];
-                this->shots->y[j + k*x.size()] = y[k];
-                this->shots->z[j + k*x.size()] = depth;
-            }
-        }    
-    }
+    }    
 
     std::vector< float >().swap(x);
     std::vector< float >().swap(y);
 }
 
-void Geometry3D::setOBNR(Utils::point2D SW, Utils::point2D NW, Utils::point2D SE, float nrx, float nry, float depth)
+void Geometry3D::setGridNodes()
 {
-    std::vector<float> x;
-    std::vector<float> y;
+    nr = nrx * nry;     
 
-    this->nr = nrx * nry;     
+    nodes = new Position[nr]; 
 
-    this->nodes = new position[this->nr]; 
+    nodes->x = new float[nr];
+    nodes->y = new float[nr];
+    nodes->z = new float[nr];
 
-    this->nodes->x = new float[this->nr];
-    this->nodes->y = new float[this->nr];
-    this->nodes->z = new float[this->nr];
+    std::vector<float> x = Utils::linspace(SW.x, SE.x, nrx);
+    std::vector<float> y = Utils::linspace(SW.y, NW.y, nry);
 
-    if (nrx == 1 && nry == 1)
+    for (int k = 0; k < y.size(); k++)
     {
-        this->nodes->x[0] = SW.x;
-        this->nodes->y[0] = SW.y;
-        this->nodes->z[0] = depth;
-    }
-    else if (nrx == 1)
-    {
-        float yi = SW.y;
-        float yf = NW.y;
-
-        y = Utils::linspace(yi, yf, nry);
-
-        for (int p = 0; p < nry; p++) 
+        for (int j = 0; j < x.size(); j++)
         {
-            this->nodes->x[p] = SW.x;   
-            this->nodes->y[p] = y[p];
-            this->nodes->z[p] = depth;    
+            nodes->x[j + k*x.size()] = x[j];
+            nodes->y[j + k*x.size()] = y[k];
+            nodes->z[j + k*x.size()] = rElev;
+        }
+    }    
+
+    std::vector< float >().swap(x);
+    std::vector< float >().swap(y);
+}
+
+void Geometry3D::setCircularShots()
+{
+    std::vector<float> x, y;
+
+    for (float radius : circles.offsets)
+    {
+        float theta = 0.0f;
+
+        while (theta < 2.0f * 4.0f*atan(1.0f))
+        {
+            theta += acos(1.0f - powf(circles.ds,2.0f)/(2.0f*powf(radius,2.0f)));    
+            
+            x.push_back(radius*sin(theta) + circles.xc);        
+            y.push_back(radius*cos(theta) + circles.yc);        
+
         }
     }
-    else if (nry == 1)
+
+    ns = x.size();
+
+    shots = new Position[ns](); 
+
+    shots->x = new float[ns]();
+    shots->y = new float[ns]();
+    shots->z = new float[ns]();
+
+    for (int i = 0; i < ns; i++)
     {
-        float xi = SW.x;
-        float xf = SE.x;
-
-        x = Utils::linspace(xi, xf, nrx);
-
-        for (int p = 0; p < nrx; p++) 
-        {
-            this->nodes->x[p] = x[p];   
-            this->nodes->y[p] = SW.y;
-            this->nodes->z[p] = depth;    
-        }
-    }
-    else
-    {
-        float xi = SW.x;
-        float xf = SE.x;
-        
-        float yi = SW.y;
-        float yf = NW.y;
-
-        x = Utils::linspace(xi, xf, nrx);
-        y = Utils::linspace(yi, yf, nry);
-
-        for (int k = 0; k < y.size(); k++)
-        {
-            for (int j = 0; j < x.size(); j++)
-            {
-                this->nodes->x[j + k*x.size()] = x[j];
-                this->nodes->y[j + k*x.size()] = y[k];
-                this->nodes->z[j + k*x.size()] = depth;
-            }
-        }    
+        shots->x[i] = x[i]; 
+        shots->y[i] = y[i];
+        shots->z[i] = sElev;
     }
 
     std::vector< float >().swap(x);
@@ -151,58 +97,69 @@ void Geometry3D::setOBNR(Utils::point2D SW, Utils::point2D NW, Utils::point2D SE
 
 void Geometry3D::setReciprocity()
 {
-    float * x = new float[this->ns];
-    float * y = new float[this->ns];
+    float * x = new float[ns];
+    float * y = new float[ns];
+    float * z = new float[ns];
 
-    for (int p = 0; p < this->ns; p++)
+    for (int p = 0; p < ns; p++)
     {
-        x[p] = this->shots->x[p];
-        y[p] = this->shots->y[p];
+        x[p] = shots->x[p];
+        y[p] = shots->y[p];
+        z[p] = shots->z[p];
     }    
 
-    delete[] this->shots->x;
-    delete[] this->shots->y;
+    delete[] shots->x;
+    delete[] shots->y;
+    delete[] shots->z;
 
-    this->shots->x = new float[this->nr];
-    this->shots->y = new float[this->nr];
+    shots->x = new float[nr];
+    shots->y = new float[nr];
+    shots->z = new float[nr];
 
-    for (int p = 0; p < this->nr; p++)
+    for (int p = 0; p < nr; p++)
     {
-        this->shots->x[p] = this->nodes->x[p];
-        this->shots->y[p] = this->nodes->y[p];
+        shots->x[p] = nodes->x[p];
+        shots->y[p] = nodes->y[p];
+        shots->z[p] = nodes->z[p];
     }    
 
-    delete[] this->nodes->x;
-    delete[] this->nodes->y;
+    delete[] nodes->x;
+    delete[] nodes->y;
+    delete[] nodes->z;
 
-    this->nodes->x = new float[this->ns];
-    this->nodes->y = new float[this->ns];
+    nodes->x = new float[ns];
+    nodes->y = new float[ns];
+    nodes->z = new float[ns];
 
-    for (int p = 0; p < this->ns; p++)
+    for (int p = 0; p < ns; p++)
     {
-        this->nodes->x[p] = x[p];
-        this->nodes->y[p] = y[p];
+        nodes->x[p] = x[p];
+        nodes->y[p] = y[p];
+        nodes->z[p] = z[p];
     }    
 
-    int aux = this->ns; this->ns = this->nr; this->nr = aux;   
+    int aux = ns; ns = nr; nr = aux;   
 
     delete[] x;
     delete[] y;
+    delete[] z;
 }
 
-void Geometry3D::exportPositions(std::string shotsPath, std::string nodesPath)
+void Geometry3D::exportPositions()
 {
-    std::ofstream shotsFile(shotsPath, std::ios::out);        
-    std::ofstream nodesFile(nodesPath, std::ios::out);
+    std::ofstream shotsFile(shotsPath);        
+    std::ofstream nodesFile(nodesPath);
 
-    for (int node = 0; node < this->nr; node++)        
+    for (int node = 0; node < nr; node++)        
     {   
-        nodesFile <<this->nodes->x[node]<<", "<<this->nodes->y[node]<<", "<<this->nodes->z[node]<<std::endl;
+        nodesFile <<nodes->x[node]<<", "<<nodes->y[node]<<", "<<nodes->z[node]<<std::endl;
     }
 
-    for (int shot = 0; shot < this->ns; shot++)        
+    for (int shot = 0; shot < ns; shot++)        
     {   
-        shotsFile <<this->shots->x[shot]<<", "<<this->shots->y[shot]<<", "<<this->shots->z[shot]<<std::endl;
+        shotsFile <<shots->x[shot]<<", "<<shots->y[shot]<<", "<<shots->z[shot]<<std::endl;
+    
+        
     }
 
     shotsFile.close();

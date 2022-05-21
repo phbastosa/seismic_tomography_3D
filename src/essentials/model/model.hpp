@@ -23,11 +23,13 @@ public:
     float dy;                // Sample spacing in y direction
     float dz;                // Sample spacing in z direction
 
-    float * vp = nullptr;    // P wave velocity volume         
+    float * vp;              // P wave velocity volume         
+
+    std::string vpPath;
 
     void init();
 
-    void readAndExpandVP(std::string vpPath);
+    void readAndExpandVP();
 };
 
 

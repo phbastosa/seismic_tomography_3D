@@ -7,3 +7,7 @@ pgc++ ../utils/utils.cpp ../inout/inout.cpp geometry.cpp geometryTest.cpp $flags
 ./test.exe
 
 rm *.o *.exe
+
+python3 showGeometry.py
+
+rm *.bin

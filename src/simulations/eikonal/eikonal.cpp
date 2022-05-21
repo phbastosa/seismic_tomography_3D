@@ -25,13 +25,13 @@ float Eikonal3D::min4(float v1, float v2, float v3, float v4)
     return min;
 }
 
-void Eikonal3D::allocateVolumes(Model3D m3D)
+void Eikonal3D::allocateVolumes()
 {
-    T = new float[m3D.nPointsB];    
-    S = new float[m3D.nPointsB];    
-    K = new float[m3D.nPointsB];    
-    nT = new float[m3D.nPointsB];    
-    nK = new float[m3D.nPointsB];    
+    T = new float[m3D.nPointsB]();    
+    S = new float[m3D.nPointsB]();    
+    K = new float[m3D.nPointsB]();    
+    nT = new float[m3D.nPointsB]();    
+    nK = new float[m3D.nPointsB]();    
 }
 
 void Eikonal3D::deleteVolumes()
@@ -43,11 +43,11 @@ void Eikonal3D::deleteVolumes()
     delete[] nK;
 }
 
-void Eikonal3D::podvin3D(Model3D m3D, Geometry3D geom)
+void Eikonal3D::podvin3D()
 {
-    int sIdx = (int)(geom.shots->x[shotId] / m3D.dx) + m3D.nb;
-    int sIdy = (int)(geom.shots->y[shotId] / m3D.dy) + m3D.nb;
-    int sIdz = (int)(geom.shots->z[shotId] / m3D.dz) + m3D.nb;
+    int sIdx = (int)(g3D.shots->x[shotId] / m3D.dx) + m3D.nb;
+    int sIdy = (int)(g3D.shots->y[shotId] / m3D.dy) + m3D.nb;
+    int sIdz = (int)(g3D.shots->z[shotId] / m3D.dz) + m3D.nb;
 
     int sId = sIdz + sIdx*m3D.nzz + sIdy*m3D.nxx*m3D.nzz; 
 
@@ -57,11 +57,11 @@ void Eikonal3D::podvin3D(Model3D m3D, Geometry3D geom)
 
         if (index == sId)
         {
-            float sx = floorf(geom.shots->x[shotId] / m3D.dx) * m3D.dx;
-            float sy = floorf(geom.shots->y[shotId] / m3D.dy) * m3D.dy;
-            float sz = floorf(geom.shots->z[shotId] / m3D.dz) * m3D.dz;
+            float sx = floorf(g3D.shots->x[shotId] / m3D.dx) * m3D.dx;
+            float sy = floorf(g3D.shots->y[shotId] / m3D.dy) * m3D.dy;
+            float sz = floorf(g3D.shots->z[shotId] / m3D.dz) * m3D.dz;
 
-            float dist = sqrtf(powf(sx - geom.shots->x[shotId],2.0f) + powf(sy - geom.shots->y[shotId],2.0f) + powf(sz - geom.shots->z[shotId],2.0f));
+            float dist = sqrtf(powf(sx - g3D.shots->x[shotId],2.0f) + powf(sy - g3D.shots->y[shotId],2.0f) + powf(sz - g3D.shots->z[shotId],2.0f));
 
             T[sId] = dist * S[sId];
             nT[sId] = T[sId]; 
@@ -142,15 +142,13 @@ void Eikonal3D::podvin3D(Model3D m3D, Geometry3D geom)
     # pragma acc enter data copyin(this[0:1], T[0:m3D.nPointsB])
     {
         for (int iteration = 0; iteration < nItEikonal; iteration++)
-        {
-            if (iteration % (nItEikonal / 5) == 0) std::cout<<"Iteration "<<iteration<<" of "<<nItEikonal<<std::endl;
-            
+        {            
             # pragma acc parallel loop present(S[0:m3D.nPointsB],T[0:m3D.nPointsB],K[0:m3D.nPointsB],nT[0:m3D.nPointsB])
             for (int index = 0; index < m3D.nPointsB; index++)
             {
                 if (K[index] == 1.0f)
                 {
-                    int k = (int) (index / (m3D.nxx*m3D.nzz));            // y direction
+                    int k = (int) (index / (m3D.nxx*m3D.nzz));             // y direction
                     int j = (int) (index - k*m3D.nxx*m3D.nzz) / m3D.nzz;   // x direction
                     int i = (int) (index - j*m3D.nzz - k*m3D.nxx*m3D.nzz); // z direction
 
@@ -1659,11 +1657,184 @@ void Eikonal3D::podvin3D(Model3D m3D, Geometry3D geom)
     # pragma acc exit data delete(nK[0:m3D.nPointsB], this[0:1])
     # pragma acc exit data copyout(T[0:m3D.nPointsB], this[0:1])
 
-    writeTravelTimes(m3D);
-    writeFirstArrivals(m3D, geom);
+    writeTravelTimes();
+    writeFirstArrivals();
 }
 
-void Eikonal3D::writeTravelTimes(Model3D m3D)
+void Eikonal3D::fim3D()
+{
+    int sIdx = (int)(g3D.shots->x[shotId] / m3D.dx) + m3D.nb;
+    int sIdy = (int)(g3D.shots->y[shotId] / m3D.dy) + m3D.nb;
+    int sIdz = (int)(g3D.shots->z[shotId] / m3D.dz) + m3D.nb;
+
+    int sId = sIdz + sIdx*m3D.nzz + sIdy*m3D.nxx*m3D.nzz; 
+
+    for (int index = 0; index < m3D.nPointsB; index++)
+    {
+        S[index] = 1.0f / m3D.vp[index];
+
+        if (index == sId)
+        {
+            float sx = floorf(g3D.shots->x[shotId] / m3D.dx) * m3D.dx;
+            float sy = floorf(g3D.shots->y[shotId] / m3D.dy) * m3D.dy;
+            float sz = floorf(g3D.shots->z[shotId] / m3D.dz) * m3D.dz;
+
+            float dist = sqrtf(powf(sx - g3D.shots->x[shotId],2.0f) + powf(sy - g3D.shots->y[shotId],2.0f) + powf(sz - g3D.shots->z[shotId],2.0f));
+
+            T[sId] = dist * S[sId];
+            nT[sId] = T[sId]; 
+        }
+        else
+        {
+            T[index] = 1e6f;
+            nT[index] = 1e6f;
+        }
+        
+        K[index] = 0.0f;
+        nK[index] = 0.0f;
+    }
+
+    K[sId - 1] = 1.0f;
+    K[sId + 1] = 1.0f;
+    K[sId - m3D.nzz] = 1.0f;
+    K[sId + m3D.nzz] = 1.0f;
+    K[sId - m3D.nxx*m3D.nzz] = 1.0f;
+    K[sId + m3D.nxx*m3D.nzz] = 1.0f;      
+ 
+    int aux = 0;
+    int nItEikonal = 0;
+
+    aux = sqrt(sIdx*sIdx + sIdy*sIdy + sIdz*sIdz); 
+    if (aux > nItEikonal) nItEikonal = aux;
+
+    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + sIdz*sIdz);
+    if (aux > nItEikonal) nItEikonal = aux;
+
+    aux = sqrt(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz); 
+    if (aux > nItEikonal) nItEikonal = aux;
+
+    aux = sqrt(sIdx*sIdx + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz)); 
+    if (aux > nItEikonal) nItEikonal = aux;
+
+    aux = sqrt(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    if (aux > nItEikonal) nItEikonal = aux;
+
+    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    if (aux > nItEikonal) nItEikonal = aux;
+
+    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz);
+    if (aux > nItEikonal) nItEikonal = aux;
+
+    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    if (aux > nItEikonal) nItEikonal = aux;
+
+    nItEikonal += (int)(3 * nItEikonal / 2);
+
+    # pragma acc enter data copyin(this[0:1], S[0:m3D.nPointsB])
+    # pragma acc enter data copyin(this[0:1], K[0:m3D.nPointsB])
+    # pragma acc enter data copyin(this[0:1], nT[0:m3D.nPointsB])
+    # pragma acc enter data copyin(this[0:1], nK[0:m3D.nPointsB])
+    # pragma acc enter data copyin(this[0:1], T[0:m3D.nPointsB])
+    {
+        for (int iteration = 0; iteration < nItEikonal; iteration++)
+        {
+            # pragma acc parallel loop present(S[0:m3D.nPointsB],T[0:m3D.nPointsB],K[0:m3D.nPointsB],nT[0:m3D.nPointsB])
+            for (int index = 0; index < m3D.nPointsB; index++)
+            {
+                if (K[index] == 1.0f)
+                {
+                    int k = (int) (index / (m3D.nxx*m3D.nzz));             // y direction
+                    int j = (int) (index - k*m3D.nxx*m3D.nzz) / m3D.nzz;   // x direction
+                    int i = (int) (index - j*m3D.nzz - k*m3D.nxx*m3D.nzz); // z direction
+
+                    if ((i > 0) && (i < m3D.nzz-1) && (j > 0) && (j < m3D.nxx-1) && (k > 0) && (k < m3D.nyy-1))
+                    {
+                        float h = m3D.dx;
+                        float a, b, c, tmp, Tijk;
+
+                        a = min(T[index - m3D.nzz],T[index + m3D.nzz]);                 // Tx min        
+                        b = min(T[index - m3D.nxx*m3D.nzz],T[index + m3D.nxx*m3D.nzz]); // Ty min        
+                        c = min(T[index - 1],T[index + 1]);                             // Tz min        
+
+                        // a,b,c <------- sort(Tx,Ty,Tz), where a > b > c
+                        if (a < b) {tmp = a; a = b; b = tmp;}
+                        if (b < c) {tmp = b; b = c; c = tmp;}
+                        if (a < b) {tmp = a; a = b; b = tmp;}
+
+                        Tijk = 1e6;
+
+                        if (c < 1e6)
+                        {
+                            Tijk = c + h*S[index];
+
+                            if (Tijk > b)
+                            {
+                                tmp = 0.5f * (b + c + sqrt(2.0f*h*h*S[index]*S[index] - (b - c)*(b - c)));           
+
+                                if (tmp > b) Tijk = tmp;
+
+                                if (Tijk > a)
+                                {
+                                    tmp = (a + b + c)/3.0f + sqrt(2.0f*(a*(b - a) + b*(c - b) + c*(a - c)) + 3.0f*h*h*S[index]*S[index])/3.0f;
+
+                                    if (tmp > a) Tijk = tmp;
+                                }
+                            }
+                        }
+
+                        /* Time atualization */
+                        float lowest = min(Tijk,T[index]);    
+
+                        if (lowest == T[index]) K[index] = 0.0f;
+
+                        nT[index] = lowest;
+                    }
+                }
+            }
+
+            # pragma acc parallel loop present(nK[0:m3D.nPointsB])
+            for (int index = 0; index < m3D.nPointsB; index++) nK[index] = 0.0f;
+
+            # pragma acc parallel loop present(K[0:m3D.nPointsB], nK[0:m3D.nPointsB])
+            for (int index = 0; index < m3D.nPointsB; index++)
+            {
+                if (K[index] == 1.0f)
+                {
+                    int k = (int) (index / (m3D.nxx*m3D.nzz));             // y direction
+                    int j = (int) (index - k*m3D.nxx*m3D.nzz) / m3D.nzz;   // x direction
+                    int i = (int) (index - j*m3D.nzz - k*m3D.nxx*m3D.nzz); // z direction
+
+                    if ((i > 0) && (i < m3D.nzz-1) && (j > 0) && (j < m3D.nxx-1) && (k > 0) && (k < m3D.nyy-1))
+                    {
+                        nK[index - 1] = 1.0f;
+                        nK[index + 1] = 1.0f;
+                        nK[index - m3D.nzz] = 1.0f;
+                        nK[index + m3D.nzz] = 1.0f;
+                        nK[index - m3D.nxx*m3D.nzz] = 1.0f;
+                        nK[index + m3D.nxx*m3D.nzz] = 1.0f;      
+                    }
+                }
+            }
+
+            # pragma acc parallel loop present(T[0:m3D.nPointsB],nT[0:m3D.nPointsB],K[0:m3D.nPointsB],nK[0:m3D.nPointsB])
+            for (int index = 0; index < m3D.nPointsB; index++)
+            {
+                T[index] = nT[index];
+                K[index] = nK[index];
+            }
+        }
+    }
+    # pragma acc exit data delete(S[0:m3D.nPointsB], this[0:1])
+    # pragma acc exit data delete(K[0:m3D.nPointsB], this[0:1])
+    # pragma acc exit data delete(nT[0:m3D.nPointsB], this[0:1])
+    # pragma acc exit data delete(nK[0:m3D.nPointsB], this[0:1])
+    # pragma acc exit data copyout(T[0:m3D.nPointsB], this[0:1])
+
+    writeTravelTimes();
+    writeFirstArrivals();
+} 
+
+void Eikonal3D::writeTravelTimes()
 {
     if (exportTimesVolume)
     {    
@@ -1687,33 +1858,29 @@ void Eikonal3D::writeTravelTimes(Model3D m3D)
     }
 }
 
-void::Eikonal3D::writeFirstArrivals(Model3D m3D, Geometry3D geom)
+void::Eikonal3D::writeFirstArrivals()
 {
     if (exportFirstArrivals) 
     {
-        float * firstArrivals = new float[geom.nr];
-
-        for (int r = 0; r < geom.nr; r++)
+        float * firstArrivals = new float[g3D.nr]();
+        
+        for (int r = 0; r < g3D.nr; r++)
         {
-            float x = geom.nodes->x[r];
-            float y = geom.nodes->y[r];
-            float z = geom.nodes->z[r];
+            float x = g3D.nodes->x[r];
+            float y = g3D.nodes->y[r];
+            float z = g3D.nodes->z[r];
 
-            float x0 = floorf(geom.nodes->x[r] / m3D.dx) * m3D.dx;
-            float y0 = floorf(geom.nodes->y[r] / m3D.dy) * m3D.dy;
-            float z0 = floorf(geom.nodes->z[r] / m3D.dz) * m3D.dz;
+            float x0 = floorf(g3D.nodes->x[r] / m3D.dx) * m3D.dx;
+            float y0 = floorf(g3D.nodes->y[r] / m3D.dy) * m3D.dy;
+            float z0 = floorf(g3D.nodes->z[r] / m3D.dz) * m3D.dz;
 
-            float x1 = floorf(geom.nodes->x[r] / m3D.dx) * m3D.dx + m3D.dx;
-            float y1 = floorf(geom.nodes->y[r] / m3D.dy) * m3D.dy + m3D.dy;
-            float z1 = floorf(geom.nodes->z[r] / m3D.dz) * m3D.dz + m3D.dz;
+            float x1 = floorf(g3D.nodes->x[r] / m3D.dx) * m3D.dx + m3D.dx;
+            float y1 = floorf(g3D.nodes->y[r] / m3D.dy) * m3D.dy + m3D.dy;
+            float z1 = floorf(g3D.nodes->z[r] / m3D.dz) * m3D.dz + m3D.dz;
 
-            float xd = (x - x0) / (x1 - x0);
-            float yd = (y - y0) / (y1 - y0);
-            float zd = (z - z0) / (z1 - z0);
-
-            int xi = (int)(geom.nodes->x[r] / m3D.dx) + m3D.nb;    
-            int yi = (int)(geom.nodes->y[r] / m3D.dy) + m3D.nb;    
-            int zi = (int)(geom.nodes->z[r] / m3D.dz) + m3D.nb;    
+            int xi = (int)(g3D.nodes->x[r] / m3D.dx) + m3D.nb;    
+            int yi = (int)(g3D.nodes->y[r] / m3D.dy) + m3D.nb;    
+            int zi = (int)(g3D.nodes->z[r] / m3D.dz) + m3D.nb;    
 
             int indT = zi + xi*m3D.nzz + yi*m3D.nxx*m3D.nzz;
 
@@ -1726,6 +1893,10 @@ void::Eikonal3D::writeFirstArrivals(Model3D m3D, Geometry3D geom)
             float c110 = T[indT + m3D.nzz + m3D.nxx*m3D.nzz]; 
             float c111 = T[indT + 1 + m3D.nzz + m3D.nxx*m3D.nzz];
 
+            float xd = (x - x0) / (x1 - x0);
+            float yd = (y - y0) / (y1 - y0);
+            float zd = (z - z0) / (z1 - z0);
+
             float c00 = c000*(1 - xd) + c100*xd;    
             float c01 = c001*(1 - xd) + c101*xd;    
             float c10 = c010*(1 - xd) + c110*xd;    
@@ -1737,7 +1908,7 @@ void::Eikonal3D::writeFirstArrivals(Model3D m3D, Geometry3D geom)
             firstArrivals[r] = c0*(1 - zd) + c1*zd;
         }
 
-        InOut::writeBinaryFloat(arrivalsPath + "times_nr" + InOut::toString(geom.nr) + "_shot_" + InOut::toString(shotId+1) + ".bin", firstArrivals, geom.nr);
+        InOut::writeBinaryFloat(arrivalsPath + "times_nr" + InOut::toString(g3D.nr) + "_shot_" + InOut::toString(shotId+1) + ".bin", firstArrivals, g3D.nr);
 
         delete[] firstArrivals;
     }

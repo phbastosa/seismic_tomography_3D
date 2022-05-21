@@ -13,6 +13,12 @@ public:
     int ns;                // Total shots in simulation
     int nr;                // Total receivers in simulation 
 
+    int nsx, nrx;          // Total geometry unit in xline
+    int nsy, nry;          // Total geometry unit in crossline   
+
+    float sElev;           // Shots elevation
+    float rElev;           // Nodes elevation  
+
     /* Position struct to storage coordinates */
     typedef struct
     {
@@ -20,22 +26,45 @@ public:
         float * y;         // Position y of shots or nodes
         float * z;         // Position z of shots or nodes
     
-    } position;            
+    } Position;            
 
-    position * shots;      // Struct to storage x,y,z coordinates of shots
-    position * nodes;      // Struct to storage x,y,z coordinates of nodes
+    typedef struct 
+    {
+        float xc;
+        float yc;
 
-    /* Method to set shots positions giving three points in grid */
-    void setOBNS(Utils::point2D SW, Utils::point2D NW, Utils::point2D SE, float nsx, float nsy, float depth);
+        float ds;
+
+        std::vector<float> offsets;  
+
+    } Circles;
     
+    Position * shots;      // Struct to storage x,y,z coordinates of shots
+    Position * nodes;      // Struct to storage x,y,z coordinates of nodes
+
+    Circles circles;
+
+    Utils::point2D SW;
+    Utils::point2D NW;
+    Utils::point2D SE;
+
+    std::string shotsPath; 
+    std::string nodesPath;
+
     /* Method to set shots positions giving three points in grid */
-    void setOBNR(Utils::point2D SW, Utils::point2D NW, Utils::point2D SE, float nsx, float nsy, float depth);
+    void setGridShots();
+    
+    /* Method to set nodes positions giving three points in grid */
+    void setGridNodes();
+
+    /* Method to set circular shots positions */
+    void setCircularShots();
 
     /* Switch the nodes position to shots position */
     void setReciprocity();
 
     /* Methood to save geometry in hard drive */
-    void exportPositions(std::string shotsPath, std::string nodesPath);
+    void exportPositions();
 };
 
 # endif

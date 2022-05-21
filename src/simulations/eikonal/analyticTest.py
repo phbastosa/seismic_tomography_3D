@@ -21,13 +21,15 @@ def analiticalRefraction2D(v,z,x):
 
     return t_direct, t_refrac
 
-nx = 201
-ny = 201
-nz = 45
-dh = 25.0
-nr = 481
+nx = 441
+ny = 441
+nz = 23
+dh = 50.0
 
-interface = 1000 / dh + 1
+ns = 1
+nr = 1256
+
+interface = 1000 / dh 
 
 model = np.zeros((nz,nx,ny))
 
@@ -36,11 +38,17 @@ model[int(interface):,:,:] = 3000
 
 model.flatten("F").astype("float32",order="F").tofile(f"refractiveModel_{nz}x{nx}x{ny}_{int(dh)}m.bin")
 
-times = readBinaryVolume(nz,nx,ny,"eikonal_nz45_nx201_ny201_shot_1.bin")
-arrivals = readBinaryArray(nr,"times_nr481_shot_1.bin")
+tPod = readBinaryArray(nr,f"podvin_times_nr{nr}_shot_{ns}.bin")
+tFIM = readBinaryArray(nr,f"fim_times_nr{nr}_shot_{ns}.bin")
 
-shots = np.loadtxt("shots.txt", delimiter=",")
-nodes = np.loadtxt("nodes.txt", delimiter=",")
+shots = np.loadtxt(f"shots_n{ns}.txt", delimiter=",")
+nodes = np.loadtxt(f"nodes_n{nr}.txt", delimiter=",")
+
+plt.figure(2)
+plt.scatter(shots[0], shots[1], label = "Shots")
+plt.scatter(nodes[:,0], nodes[:,1], label = "Nodes")
+plt.title("Geometry acquisition")
+plt.legend()
 
 x = np.sqrt((shots[0] - nodes[:,0])**2 + (shots[1] - nodes[:,1])**2 + (shots[2] - nodes[:,2])**2)
 
@@ -49,22 +57,29 @@ z = np.array([1000])
 
 td, t = analiticalRefraction2D(v,z,x)
 
-offset = np.arange(nr) * 10 - 2400
+shotId = np.arange(nr)
 
-plt.figure(1, figsize=(13,6))
+plt.figure(1, figsize=(13,8))
 
 plt.subplot(211)
-plt.plot(offset, arrivals)
-plt.plot(offset, t[0])
-plt.plot(offset, td)
+plt.plot(shotId, tPod, label = "Podvin")
+plt.plot(shotId, tFIM, label = "FIM")
+plt.plot(shotId, t[0], label = "Analytic")
+plt.gca().invert_yaxis()
+plt.title("Travel times")
+plt.ylabel("Times [s]")
+plt.xlabel("Shot index")
+plt.legend()
 
 plt.subplot(212)
-diffT = t[0] - arrivals
+plt.plot(shotId,np.abs(t[0] - tPod), label = "Podvin erros")
+plt.plot(shotId,np.abs(t[0] - tFIM), label = "FIM erros")
+plt.title("Absolute erros")
+plt.ylabel("abs(Ta - Tc) [s]")
+plt.xlabel("Shot index")
 
-plt.plot(offset,diffT)
+plt.ylim([0,0.06])
 
-print(diffT[0], diffT[-1])
-print(x[0] == x[-1])
-
+plt.tight_layout()
 plt.show()
 

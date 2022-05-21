@@ -12,7 +12,7 @@ void Model3D::init()
     this->nPointsB = this->nxx * this->nyy * this->nzz;
 }
 
-void Model3D::readAndExpandVP(std::string vpPath)
+void Model3D::readAndExpandVP()
 {
     this->init();
 

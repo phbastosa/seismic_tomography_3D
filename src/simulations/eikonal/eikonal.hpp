@@ -13,17 +13,20 @@ public:
     int shotId;                  // Current source index available
     
     float * T;                   // Travel times volume
-    float * S;                   // 
-    float * K;
-    float * nT;
-    float * nK;
+    float * S;                   // Slowness volume
+    float * K;                   // Wavefront expansion volume
+    float * nT;                  // Auxiliar travel times volume
+    float * nK;                  // Auxiliar wavefromt expansion volume
+
+    Model3D m3D;
+    Geometry3D g3D;
 
     std::string eikonalPath;     // Folder to write travel times volume 
     std::string arrivalsPath;    // Folder to write first arrivals
 
     bool exportTimesVolume;      // To set if you want to write the times volume 
     bool exportFirstArrivals;    // To set if you want to write the first arrivals
-    
+
     /* Function to calculate minimum value between two inputs */
     float min(float v1, float v2);
     
@@ -34,16 +37,19 @@ public:
     void deleteVolumes();
 
     /* */
-    void allocateVolumes(Model3D m3D);
+    void allocateVolumes();
 
     /* */
-    void podvin3D(Model3D m3D, Geometry3D geom);
+    void podvin3D();
+    
+    /* */ 
+    void fim3D();
+
+    /* */
+    void writeTravelTimes();
     
     /* */
-    void writeTravelTimes(Model3D m3D);
-    
-    /* */
-    void writeFirstArrivals(Model3D m3D, Geometry3D geom);
+    void writeFirstArrivals();
 };
 
 # endif
