@@ -1,5 +1,4 @@
 # include "model.hpp"
-
 # include "../inout/inout.hpp"
 
 void Model3D::init()

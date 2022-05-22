@@ -1,0 +1,63 @@
+# Eikonal Parameters file -------------------------------------------------------
+# Instructions:
+#
+#
+#
+#
+#
+#
+
+eikonalType = 1               # comment
+exportTravelTimes = True      # comment
+exportFirstArrivals = True    # comment 
+
+# Model paramenters --------------------------------------------------------------
+ 
+nx = 441                      # comment
+ny = 441                      # comment
+nz = 23                       # comment
+
+nb = 2                        # comment
+ 
+dx = 50                       # comment
+dy = 50                       # comment 
+dz = 50                       # comment  
+
+vpPath = "refractiveModel_23x441x441_50m.bin" # comment
+
+# Geometry parameters ------------------------------------------------------------
+
+# General geometry parameters
+shotsGeometryType = 1         # comment
+nodesGeometryType = 1         # comment
+reciprocity = True            # comment
+saveGeometry = True           # comment
+
+# Grid shots geometry (1)                        
+nsx = 1                       # comment
+nsy = 1                       # comment
+sElev = 10                    # comment             
+SWs = [11000, 11000]          # (x, y) in float    NW
+NWs = [11000, 11000]          # (x, y) in float     |
+SEs = [11000, 11000]          # (x, y) in float    SW -- SE
+
+# Circular shots geometry (2)
+sxc = 11000                   # comment
+syc = 11000                   # comment
+sds = 50                      # comment
+sOffsets = [10000]            # comment
+
+# Grid nodes geometry (1)                       
+nrx = 1                       # comment
+nry = 1                       # comment
+rElev = 10                    # comment
+SWr = [11000, 11000]          # (x, y) in float    NW
+NWr = [11000, 11000]          # (x, y) in float     |
+SEr = [11000, 11000]          # (x, y) in float    SW -- SE
+
+# Circular nodes geometry (2)
+rxc = 11000                   # comment
+ryc = 11000                   # comment
+rds = 50                      # comment
+rOffsets = [10000]            # comment
+

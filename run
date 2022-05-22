@@ -1,0 +1,65 @@
+#!/bin/bash
+
+USER_MESSAGE="
+$(basename $0) [-h | -clean | -eikonal3D_gpu ]
+
+-h --help         Show all instructions
+-eikonal3D_gpu    Compiling and run 3D GPU eikonal application 
+
+Usage: 
+
+bash$ $0 -eikonal3D_gpu     # Compile and run .cpp files
+
+"
+inout=src/essentials/inout/inout.cpp
+model=src/essentials/model/model.cpp
+utils=src/essentials/utils/utils.cpp
+geom=src/essentials/geometry/geometry.cpp
+
+# Check if user provide some parameter
+[ -z "$1" ] && {
+	echo " "
+	echo "The user doesn't provide any parameter" 
+	echo "Type $0 -h for more info"
+	echo " "  
+	exit 1 
+}
+
+case "$1" in
+-h | --help) ## Show help
+	echo -e "$USER_MESSAGE"
+	exit 0
+;;
+
+-clean) ## Remove files .bin 
+
+
+	exit 0
+;;
+
+-eikonal3D_gpu) ## Compiling gpu code
+
+	main=mainCodes/eikonal3D_main.cpp
+	eikonal=src/simulations/eikonal/eikonal.cpp
+	essentials="$inout $model $utils $geom"
+
+	flags="-acc -fast -ta=tesla,cc60 -g -std::c++11"
+
+	target=bin/eikonal3D.x 
+
+	pgc++ $main $eikonal $essential -o $target   
+
+	rm *.o
+
+	# ./$target
+
+	exit 0
+;;
+
+*) ## Message for bad parameter
+	echo -e "\033[31mERRO: Option $1 unknown!\033[m"
+	echo -e "\033[31mType $0 -h for help \033[m"
+	exit 3
+;;
+
+esac

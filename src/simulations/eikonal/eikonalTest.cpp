@@ -65,7 +65,6 @@ int main(int argc, char **argv)
     eikonal.exportTimesVolume = true;
     eikonal.exportFirstArrivals = true;
 
-
     eikonal.eikonalPath = "podvin_";
     eikonal.arrivalsPath = "podvin_";
 

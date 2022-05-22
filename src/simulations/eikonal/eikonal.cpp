@@ -6,6 +6,27 @@
 
 # include "eikonal.hpp"
 
+void Eikonal3D::setup()
+{
+    std::string line;
+    std::ifstream parameters(parametersFile);
+    if (parameters.is_open())
+    {
+        while (getline(parameters, line))
+        {
+            std::cout<<line<<"\n";
+        }
+        parameters.close();
+    }        
+    else 
+    {
+        std::cout<<"Unable to open a file!"<<std::endl;
+    }
+
+
+}
+
+
 float Eikonal3D::min(float v1, float v2)
 {
     if (v1 < v2)
@@ -1852,7 +1873,7 @@ void Eikonal3D::writeTravelTimes()
             }
         }
         
-        InOut::writeBinaryFloat(eikonalPath + "eikonal_nz" + InOut::toString(m3D.nz) + "_nx" + InOut::toString(m3D.nx) + "_ny" + InOut::toString(m3D.ny) + "_shot_" + InOut::toString(shotId+1) + ".bin", TT, m3D.nPoints);
+        io.writeBinaryFloat(eikonalPath + "eikonal_nz" + io.toString(m3D.nz) + "_nx" + io.toString(m3D.nx) + "_ny" + io.toString(m3D.ny) + "_shot_" + io.toString(shotId+1) + ".bin", TT, m3D.nPoints);
 
         delete[] TT;
     }
@@ -1908,7 +1929,7 @@ void::Eikonal3D::writeFirstArrivals()
             firstArrivals[r] = c0*(1 - zd) + c1*zd;
         }
 
-        InOut::writeBinaryFloat(arrivalsPath + "times_nr" + InOut::toString(g3D.nr) + "_shot_" + InOut::toString(shotId+1) + ".bin", firstArrivals, g3D.nr);
+        // InOut::writeBinaryFloat(arrivalsPath + "times_nr" + InOut::toString(g3D.nr) + "_shot_" + InOut::toString(shotId+1) + ".bin", firstArrivals, g3D.nr);
 
         delete[] firstArrivals;
     }
