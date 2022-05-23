@@ -31,14 +31,14 @@ public:
     std::string geomPath;
     std::string eikonalPath;             // Folder to write travel times volume 
     std::string arrivalsPath;            // Folder to write first arrivals
+    std::string parametersFile;
 
     bool reciprocity;
     bool saveGeometry;
     bool exportTimesVolume;              // To set if you want to write the times volume 
     bool exportFirstArrivals;            // To set if you want to write the first arrivals
 
-    std::string parametersFile;
-
+    /* */
     Eikonal3D(char **argv);
 
     /* Function to calculate minimum value between two inputs */

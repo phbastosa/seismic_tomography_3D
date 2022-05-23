@@ -268,8 +268,6 @@ void Eikonal3D::podvin3D()
     {
         for (int iteration = 0; iteration < nItEikonal; iteration++)
         {  
-            if (iteration % 100 == 0) std::cout<<iteration<< " of "<<nItEikonal<<"\n";
-
             # pragma acc parallel loop present(S[0:m3D.nPointsB],T[0:m3D.nPointsB],K[0:m3D.nPointsB],nT[0:m3D.nPointsB])
             for (int index = 0; index < m3D.nPointsB; index++)
             {
