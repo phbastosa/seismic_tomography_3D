@@ -194,9 +194,7 @@ void Geometry3D::exportPositions()
 
     for (int shot = 0; shot < ns; shot++)        
     {   
-        shotsFile <<shots->x[shot]<<", "<<shots->y[shot]<<", "<<shots->z[shot]<<std::endl;
-    
-        
+        shotsFile <<shots->x[shot]<<", "<<shots->y[shot]<<", "<<shots->z[shot]<<std::endl;    
     }
 
     shotsFile.close();

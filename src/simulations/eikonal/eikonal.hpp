@@ -39,6 +39,7 @@ public:
     bool exportFirstArrivals;            // To set if you want to write the first arrivals
 
     /* */
+    Eikonal3D();
     Eikonal3D(char **argv);
 
     /* Function to calculate minimum value between two inputs */

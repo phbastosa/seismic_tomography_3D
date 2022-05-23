@@ -8,6 +8,8 @@
 
 # include "eikonal.hpp"
 
+Eikonal3D::Eikonal3D() {  }
+
 Eikonal3D::Eikonal3D(char **argv) { parametersFile = argv[1]; setup(); }
 
 void Eikonal3D::setup()
@@ -281,7 +283,7 @@ void Eikonal3D::podvin3D()
                     {
                         float h = m3D.dx;
                         float lowest = T[index];
-                        float Tijk, T1, T2, Sref, M, N, P, Q;
+                        float Tijk, T1, T2, Sref, M, N, P, Q; 
                         float hs2 = h*h*S[index]*S[index];
 
                         /* 1D operator head wave: i,j-1,k -> i,j,k (x direction) */
@@ -398,7 +400,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator XZ plane: First Quadrant*/
 
-                        Sref = S[index - 1 - m3D.nzz];
+                        Sref = min(S[index - 1 - m3D.nzz], S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]);
 
                         // i,j-1,k - i-1,j-1,k -> i,j,k
                         T1 = T[index - m3D.nzz];
@@ -426,7 +428,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator XZ plane: Second Quadrant*/                        
 
-                        Sref = S[index - m3D.nzz];
+                        Sref = min(S[index - m3D.nzz],S[index - m3D.nzz - m3D.nxx*m3D.nzz]);
 
                         // i,j-1,k - i+1,j-1,k -> i,j,k
                         T1 = T[index - m3D.nzz];
@@ -454,7 +456,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator XZ plane: Third Quadrant*/                        
 
-                        Sref = S[index];
+                        Sref = min(S[index], S[index - m3D.nxx*m3D.nzz]);
 
                         // i+1,j,k - i+1,j+1,k -> i,j,k
                         T1 = T[index + 1];
@@ -482,7 +484,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator XZ plane: Fourth Quadrant*/                        
 
-                        Sref = S[index - 1];
+                        Sref = min(S[index - 1], S[index - 1 - m3D.nxx*m3D.nzz]);
 
                         // i,j+1,k - i-1,j+1,k -> i,j,k
                         T1 = T[index + m3D.nzz];
@@ -510,7 +512,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator YZ plane: First Quadrant */                        
 
-                        Sref = S[index - 1 - m3D.nxx*m3D.nzz];
+                        Sref = min(S[index - 1 - m3D.nxx*m3D.nzz], S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]);
 
                         // i,j,k-1 - i-1,j,k-1 -> i,j,k
                         T1 = T[index - m3D.nxx*m3D.nzz];
@@ -538,7 +540,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator YZ plane: Second Quadrant */                        
 
-                        Sref = S[index - m3D.nxx*m3D.nzz];
+                        Sref = min(S[index - m3D.nxx*m3D.nzz], S[index - m3D.nzz - m3D.nxx*m3D.nzz]);
 
                         // i,j,k-1 - i+1,j,k-1 -> i,j,k
                         T1 = T[index - m3D.nxx*m3D.nzz];
@@ -566,7 +568,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator YZ plane: Third Quadrant*/                        
 
-                        Sref = S[index];
+                        Sref = min(S[index], S[index - m3D.nzz]);
 
                         // i+1,j,k - i+1,j,k+1 -> i,j,k
                         T1 = T[index + 1];
@@ -594,7 +596,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator YZ plane: Fourth Quadrant*/                        
 
-                        Sref = S[index - 1];
+                        Sref = min(S[index - 1], S[index - 1 - m3D.nzz]);
 
                         // i,j,k+1 - i-1,j,k+1 -> i,j,k
                         T1 = T[index + m3D.nxx*m3D.nzz];
@@ -622,7 +624,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator XY plane: First Quadrant*/                        
 
-                        Sref = S[index - m3D.nzz - m3D.nxx*m3D.nzz];
+                        Sref = min(S[index - m3D.nzz - m3D.nxx*m3D.nzz],S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]);
 
                         // i,j-1,k - i,j-1,k-1 -> i,j,k
                         T1 = T[index - m3D.nzz];
@@ -650,7 +652,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator XY plane: Second Quadrant*/                        
 
-                        Sref = S[index - m3D.nzz];
+                        Sref = min(S[index - m3D.nzz],S[index - 1 - m3D.nzz]);
 
                         // i,j-1,k - i,j-1,k+1 -> i,j,k
                         T1 = T[index - m3D.nzz];
@@ -678,7 +680,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator XY plane: Third Quadrant*/                        
 
-                        Sref = S[index];
+                        Sref = min(S[index],S[index - 1]);
 
                         // i,j,k+1 - i,j+1,k+1 -> i,j,k
                         T1 = T[index + m3D.nxx*m3D.nzz];
@@ -706,7 +708,7 @@ void Eikonal3D::podvin3D()
 
                         /* 2D operator XY plane: Fourth Quadrant*/                        
 
-                        Sref = S[index - m3D.nxx*m3D.nzz];
+                        Sref = min(S[index - m3D.nxx*m3D.nzz], S[index - 1 - m3D.nxx*m3D.nzz]);
 
                         // i,j+1,k - i,j+1,k-1 -> i,j,k
                         T1 = T[index + m3D.nzz];
@@ -733,7 +735,7 @@ void Eikonal3D::podvin3D()
                         }
 
                         /* 3D operator - First octant: XY plane */
- 
+
     /* i-1,j-1,k-1 */   M = T[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz];   
     /* i-1,j-1, k  */   N = T[index - 1 - m3D.nzz];             
     /* i-1, j ,k-1 */   P = T[index - 1 - m3D.nxx*m3D.nzz];       
@@ -856,7 +858,7 @@ void Eikonal3D::podvin3D()
                         }        
 
                         /* 3D operator - Second octant: XY plane */
- 
+
     /* i-1,j+1,k-1 */   M = T[index - 1 + m3D.nzz - m3D.nxx*m3D.nzz];   
     /* i-1, j ,k-1 */   N = T[index - 1 - m3D.nxx*m3D.nzz];             
     /* i-1,j+1, k  */   P = T[index - 1 + m3D.nzz];       
@@ -1102,7 +1104,7 @@ void Eikonal3D::podvin3D()
                         }        
 
                         /* 3D operator - Fourth octant: XY plane */
- 
+
     /* i-1,j-1,k+1 */   M = T[index - 1 - m3D.nzz + m3D.nxx*m3D.nzz];   
     /* i-1, j ,k+1 */   N = T[index - 1 + m3D.nxx*m3D.nzz];             
     /* i-1,j-1, k  */   P = T[index - 1 - m3D.nzz];       
@@ -1225,7 +1227,7 @@ void Eikonal3D::podvin3D()
                         }        
 
                         /* 3D operator - Fifth octant: XY plane */
- 
+
     /* i+1,j-1,k-1 */   M = T[index + 1 - m3D.nzz - m3D.nxx*m3D.nzz];   
     /* i+1, j ,k-1 */   N = T[index + 1 - m3D.nxx*m3D.nzz];             
     /* i+1,j-1, k  */   P = T[index + 1 - m3D.nzz];       
@@ -1348,7 +1350,7 @@ void Eikonal3D::podvin3D()
                         }        
 
                         /* 3D operator - Sixth octant: XY plane */
- 
+
     /* i+1,j+1,k-1 */   M = T[index + 1 + m3D.nzz - m3D.nxx*m3D.nzz];   
     /* i+1,j+1, k  */   N = T[index + 1 + m3D.nzz];             
     /* i+1, j ,k-1 */   P = T[index + 1 - m3D.nxx*m3D.nzz];       
@@ -1471,7 +1473,7 @@ void Eikonal3D::podvin3D()
                         }        
 
                         /* 3D operator - Seventh octant: XY plane */
- 
+
     /* i+1,j-1,k+1 */   M = T[index + 1 - m3D.nzz + m3D.nxx*m3D.nzz];   
     /* i+1,j-1, k  */   N = T[index + 1 - m3D.nzz];             
     /* i+1, j ,k+1 */   P = T[index + 1 + m3D.nxx*m3D.nzz];       
@@ -1675,7 +1677,7 @@ void Eikonal3D::podvin3D()
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
-                        /* 3D operator - Fourth octant: XZ plane */
+                        /* 3D operator - Eighth octant: XZ plane */
 
     /* i+1,j+1,k+1 */   M = T[index + 1 + m3D.nzz + m3D.nxx*m3D.nzz];   
     /*  i ,j+1,k+1 */   N = T[index + m3D.nzz + m3D.nxx*m3D.nzz];             

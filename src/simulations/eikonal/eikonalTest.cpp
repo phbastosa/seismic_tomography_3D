@@ -55,8 +55,8 @@ int main(int argc, char **argv)
 
     eikonal.g3D.setReciprocity();
 
-    eikonal.g3D.nodesPath = "nodes_n" + InOut::toString(eikonal.g3D.nr) + ".txt";
-    eikonal.g3D.shotsPath = "shots_n" + InOut::toString(eikonal.g3D.ns) + ".txt";
+    eikonal.g3D.nodesPath = "nodes_n" + std::to_string(eikonal.g3D.nr) + ".txt";
+    eikonal.g3D.shotsPath = "shots_n" + std::to_string(eikonal.g3D.ns) + ".txt";
 
     eikonal.g3D.exportPositions();
 
