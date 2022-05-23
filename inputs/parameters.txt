@@ -1,0 +1,82 @@
+# Tomography Parameters file -------------------------------------------------------
+# Instructions:
+#
+#
+#
+#
+#
+#
+ 
+eikonalType = 1                           # comment
+exportTravelTimes = False                 # comment 
+exportFirstArrivals = True                # comment 
+generate_dobs = True                      # comment
+
+maxIteration = 1                          # comment                    
+tomoTolerance = 0.001                     # comment
+
+# Inputs Folders 
+
+vpPath = "inputs/models/refractiveModel_23x441x441_50m.bin"   # 
+trueModelPath = "inputs/models/trueModel_31x101x101_50m.bin"  #
+initModelPath = "inputs/models/initModel_31x101x101_50m.bin"  #
+dobsFolder = "inputs/dobs/"                                   #
+
+# Outputs folders
+
+dcalFolder = "outputs/dcal/"                               #
+shotsPositionPath = "outputs/geometry/shotsPosition.txt"   #     
+nodesPositionPath = "outputs/geometry/nodesPosition.txt"   #    
+travelTimesFolder = "outputs/travelTimes/"                 #
+firstArrivalsFolder = "outputs/firstArrivals/"             #   
+gradientFolder = "outputs/gradient/"                        #
+
+# Model paramenters --------------------------------------------------------------
+ 
+nx = 101                                  # comment
+ny = 101                                  # comment
+nz = 31                                   # comment
+ 
+nb = 2                                    # comment
+ 
+dx = 50                                   # comment
+dy = 50                                   # comment 
+dz = 50                                   # comment  
+ 
+# Geometry parameters ------------------------------------------------------------
+ 
+# General geometry parameters
+shotsGeometryType = 2                     # comment
+nodesGeometryType = 1                     # comment
+reciprocity = True                        # comment
+saveGeometry = True                       # comment
+
+sElev = 10                                # comment             
+rElev = 500                               # comment
+
+# Grid SHOTS geometry (option: 1)                        
+nsx = 1                                   # comment
+nsy = 1                                   # comment
+SWs = [11000,11000]                       # (x, y) in float    NW
+NWs = [11000,11000]                       # (x, y) in float     |
+SEs = [11000,11000]                       # (x, y) in float    SW -- SE
+ 
+# Circular SHOTS geometry (option: 2)
+sxc = 2500                               # comment
+syc = 2500                               # comment
+sds = 25                                 # comment
+sOffsets = [1000,1500,2000]              # comment
+ 
+# Grid NODES geometry (option: 1)                       
+nrx = 11                                  # comment
+nry = 11                                  # comment
+SWr = [500,500]                           # (x, y) in float    NW
+NWr = [500,4500]                          # (x, y) in float     |
+SEr = [4500,500]                          # (x, y) in float    SW -- SE
+ 
+# Circular NODES geometry (option: 2)
+rxc = 11000                               # comment
+ryc = 11000                               # comment
+rds = 50                                  # comment
+rOffsets = [10000]                        # comment
+

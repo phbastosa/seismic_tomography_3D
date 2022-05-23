@@ -118,10 +118,6 @@ void Eikonal3D::setup()
     eikonalPath = io.catchParameter("travelTimesFolder", parametersFile);
     arrivalsPath = io.catchParameter("firstArrivalsFolder", parametersFile);
 
-    std::cout<<m3D.vpPath<<std::endl;
-    std::cout<<arrivalsPath + "teste.bin"<<std::endl;
-    std::cout<<eikonalPath + "teste.bin"<<std::endl;
-
     m3D.init();
 
     m3D.readAndExpandVP();

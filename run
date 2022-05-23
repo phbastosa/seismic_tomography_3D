@@ -3,14 +3,16 @@
 USER_MESSAGE="
 $(basename $0) [-h | -clean | -eikonal3D_gpu ]
 
--h --help         Show all instructions
--eikonal3D_gpu    Compiling and run 3D GPU eikonal application 
+-h --help          Show all instructions
+-eikonal3D_gpu     Compile and run 3D GPU eikonal application 
+-tomography3D_gpu  Compile and run 3D GPU tomography application 
 
 Usage: 
 
-bash$ $0 -eikonal3D_gpu     # Compile and run .cpp files
-
+bash$ $0 -eikonal3D_gpu      # Compile and run .cpp files
+bash$ $0 -tomography3D_gpu   # Compile and run .cpp files
 "
+
 inout=src/essentials/inout/inout.cpp
 model=src/essentials/model/model.cpp
 utils=src/essentials/utils/utils.cpp
@@ -42,12 +44,35 @@ case "$1" in
 	main=mainCodes/eikonal3D_main.cpp
 	eikonal=src/simulations/eikonal/eikonal.cpp
 	essentials="$inout $model $utils $geom"
-	paramFile="inputs/parameters/eikonalParameters.txt"
-	flags="-acc -fast -ta=tesla,cc60 -g -std::c++11"
+	paramFile="inputs/parameters.txt"
+	flags="-acc -fast -ta=tesla,cc60 -g -std::c++11 -lm"
 
 	target=bin/eikonal3D.x 
 
-	pgc++ $main $eikonal $essentials -o $target   
+	pgc++ $flags $main $eikonal $essentials -o $target   
+
+	rm *.o
+
+	./$target $paramFile
+
+	exit 0
+;;
+
+
+-tomography3D_gpu) ## Compiling gpu code
+
+	# python3 src/auxPyCodes/generateTomoModels.py
+
+	main=mainCodes/tomography3D_main.cpp
+	eikonal=src/simulations/eikonal/eikonal.cpp
+	tomography=src/tomography/tomography.cpp
+	essentials="$inout $model $utils $geom"
+	paramFile="inputs/parameters.txt"
+	flags="-acc -fast -ta=tesla,cc60 -g -std::c++11 -lm"
+
+	target=bin/tomography3D.x 
+
+	pgc++ $flags $main $eikonal $tomography $essentials -o $target   
 
 	rm *.o
 
