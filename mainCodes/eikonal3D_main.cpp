@@ -7,7 +7,23 @@
 
 int main(int argc, char **argv)
 {
-    std::cout<<"Hello world!"<<std::endl;
+    auto eikonal = Eikonal3D(argv);
+
+    for (int i = 0; i < eikonal.g3D.ns; i++)
+    {
+        eikonal.shotId = i;
+
+        if (eikonal.eikonalType)
+        {
+            eikonal.podvin3D();
+        }
+        else 
+        {
+            eikonal.fim3D();
+        }
+    }    
+
+    eikonal.deleteVolumes();
 
     return 0;
 }

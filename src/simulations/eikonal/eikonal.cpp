@@ -1,31 +1,135 @@
 # include <cmath>
+#include <algorithm>
 
 # include "../../essentials/inout/inout.hpp"
+# include "../../essentials/utils/utils.hpp"
 # include "../../essentials/model/model.hpp"
 # include "../../essentials/geometry/geometry.hpp"
 
 # include "eikonal.hpp"
 
+Eikonal3D::Eikonal3D(char **argv) { parametersFile = argv[1]; setup(); }
+
 void Eikonal3D::setup()
 {
-    std::string line;
-    std::ifstream parameters(parametersFile);
-    if (parameters.is_open())
+    eikonalType = std::stoi(io.catchParameter("eikonalType", parametersFile));    
+    exportTimesVolume = utils.str2bool(io.catchParameter("exportTravelTimes", parametersFile));
+    exportFirstArrivals = utils.str2bool(io.catchParameter("exportFirstArrivals", parametersFile));
+
+    m3D.nx = std::stoi(io.catchParameter("nx", parametersFile));
+    m3D.ny = std::stoi(io.catchParameter("ny", parametersFile));
+    m3D.nz = std::stoi(io.catchParameter("nz", parametersFile));
+    m3D.nb = std::stoi(io.catchParameter("nb", parametersFile));
+    
+    m3D.dx = std::stof(io.catchParameter("dx", parametersFile));
+    m3D.dy = std::stof(io.catchParameter("dy", parametersFile));
+    m3D.dz = std::stof(io.catchParameter("dz", parametersFile));
+
+    m3D.vpPath = io.catchParameter("vpPath", parametersFile);
+    
+    shotsGeometryType = std::stoi(io.catchParameter("shotsGeometryType", parametersFile));
+    nodesGeometryType = std::stoi(io.catchParameter("nodesGeometryType", parametersFile));
+
+    reciprocity = utils.str2bool(io.catchParameter("reciprocity", parametersFile));
+    saveGeometry = utils.str2bool(io.catchParameter("saveGeometry", parametersFile));
+
+    std::vector<std::string> splitted;
+
+    g3D.sElev = std::stof(io.catchParameter("sElev", parametersFile));
+    g3D.rElev = std::stof(io.catchParameter("rElev", parametersFile));
+
+    if (shotsGeometryType == 1)           // Grid shots aqcuisition
     {
-        while (getline(parameters, line))
-        {
-            std::cout<<line<<"\n";
-        }
-        parameters.close();
-    }        
-    else 
-    {
-        std::cout<<"Unable to open a file!"<<std::endl;
+        g3D.nsx = std::stoi(io.catchParameter("nsx", parametersFile));
+        g3D.nsy = std::stoi(io.catchParameter("nsy", parametersFile));
+        
+        splitted = utils.split(io.catchParameter("SWs", parametersFile),',');
+
+        g3D.SW.x = std::stof(splitted[0]); 
+        g3D.SW.y = std::stof(splitted[1]);
+
+        splitted = utils.split(io.catchParameter("NWs", parametersFile),',');
+
+        g3D.NW.x = std::stof(splitted[0]); 
+        g3D.NW.y = std::stof(splitted[1]);
+
+        splitted = utils.split(io.catchParameter("SEs", parametersFile),',');
+
+        g3D.SE.x = std::stof(splitted[0]); 
+        g3D.SE.y = std::stof(splitted[1]);
+
+        g3D.setGridShots();
+    }
+    else if (shotsGeometryType == 2)      // Circular shots aqcuisition
+    {   
+        g3D.circles.xc = std::stoi(io.catchParameter("sxc", parametersFile));
+        g3D.circles.yc = std::stoi(io.catchParameter("syc", parametersFile));
+        g3D.circles.ds = std::stof(io.catchParameter("sds", parametersFile));
+        
+        splitted = utils.split(io.catchParameter("sOffsets", parametersFile),',');
+
+        for (auto offset : splitted) 
+            g3D.circles.offsets.push_back(std::stof(offset));
+
+        g3D.setCircularShots();
     }
 
+    if (nodesGeometryType == 1)           // Grid nodes aqcuisition
+    {
+        g3D.nrx = std::stoi(io.catchParameter("nrx", parametersFile));
+        g3D.nry = std::stoi(io.catchParameter("nry", parametersFile));
+        
+        splitted = utils.split(io.catchParameter("SWr", parametersFile),',');
 
+        g3D.SW.x = std::stof(splitted[0]); 
+        g3D.SW.y = std::stof(splitted[1]);
+
+        splitted = utils.split(io.catchParameter("NWr", parametersFile),',');
+
+        g3D.NW.x = std::stof(splitted[0]); 
+        g3D.NW.y = std::stof(splitted[1]);
+
+        splitted = utils.split(io.catchParameter("SEr", parametersFile),',');
+
+        g3D.SE.x = std::stof(splitted[0]); 
+        g3D.SE.y = std::stof(splitted[1]);
+
+        g3D.setGridNodes();
+    }
+    else if (nodesGeometryType == 2)      // Circular nodes aqcuisition
+    {
+        g3D.circles.xc = std::stoi(io.catchParameter("rxc", parametersFile));
+        g3D.circles.yc = std::stoi(io.catchParameter("ryc", parametersFile));
+        g3D.circles.ds = std::stof(io.catchParameter("rds", parametersFile));
+
+        splitted = utils.split(io.catchParameter("rOffsets", parametersFile),',');
+
+        for (auto offset : splitted) 
+            g3D.circles.offsets.push_back(std::stof(offset));
+
+        g3D.setCircularNodes();
+    }
+
+    g3D.shotsPath = io.catchParameter("shotsPositionPath", parametersFile);
+    g3D.nodesPath = io.catchParameter("nodesPositionPath", parametersFile);
+
+    eikonalPath = io.catchParameter("travelTimesFolder", parametersFile);
+    arrivalsPath = io.catchParameter("firstArrivalsFolder", parametersFile);
+
+    std::cout<<m3D.vpPath<<std::endl;
+    std::cout<<arrivalsPath + "teste.bin"<<std::endl;
+    std::cout<<eikonalPath + "teste.bin"<<std::endl;
+
+    m3D.init();
+
+    m3D.readAndExpandVP();
+
+    g3D.exportPositions();
+
+    if (reciprocity) g3D.setReciprocity();
+
+    allocateVolumes();
 }
-
 
 float Eikonal3D::min(float v1, float v2)
 {
@@ -163,7 +267,9 @@ void Eikonal3D::podvin3D()
     # pragma acc enter data copyin(this[0:1], T[0:m3D.nPointsB])
     {
         for (int iteration = 0; iteration < nItEikonal; iteration++)
-        {            
+        {  
+            if (iteration % 100 == 0) std::cout<<iteration<< " of "<<nItEikonal<<"\n";
+
             # pragma acc parallel loop present(S[0:m3D.nPointsB],T[0:m3D.nPointsB],K[0:m3D.nPointsB],nT[0:m3D.nPointsB])
             for (int index = 0; index < m3D.nPointsB; index++)
             {
@@ -1873,7 +1979,7 @@ void Eikonal3D::writeTravelTimes()
             }
         }
         
-        io.writeBinaryFloat(eikonalPath + "eikonal_nz" + io.toString(m3D.nz) + "_nx" + io.toString(m3D.nx) + "_ny" + io.toString(m3D.ny) + "_shot_" + io.toString(shotId+1) + ".bin", TT, m3D.nPoints);
+        io.writeBinaryFloat(eikonalPath + "eikonal_nz" + std::to_string(m3D.nz) + "_nx" + std::to_string(m3D.nx) + "_ny" + std::to_string(m3D.ny) + "_shot_" + std::to_string(shotId+1) + ".bin", TT, m3D.nPoints);
 
         delete[] TT;
     }
@@ -1929,8 +2035,9 @@ void::Eikonal3D::writeFirstArrivals()
             firstArrivals[r] = c0*(1 - zd) + c1*zd;
         }
 
-        // InOut::writeBinaryFloat(arrivalsPath + "times_nr" + InOut::toString(g3D.nr) + "_shot_" + InOut::toString(shotId+1) + ".bin", firstArrivals, g3D.nr);
+        io.writeBinaryFloat(arrivalsPath + "times_nr" + std::to_string(g3D.nr) + "_shot_" + std::to_string(shotId+1) + ".bin", firstArrivals, g3D.nr);
 
         delete[] firstArrivals;
     }
 }
+

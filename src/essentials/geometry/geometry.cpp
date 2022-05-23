@@ -95,6 +95,43 @@ void Geometry3D::setCircularShots()
     std::vector< float >().swap(y);
 }
 
+void Geometry3D::setCircularNodes()
+{
+    std::vector<float> x, y;
+
+    for (float radius : circles.offsets)
+    {
+        float theta = 0.0f;
+
+        while (theta < 2.0f * 4.0f*atan(1.0f))
+        {
+            theta += acos(1.0f - powf(circles.ds,2.0f)/(2.0f*powf(radius,2.0f)));    
+            
+            x.push_back(radius*sin(theta) + circles.xc);        
+            y.push_back(radius*cos(theta) + circles.yc);        
+
+        }
+    }
+
+    nr = x.size();
+
+    nodes = new Position[nr](); 
+
+    nodes->x = new float[nr]();
+    nodes->y = new float[nr]();
+    nodes->z = new float[nr]();
+
+    for (int i = 0; i < nr; i++)
+    {
+        nodes->x[i] = x[i]; 
+        nodes->y[i] = y[i];
+        nodes->z[i] = rElev;
+    }
+
+    std::vector< float >().swap(x);
+    std::vector< float >().swap(y);
+}
+
 void Geometry3D::setReciprocity()
 {
     float * x = new float[ns];

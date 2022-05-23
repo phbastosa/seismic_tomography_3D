@@ -13,7 +13,10 @@ private:
 public:    
 
     int shotId;                  // Current source index available
-    
+    int eikonalType;             //
+    int shotsGeometryType;
+    int nodesGeometryType;
+
     float * T;                   // Travel times volume
     float * S;                   // Slowness volume
     float * K;                   // Wavefront expansion volume
@@ -21,16 +24,22 @@ public:
     float * nK;                  // Auxiliar wavefromt expansion volume
 
     InOut io;
+    Utils utils;
     Model3D m3D;
     Geometry3D g3D;
 
+    std::string geomPath;
     std::string eikonalPath;             // Folder to write travel times volume 
     std::string arrivalsPath;            // Folder to write first arrivals
 
+    bool reciprocity;
+    bool saveGeometry;
     bool exportTimesVolume;              // To set if you want to write the times volume 
     bool exportFirstArrivals;            // To set if you want to write the first arrivals
 
     std::string parametersFile;
+
+    Eikonal3D(char **argv);
 
     /* Function to calculate minimum value between two inputs */
     float min(float v1, float v2);

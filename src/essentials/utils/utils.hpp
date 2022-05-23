@@ -2,6 +2,7 @@
 # define UTILS_HPP
 
 # include <vector>
+# include <string>
 
 class Utils
 {
@@ -16,7 +17,11 @@ public:
         
     } point2D;
 
+    static bool str2bool(std::string s);
+
     static std::vector<float> linspace(float start, float end, int num);        
+
+    static std::vector<std::string> split(std::string s, char delimiter);
 };
 
 # endif

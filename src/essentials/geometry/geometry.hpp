@@ -60,6 +60,9 @@ public:
     /* Method to set circular shots positions */
     void setCircularShots();
 
+    /* Method to set circular nodes positions */
+    void setCircularNodes();
+
     /* Switch the nodes position to shots position */
     void setReciprocity();
 

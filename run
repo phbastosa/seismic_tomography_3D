@@ -42,16 +42,16 @@ case "$1" in
 	main=mainCodes/eikonal3D_main.cpp
 	eikonal=src/simulations/eikonal/eikonal.cpp
 	essentials="$inout $model $utils $geom"
-
+	paramFile="inputs/parameters/eikonalParameters.txt"
 	flags="-acc -fast -ta=tesla,cc60 -g -std::c++11"
 
 	target=bin/eikonal3D.x 
 
-	pgc++ $main $eikonal $essential -o $target   
+	pgc++ $main $eikonal $essentials -o $target   
 
 	rm *.o
 
-	# ./$target
+	./$target $paramFile
 
 	exit 0
 ;;
