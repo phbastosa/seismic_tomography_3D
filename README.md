@@ -1,2 +1,2 @@
-# Seismic imaging OOP project
-Algorithms of seismic imaging written in object-oriented programming
+# 3D seismic tomography OOP project
+Master degree project using object-oriented programming
