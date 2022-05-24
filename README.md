@@ -1,2 +1,2 @@
-# 3D seismic tomography OOP project
+# 3D seismic tomography
 Master degree project using object-oriented programming
