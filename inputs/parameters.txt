@@ -7,11 +7,11 @@
 eikonalType = 1                       # 0 - Jeong & Whitaker (2008); 1 - Podvin & Lecomte (1991) (int)  
 exportTravelTimes = False             # Flag to export travel times volume (bool) 
 exportFirstArrivals = True            # Flag to export first arrivals (bool) 
-generateDobs = False                   # Flag to generate sinthetic observed data
+generateDobs = False                  # Flag to generate sinthetic observed data
 
-maxIteration = 2                      # Tomography max iteration                    
+maxIteration = 5                      # Tomography max iteration                    
 tomoTolerance = 0.001                 # Tomography tolerance to stop inversion progress
-regParam = 0.001                      # Regularization parameter 
+regParam = 0.005                       # Regularization parameter 
 
 # Inputs Folders 
 
@@ -72,7 +72,7 @@ reciprocity = True                    # Shots become nodes and nodes become shot
 saveGeometry = True                   # To save shots and nodes position in a .txt file (bool)
 
 sElev = 10                            # Sources elevation - flat surface (float)             
-rElev = 500                           # Receivers elevation - flat surface (float)
+rElev = 200                           # Receivers elevation - flat surface (float)
 
 # Grid SHOTS geometry (option: 1)                        
 

@@ -1,5 +1,7 @@
 # include <cmath>
+# include <limits>
 # include <string>
+# include <iomanip>
 # include <algorithm>
 
 # include "tomography.hpp"
@@ -68,7 +70,7 @@ Tomography::Tomography(char **argv)
 
     m3D.readAndExpandVP();
 
-    iteration = 1;
+    iteration = 0;
 
     residuo.reserve(maxIteration);
 
@@ -78,6 +80,32 @@ Tomography::Tomography(char **argv)
     gradient = new float[mTomo.nPoints]();
     slowness = new float[mTomo.nPoints]();
 }
+
+void Tomography::infoMessage()
+{
+    std::cout << std::fixed << std::setprecision(1);
+
+    system("clear");
+    std::cout<<"3D first arrival tomography for OBN geometry\n\n";
+    
+    std::cout<<"Total x model length = "<<(m3D.nx-1)*m3D.dx<<" m\n";
+    std::cout<<"Total Y model length = "<<(m3D.ny-1)*m3D.dy<<" m\n";
+    std::cout<<"Total Z model length = "<<(m3D.nz-1)*m3D.dz<<" m\n\n";
+    
+    if (reciprocity)
+        std::cout<<"Reciprocity = True\n\n";
+    else
+        std::cout<<"Shots reciprocity = False\n\n";
+
+    if (iteration == maxIteration)
+        std::cout<<"------- Checking final residuo ------------\n\n";
+    else
+        std::cout<<"------- Computing iteration "<<iteration+1<<" ------------\n\n";
+
+    std::cout<<"Shot "<<shotId+1<<" of "<<g3D.ns<<" at position: (x = "<<g3D.shots->x[shotId]<<" m, y = "<<g3D.shots->y[shotId]<<" m, z = "<<g3D.shots->z[shotId]<<" m)\n\n";
+
+    if (iteration > 1) std::cout<<"\nPrevious iteration residuous: "<<residuo.back()<<"\n";
+} 
 
 void Tomography::importDobs()
 {   
@@ -138,16 +166,16 @@ void Tomography::fwdModeling()
 
     for (int shot = 0; shot < g3D.ns; shot++)
     {
-        std::cout<<"Iteration "<<iteration<<": computing shot "<<shot+1<<" of "<<g3D.ns<<"\n";
-
         shotId = shot;
 
-        if (eikonalType == 1) 
+        if (eikonalType) 
             podvin();
         else 
             jeongFIM();
 
         gradientRayTracing();
+    
+        infoMessage();    
     }
 }
 
@@ -256,7 +284,7 @@ bool Tomography::converged()
     
     if ((residuo.back() < tomoTolerance) || (iteration >= maxIteration))
     {
-        std::cout<<"\nFinal residuo: "<<r<<std::endl;
+        std::cout<<"\nFinal residuo: "<<sqrtf(r)<<std::endl;
         return true;
     }
     else
@@ -268,6 +296,8 @@ bool Tomography::converged()
 
 void Tomography::cgls_Berriman()
 {
+    std::cout<<"Solving linear system...\n\n";
+
     // G matrix construction
 
     int nnz = vM.size();
@@ -433,7 +463,7 @@ void Tomography::modelUpdate()
         mm[i + j*m3D.nz + k*m3D.nx*m3D.nz] = m3D.vp[(i + m3D.nb) + (j + m3D.nb)*m3D.nzz + (k + m3D.nb)*m3D.nxx*m3D.nzz];
     }
 
-    io.writeBinaryFloat(estModels + "estimatedModel_iteration_" + std::to_string(iteration-1) + ".bin", mm, m3D.nPoints);    
+    io.writeBinaryFloat(estModels + "estimatedModel_iteration_" + std::to_string(iteration) + ".bin", mm, m3D.nPoints);    
 
     delete[] mm;
 }
@@ -487,7 +517,7 @@ void Tomography::modelSmoothing()
 
 void Tomography::exportConvergency()
 {
-    std::ofstream resFile(resPath);
+    std::ofstream resFile(resPath + "residuo.txt");
     
     for (int r = 0; r < residuo.size(); r++)
         resFile<<residuo[r]<<"\n";

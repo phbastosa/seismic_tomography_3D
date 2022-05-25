@@ -50,6 +50,9 @@ public:
     Tomography(char **argv);
 
     /* */
+    void infoMessage();
+
+    /* */
     void importDobs();
 
     /* */

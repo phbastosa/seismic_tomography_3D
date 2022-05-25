@@ -20,10 +20,6 @@ int main(int argc, char **argv)
 
         tomography.cgls_Berriman();
 
-        // tomography.cgls_zoTikhonov();
-        // tomography.cgls_foTikhonov();
-        // tomography.cgls_soTikhonov();
-
         tomography.modelUpdate();
 
         tomography.modelSmoothing();
