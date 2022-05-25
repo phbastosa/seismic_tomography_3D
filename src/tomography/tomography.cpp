@@ -340,7 +340,7 @@ void Tomography::cgls_Berriman()
         int j = (int) (index - k*mTomo.nx*mTomo.nz) / mTomo.nz;    // x direction
         int i = (int) (index - j*mTomo.nz - k*mTomo.nx*mTomo.nz);  // z direction        
 
-        if ((i >= zcutUp) && (i < mTomo.nz - zcutDown) && (j >= xcut) && (j < mTomo.nx - xcut) && (k >= ycut) && (k < mTomo.ny - ycut))
+        if ((i >= zcutUp) && (i < mTomo.nz - zcutDown) && (j >= xcut) && (j < mTomo.nx - xcut - 1) && (k >= ycut) && (k < mTomo.ny - ycut - 1))
         {
             if (fabs(x[index]) < msv) slowness[index] += x[index];
         }
