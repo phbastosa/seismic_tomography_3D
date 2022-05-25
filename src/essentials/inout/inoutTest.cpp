@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 
     InOut::readBinaryFloat(filePath,ricker,n);
 
-    std::string newFilePath = "ricker_" + InOut::toString(n) + "_samples.bin";
+    std::string newFilePath = "ricker_" + std::to_string(n) + "_samples.bin";
 
     InOut::writeBinaryFloat(newFilePath,ricker,n);
 

@@ -1,82 +1,106 @@
 # Tomography Parameters file -------------------------------------------------------
-# Instructions:
-#
-#
-#
-#
-#
-#
- 
-eikonalType = 1                           # comment
-exportTravelTimes = False                 # comment 
-exportFirstArrivals = True                # comment 
-generate_dobs = True                      # comment
+# 
+# Do not change the variable names!!
+# Do not remove the comments!!
+# Keep it organized!!
 
-maxIteration = 1                          # comment                    
-tomoTolerance = 0.001                     # comment
+eikonalType = 1                       # 0 - Jeong & Whitaker (2008); 1 - Podvin & Lecomte (1991) (int)  
+exportTravelTimes = False             # Flag to export travel times volume (bool) 
+exportFirstArrivals = True            # Flag to export first arrivals (bool) 
+generateDobs = False                  # Flag to generate sinthetic observed data
+
+maxIteration = 2                      # Tomography max iteration                    
+tomoTolerance = 0.001                 # Tomography tolerance to stop inversion progress
+regParam = 0.001                      # Regularization parameter 
 
 # Inputs Folders 
 
-vpPath = "inputs/models/refractiveModel_23x441x441_50m.bin"   # 
-trueModelPath = "inputs/models/trueModel_31x101x101_50m.bin"  #
-initModelPath = "inputs/models/initModel_31x101x101_50m.bin"  #
-dobsFolder = "inputs/dobs/"                                   #
+vpPath = "inputs/models/refractiveModel_23x441x441_50m.bin"   # Full velocity model path  
+trueModelPath = "inputs/models/trueModel_31x101x101_50m.bin"  # Full true velocity model path
+initModelPath = "inputs/models/initModel_31x101x101_50m.bin"  # Full initial velocity model path
+dobsFolder = "inputs/dobs/"                                   # Folder to write observed data
 
 # Outputs folders
 
-dcalFolder = "outputs/dcal/"                               #
-shotsPositionPath = "outputs/geometry/shotsPosition.txt"   #     
-nodesPositionPath = "outputs/geometry/nodesPosition.txt"   #    
-travelTimesFolder = "outputs/travelTimes/"                 #
-firstArrivalsFolder = "outputs/firstArrivals/"             #   
-gradientFolder = "outputs/gradient/"                        #
+dcalFolder = "outputs/dcal/"                                  # Folder to write calculated data
+shotsPositionPath = "outputs/geometry/shotsPosition.txt"      # Full path of receivers position     
+nodesPositionPath = "outputs/geometry/nodesPosition.txt"      # Full path of shots position   
+travelTimesFolder = "outputs/travelTimes/"                    # Folder to write travel time volume per shot
+firstArrivalsFolder = "outputs/firstArrivals/"                # Folder to write first arrivals per shot   
+gradientFolder = "outputs/gradient/"                          # Folder to write gradients per iteration 
+convergencyFolder = "outputs/convergency/"                    # Folder to write convergency line to residuous norm
+estimatedModelsFolder = "outputs/models/"                     # Folder to write estimated models per iteration 
 
 # Model paramenters --------------------------------------------------------------
  
-nx = 101                                  # comment
-ny = 101                                  # comment
-nz = 31                                   # comment
+nx = 101                              # x dimension of model (int)
+ny = 101                              # y dimension of model (int)
+nz = 31                               # z dimension of model (int)
  
-nb = 2                                    # comment
+nb = 2                                # Boundary to expand model (int)
  
-dx = 50                                   # comment
-dy = 50                                   # comment 
-dz = 50                                   # comment  
- 
+dx = 50                               # x sample spacing of model (float)
+dy = 50                               # y sample spacing of model (float) 
+dz = 50                               # z sample spacing of model (float)  
+
+# Tomography model parameters  
+
+nxTomo = 26                           # Resized x dimension of model (int)
+nyTomo = 26                           # Resized y dimension of model (int)
+nzTomo = 15                           # Resized z dimension of model (int)
+
+dxTomo = 200                          # Resized model sample spacing of x dimension (float) 
+dyTomo = 200                          # Resized model sample spacing of y dimension (float)
+dzTomo = 100                          # Resized model sample spacing of z dimension (float)
+
+xMask = 1200                          # Mask right and left sides of axis x in meters (float)
+yMask = 1200                          # Mask right and left sides of axis y in meters (float)
+zMaskUp = 200                         # Mask top of model in meters (float)    
+zMaskDown = 0                         # Mask bottom of model in meters (float) 
+
+maxVariation = 1e-3                   # Max slowness variation
+
+smoothing = True                      # Activate moving average model smoothing per iteration (bool)
+
 # Geometry parameters ------------------------------------------------------------
  
 # General geometry parameters
-shotsGeometryType = 2                     # comment
-nodesGeometryType = 1                     # comment
-reciprocity = True                        # comment
-saveGeometry = True                       # comment
 
-sElev = 10                                # comment             
-rElev = 500                               # comment
+shotsGeometryType = 1                 # 0 - circular style shots; 1 - grid style shots (int)
+nodesGeometryType = 1                 # 0 - circular style nodes; 1 - grid style nodes (int)
+reciprocity = True                    # Shots become nodes and nodes become shots (bool)  
+saveGeometry = True                   # To save shots and nodes position in a .txt file (bool)
+
+sElev = 10                            # Sources elevation - flat surface (float)             
+rElev = 500                           # Receivers elevation - flat surface (float)
 
 # Grid SHOTS geometry (option: 1)                        
-nsx = 1                                   # comment
-nsy = 1                                   # comment
-SWs = [11000,11000]                       # (x, y) in float    NW
-NWs = [11000,11000]                       # (x, y) in float     |
-SEs = [11000,11000]                       # (x, y) in float    SW -- SE
+
+nsx = 49                              # Number of sources in x direction (int)
+nsy = 49                              # Number of sources in y direction (int)
+SWs = [100,100]            # NW       # (x,y) in float WITHOUT SPACES (float)    
+NWs = [100,4900]           #  |       # (x,y) in float WITHOUT SPACES (float)    
+SEs = [4900,100]           # SW -- SE # (x,y) in float WITHOUT SPACES (float)   
  
-# Circular SHOTS geometry (option: 2)
-sxc = 2500                               # comment
-syc = 2500                               # comment
-sds = 25                                 # comment
-sOffsets = [1000,1500,2000]              # comment
+# Circular SHOTS geometry (option: 0)
+
+sxc = 2500                            # x source center position (float)  
+syc = 2500                            # y source center position (float)
+sds = 25                              # Shot spacing (float)
+sOffsets = [1000,1500,2000]           # Source offsets WITHOUT SPACES (float)
  
 # Grid NODES geometry (option: 1)                       
-nrx = 11                                  # comment
-nry = 11                                  # comment
-SWr = [500,500]                           # (x, y) in float    NW
-NWr = [500,4500]                          # (x, y) in float     |
-SEr = [4500,500]                          # (x, y) in float    SW -- SE
+
+nrx = 21                              # Number of sources in x direction
+nry = 21                              # Number of sources in y direction
+SWr = [500,500]                       # (x,y) in float WITHOUT SPACES    NW
+NWr = [500,4500]                      # (x,y) in float WITHOUT SPACES     |
+SEr = [4500,500]                      # (x,y) in float WITHOUT SPACES    SW -- SE
  
 # Circular NODES geometry (option: 2)
-rxc = 11000                               # comment
-ryc = 11000                               # comment
-rds = 50                                  # comment
-rOffsets = [10000]                        # comment
+
+rxc = 2500                            # x receiver center position (float)
+ryc = 2500                            # y receiver center position (float)
+rds = 50                              # Receiver spacing (float)
+rOffsets = [2000]                     # Receiver offsets WITHOUT SPACES (float)
 

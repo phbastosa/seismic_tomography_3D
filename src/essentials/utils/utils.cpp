@@ -1,3 +1,4 @@
+# include <cmath>
 # include <vector>
 # include <string>
 # include <sstream>
@@ -49,3 +50,81 @@ bool Utils::str2bool(std::string s)
 
     return b;
 }
+
+float * Utils::sparse_cgls(int * iG, int * jG, float * vG, float * B, int nD, int nM, int nnz, int maxIt, float cgTol)
+{
+    float a, b, qTq, rTr, rd;
+
+    float * s = new float[nD]();
+    float * q = new float[nD]();
+    float * r = new float[nM]();
+    float * p = new float[nM]();
+    float * x = new float[nM]();    // Linear system solution
+
+    // s = d - G * x, where d = dobs - dcal and x = slowness variation
+    for (int i = 0; i < nD; i++) 
+        s[i] = B[i]; 
+
+    // r = G' * s    
+    for (int i = 0; i < nnz; i++) 
+        r[jG[i]] += vG[i] * s[iG[i]];        
+
+    // p = r
+    for (int i = 0; i < nM; i++) 
+        p[i] = r[i]; 
+
+    // q = G * p
+    for (int i = 0; i < nnz; i++) 
+        q[iG[i]] += vG[i] * p[jG[i]];        
+
+    for (int i = 0; i < maxIt; i++)
+    {
+        qTq = 0.0f;
+        for (int k = 0; k < nD; k++)          // q inner product
+            qTq += q[k] * q[k];               // qTq = q' * q
+
+        rTr = 0.0f;
+        for (int k = 0; k < nM; k++)          // r inner product
+            rTr += r[k] * r[k];               // rTr = r' * r 
+
+        a = rTr / qTq;                        // a = (r' * r) / (q' * q)                    
+
+        for (int k = 0; k < nM; k++)          // model atualization
+            x[k] += a * p[k];                 // x = x + a * p
+
+        for (int k = 0; k < nD; k++)          // s atualization  
+            s[k] -= a * q[k];                 // s = s - a * q 
+
+        rd = 0.0f;
+        for (int k = 0; k < nM; k++)          // r inner product for division 
+            rd += r[k] * r[k];                // rd = r' * r
+
+        for (int k = 0; k < nM; k++)          // Zeroing r 
+            r[k] = 0.0f;                      // r = 0, for multiplication
+        
+        for (int k = 0; k < nnz; k++)         // r atualization 
+            r[jG[k]] += vG[k] * s[iG[k]];     // r = G' * s    
+
+        rTr = 0.0f;                
+        for (int k = 0; k < nM; k++)          // r inner product
+            rTr += r[k] * r[k];               // rTr = r' * r
+
+        if (sqrtf(rd) < cgTol) break;          // Convergence condition
+        
+        b = rTr / rd;                         // b = (r' * r) / rd
+
+        for (int k = 0; k < nM; k++)          
+            p[k] = r[k] + b * p[k];           // p = r + b * p 
+
+        for (int k = 0; k < nD; k++) 
+            q[k] = 0.0f;                      // q = 0, for multiplication
+
+        for (int k = 0; k < nnz; k++) 
+            q[iG[k]] += vG[k] * p[jG[k]];     // q = G * p   
+    }
+    
+    delete[] s; delete[] q; delete[] r; delete[] p;
+    
+    return x;
+}
+

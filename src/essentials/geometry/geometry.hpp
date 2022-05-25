@@ -4,11 +4,8 @@
 # include "../inout/inout.hpp"
 # include "../utils/utils.hpp"
 
-class Geometry3D
+class Geometry
 {
-private:
-
-
 public:
     int ns;                // Total shots in simulation
     int nr;                // Total receivers in simulation 

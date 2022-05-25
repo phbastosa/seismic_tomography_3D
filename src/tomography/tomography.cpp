@@ -4,9 +4,9 @@
 
 # include "tomography.hpp"
 
-# include "../simulations/eikonal/eikonal.hpp"
+# include "../eikonal/eikonal.hpp"
 
-Tomography3D::Tomography3D(char **argv)
+Tomography::Tomography(char **argv)
 {
     parametersFile = argv[1];
 
@@ -18,8 +18,30 @@ Tomography3D::Tomography3D(char **argv)
 
     maxIteration = std::stoi(io.catchParameter("maxIteration", parametersFile));
     tomoTolerance = std::stof(io.catchParameter("tomoTolerance", parametersFile));
+    lambda = std::stof(io.catchParameter("regParam", parametersFile));
 
-    generate_dobs = utils.str2bool(io.catchParameter("generate_dobs", parametersFile));
+    mTomo.nx = std::stoi(io.catchParameter("nxTomo", parametersFile));
+    mTomo.ny = std::stoi(io.catchParameter("nyTomo", parametersFile));
+    mTomo.nz = std::stoi(io.catchParameter("nzTomo", parametersFile));
+
+    mTomo.dx = std::stof(io.catchParameter("dxTomo", parametersFile));
+    mTomo.dy = std::stof(io.catchParameter("dyTomo", parametersFile));
+    mTomo.dz = std::stof(io.catchParameter("dzTomo", parametersFile));
+
+    mTomo.nPoints = mTomo.nx * mTomo.ny * mTomo.nz;
+
+    resPath = io.catchParameter("convergencyFolder", parametersFile);
+    estModels = io.catchParameter("estimatedModelsFolder", parametersFile); 
+    msv = std::stof(io.catchParameter("maxVariation", parametersFile)); 
+
+    xMask = std::stof(io.catchParameter("xMask", parametersFile));
+    yMask = std::stof(io.catchParameter("yMask", parametersFile));
+    zMaskUp = std::stof(io.catchParameter("zMaskUp", parametersFile));
+    zMaskDown = std::stof(io.catchParameter("zMaskDown", parametersFile));
+
+    smoothing = utils.str2bool(io.catchParameter("smoothing", parametersFile));
+
+    generate_dobs = utils.str2bool(io.catchParameter("generateDobs", parametersFile));
 
     if (generate_dobs)
     {
@@ -36,9 +58,9 @@ Tomography3D::Tomography3D(char **argv)
             shotId = shot;
 
             if (eikonalType == 1) 
-                podvin3D();
+                podvin();
             else 
-                fim3D();
+                jeongFIM();
         }
     }
 
@@ -48,13 +70,16 @@ Tomography3D::Tomography3D(char **argv)
 
     iteration = 1;
 
+    residuo.reserve(maxIteration);
+
     dobs = new float[g3D.ns * g3D.nr]();
     dcal = new float[g3D.ns * g3D.nr]();
 
-    gradient = new float[m3D.nPoints]();
+    gradient = new float[mTomo.nPoints]();
+    slowness = new float[mTomo.nPoints]();
 }
 
-void Tomography3D::importDobs()
+void Tomography::importDobs()
 {   
     float * data = new float[g3D.nr]();    
     
@@ -71,7 +96,27 @@ void Tomography3D::importDobs()
     delete[] data;
 }
 
-void Tomography3D::importDcal()
+void Tomography::setInitialModel()
+{
+    for (int k = 0; k < mTomo.ny; k++)
+    {
+        for (int j = 0; j < mTomo.nx; j++)
+        {
+            for (int i = 0; i < mTomo.nz; i++)
+            {
+                int im = (int) ((float)(i)*mTomo.dz/m3D.dz) + m3D.nb;
+                int jm = (int) ((float)(j)*mTomo.dx/m3D.dx) + m3D.nb;
+                int km = (int) ((float)(k)*mTomo.dy/m3D.dy) + m3D.nb;
+                
+                slowness[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = 1.0f / m3D.vp[im + jm*m3D.nzz + km*m3D.nxx*m3D.nzz];    
+            }
+        }
+    }
+    
+    io.writeBinaryFloat("slowness.bin", slowness, mTomo.nx);
+}
+
+void Tomography::importDcal()
 {
     float * data = new float[g3D.nr]();    
     
@@ -89,32 +134,32 @@ void Tomography3D::importDcal()
     delete[] data;
 }
 
-void Tomography3D::fwdModeling()
+void Tomography::fwdModeling()
 {
     arrivalsPath = dcalPath;
 
     for (int shot = 0; shot < g3D.ns; shot++)
     {
-        std::cout<<"Computing shot "<<shot+1<<" of "<<g3D.ns<<"\n";
+        std::cout<<"Iteration "<<iteration<<": computing shot "<<shot+1<<" of "<<g3D.ns<<"\n";
 
         shotId = shot;
 
         if (eikonalType == 1) 
-            podvin3D();
+            podvin();
         else 
-            fim3D();
+            jeongFIM();
 
         gradientRayTracing();
     }
 }
 
-void Tomography3D::gradientRayTracing()
+void Tomography::gradientRayTracing()
 {   
-    int sIdz = (int)(g3D.shots->z[shotId] / m3D.dz);
-    int sIdx = (int)(g3D.shots->x[shotId] / m3D.dx);
-    int sIdy = (int)(g3D.shots->y[shotId] / m3D.dy);
+    int sIdz = (int)(g3D.shots->z[shotId] / mTomo.dz);
+    int sIdx = (int)(g3D.shots->x[shotId] / mTomo.dx);
+    int sIdy = (int)(g3D.shots->y[shotId] / mTomo.dy);
 
-    int sId = sIdz + sIdx*m3D.nz + sIdy*m3D.nx*m3D.nz;     
+    int sId = sIdz + sIdx*mTomo.nz + sIdy*mTomo.nx*mTomo.nz;     
 
     int maxRayLength = 100000;
     float rayStep = 0.2f * m3D.dx;
@@ -143,11 +188,11 @@ void Tomography3D::gradientRayTracing()
             xi -= rayStep*dTx / norm; // x ray position atualization   
             yi -= rayStep*dTy / norm; // y ray position atualization   
 
-            int jm = (int)(xi / m3D.dx); 
-            int km = (int)(yi / m3D.dy); 
-            int im = (int)(zi / m3D.dz); 
+            int jm = (int)(xi / mTomo.dx); 
+            int km = (int)(yi / mTomo.dy); 
+            int im = (int)(zi / mTomo.dz); 
 
-            rayInd.push_back(im + jm*m3D.nz + km*m3D.nx*m3D.nz);
+            rayInd.push_back(im + jm*mTomo.nz + km*mTomo.nx*mTomo.nz);
 
             if (rayInd.back() == sId) break;
         }
@@ -195,28 +240,263 @@ void Tomography3D::gradientRayTracing()
     }
 }
 
-void Tomography3D::makeGradient()
+void Tomography::makeGradient()
 {
     for (int index = 0; index < vM.size(); index++)
         gradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);
 
-    io.writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", gradient, m3D.nPoints);    
+    io.writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", gradient, mTomo.nPoints);    
 }
 
-bool Tomography3D::converged()
+bool Tomography::converged()
 {
     float r = 0.0f;
     for (int i = 0; i < g3D.nr * g3D.ns; i++)
         r += powf(dobs[i] - dcal[i], 2.0f);
 
-    if ((r < tomoTolerance) || (iteration >= maxIteration))
+    residuo.emplace_back(sqrt(r));
+    
+    if ((residuo.back() < tomoTolerance) || (iteration >= maxIteration))
     {
         std::cout<<"\nFinal residuo: "<<r<<std::endl;
         return true;
     }
     else
     {
+        iteration += 1;
         return false;
     }
 }
+
+void Tomography::cgls_Berriman()
+{
+    // G matrix construction
+
+    int nnz = vM.size();
+
+    int nM = mTomo.nPoints;                 // Model dimension
+    int nD = g3D.ns * g3D.nr;               // Data dimension
+
+    int * iG = new int[nnz + nM]();
+    int * jG = new int[nnz + nM]();
+    float * vG = new float[nnz + nM]();
+
+    for (int index = 0; index < nnz; index++)
+    {
+        iG[index] = iM[index];
+        jG[index] = jM[index];
+        vG[index] = vM[index];
+    }
+
+    std::vector<  int  >().swap(iM);
+    std::vector<  int  >().swap(jM);
+    std::vector< float >().swap(vM);
+
+    // Berriman regularization 
+
+    float * L = new float[nD]();
+    float * C = new float[nM]();
+    float * B = new float[nD + nM]();
+
+    for (int index = 0; index < nnz; index++)
+    {
+        L[iG[index]] += vG[index];
+        C[jG[index]] += vG[index];
+    }    
+
+    for (int index = 0; index < nD; index++) 
+        L[index] = sqrtf(1.0f / L[index]);
+
+    for (int index = 0; index < nnz; index++) 
+        vG[index] *= L[iG[index]]; 
+
+    for (int index = 0; index < nD; index++) 
+        B[index] = L[index] * (dobs[index] - dcal[index]);
+
+    for (int index = 0; index < nM; index++) 
+    {
+        iG[nnz + index] = nD + index;
+        jG[nnz + index] = index;
+        vG[nnz + index] = lambda * C[index];
+    }
+
+    // Conjugate gradient least square
+
+    nD += nM;
+    nnz += nM;
+
+    int maxIt = 1000;
+    int cgTol = 1e-6;
+
+    float * x = utils.sparse_cgls(iG, jG, vG, B, nD, nM, nnz, maxIt, cgTol);
+
+    int xcut = (int) (xMask / mTomo.dx);
+    int ycut = (int) (yMask / mTomo.dy);
+    int zcutUp = (int) (zMaskUp / mTomo.dz);
+    int zcutDown = (int) (zMaskDown / mTomo.dz);
+
+    // Tomography slowness parameters atualization    
+    for (int index = 0; index < nM; index++) 
+    {
+        int k = (int) (index / (mTomo.nx*mTomo.nz));               // y direction
+        int j = (int) (index - k*mTomo.nx*mTomo.nz) / mTomo.nz;    // x direction
+        int i = (int) (index - j*mTomo.nz - k*mTomo.nx*mTomo.nz);  // z direction        
+
+        if ((i >= zcutUp) && (i < mTomo.nz - zcutDown) && (j >= xcut) && (j < mTomo.nx - xcut) && (k >= ycut) && (k < mTomo.ny - ycut))
+        {
+            if (fabs(x[index]) < msv) slowness[index] += x[index];
+        }
+    }
+
+    delete[] iG; delete[] jG; delete[] vG; delete[] B; delete[] x;
+}
+
+void Tomography::cgls_zoTikhonov()
+{
+
+
+}
+
+void Tomography::cgls_foTikhonov()
+{
+
+
+}
+
+void Tomography::cgls_soTikhonov()
+{
+
+    
+}
+
+void Tomography::modelUpdate()
+{    
+    // Trilinear interpolation - wikipedia
+
+    for (int index = 0; index < m3D.nPoints; index++)
+    {
+        int k = (int) (index / (m3D.nx*m3D.nz));         // y direction
+        int j = (int) (index - k*m3D.nx*m3D.nz) / m3D.nz;    // x direction
+        int i = (int) (index - j*m3D.nz - k*m3D.nx*m3D.nz);  // z direction
+
+        float z = i*m3D.dz; 
+        float x = j*m3D.dx; 
+        float y = k*m3D.dy; 
+
+        float x0 = floor(x / mTomo.dx) * mTomo.dx;
+        float x1 = floor(x / mTomo.dx) * mTomo.dx + mTomo.dx;
+
+        float y0 = floor(y / mTomo.dy) * mTomo.dy;
+        float y1 = floor(y / mTomo.dy) * mTomo.dy + mTomo.dy;
+
+        float z0 = floor(z / mTomo.dz) * mTomo.dz;
+        float z1 = floor(z / mTomo.dz) * mTomo.dz + mTomo.dz;
+
+        float xd = (x - x0) / (x1 - x0);
+        float yd = (y - y0) / (y1 - y0);
+        float zd = (z - z0) / (z1 - z0);
+
+        int zTomo = (int) z / mTomo.dz;
+        int xTomo = (int) x / mTomo.dx;
+        int yTomo = (int) y / mTomo.dy;
+
+        int indS = zTomo + xTomo*mTomo.nz + yTomo*mTomo.nx*mTomo.nz;
+
+        float c000 = slowness[indS];                  
+        float c100 = slowness[indS + mTomo.nz];
+        float c001 = slowness[indS + 1];
+        float c101 = slowness[indS + 1 + mTomo.nz];
+        float c010 = slowness[indS + mTomo.nx*mTomo.nz];
+        float c110 = slowness[indS + mTomo.nz + mTomo.nx*mTomo.nz];
+        float c011 = slowness[indS + 1 + mTomo.nx*mTomo.nz];
+        float c111 = slowness[indS + 1 + mTomo.nz + mTomo.nx*mTomo.nz];  
+
+        float c00 = c000*(1 - xd) + c100*xd;
+        float c01 = c001*(1 - xd) + c101*xd;
+        float c10 = c010*(1 - xd) + c110*xd;
+        float c11 = c011*(1 - xd) + c111*xd;
+
+        float c0 = c00*(1 - yd) + c10*yd;
+        float c1 = c01*(1 - yd) + c11*yd;
+
+        float c = c0*(1 - zd) + c1*zd; 
+        
+        if (c > 0.0f) m3D.vp[(i + m3D.nb) + (j+m3D.nb)*m3D.nzz + (k+m3D.nb)*m3D.nxx*m3D.nzz] = 1.0f / c;
+    }
+
+    float * mm = new float[m3D.nPoints]();
+    
+    for (int index  = 0; index < m3D.nPoints; index++)
+    {
+        int k = (int) (index / (m3D.nx*m3D.nz));             // y direction
+        int j = (int) (index - k*m3D.nx*m3D.nz) / m3D.nz;    // x direction
+        int i = (int) (index - j*m3D.nz - k*m3D.nx*m3D.nz);  // z direction
+
+        mm[i + j*m3D.nz + k*m3D.nx*m3D.nz] = m3D.vp[(i + m3D.nb) + (j + m3D.nb)*m3D.nzz + (k + m3D.nb)*m3D.nxx*m3D.nzz];
+    }
+
+    io.writeBinaryFloat(estModels + "estimatedModel_iteration_" + std::to_string(iteration-1) + ".bin", mm, m3D.nPoints);    
+
+    delete[] mm;
+}
+
+void Tomography::modelSmoothing()
+{
+    int init = m3D.nb;
+    int samples = 2*m3D.nb + 1;
+
+    // Slowness suavization - moving average filter
+
+    if (smoothing)
+    {
+        float * smoothSlowness = new float[m3D.nPointsB];
+
+        for (int i = 0; i < m3D.nPointsB; i++) smoothSlowness[i] = 1.0f / m3D.vp[i];
+
+        for (int i = init; i < m3D.nzz - init; i++)
+        {
+            for (int j = init; j < m3D.nxx - init; j++)
+            {
+                for (int k = init; k < m3D.nyy - init; k++)
+                {
+                    float xs = 0.0f; 
+                    float ys = 0.0f;
+                    float zs = 0.0f;
+                    
+                    for (int s = 0; s < samples; s++)
+                    {
+                        int p = s - init;
+
+                        xs += smoothSlowness[i + (j + p)*m3D.nzz + k*m3D.nxx*m3D.nzz];
+                        ys += smoothSlowness[(i + p) + j*m3D.nzz + k*m3D.nxx*m3D.nzz];
+                        zs += smoothSlowness[i + j*m3D.nzz + (k + p)*m3D.nxx*m3D.nzz];
+                    }        
+
+                    xs *= 1.0f / samples;
+                    ys *= 1.0f / samples;
+                    zs *= 1.0f / samples;
+
+                    smoothSlowness[i + j*m3D.nzz + k*m3D.nxx*m3D.nzz] = (xs + ys + zs) / 3.0f;
+                }
+            }   
+        }
+
+        for (int i = 0; i < m3D.nPointsB; i++) m3D.vp[i] = 1.0f / smoothSlowness[i];
+
+        delete[] smoothSlowness;
+    }
+}
+
+void Tomography::exportConvergency()
+{
+    std::ofstream resFile(resPath);
+    
+    for (int r = 0; r < residuo.size(); r++)
+        resFile<<residuo[r]<<"\n";
+
+    resFile.close();  
+}
+
+
+
 

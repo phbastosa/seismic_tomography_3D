@@ -5,7 +5,7 @@
 
 int main(int argc, char**argv)
 {
-    auto G = Geometry3D();
+    auto G = Geometry();
 
     std::cout<<"\nPoint acquisition test"<<std::endl;
 
@@ -157,8 +157,8 @@ int main(int argc, char**argv)
 
     G.setGridNodes();    
 
-    G.nodesPath = "nodes_n" + InOut::toString(G.nr) + ".bin";
-    G.shotsPath = "shots_n" + InOut::toString(G.ns) + ".bin";
+    G.nodesPath = "nodes_n" + std::to_string(G.nr) + ".bin";
+    G.shotsPath = "shots_n" + std::to_string(G.ns) + ".bin";
 
     G.exportPositions();
 

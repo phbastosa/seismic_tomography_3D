@@ -4,7 +4,7 @@
 # include "../inout/inout.hpp"
 # include "../utils/utils.hpp"
 
-void Geometry3D::setGridShots()
+void Geometry::setGridShots()
 {
     ns = nsx * nsy;
 
@@ -31,7 +31,7 @@ void Geometry3D::setGridShots()
     std::vector< float >().swap(y);
 }
 
-void Geometry3D::setGridNodes()
+void Geometry::setGridNodes()
 {
     nr = nrx * nry;     
 
@@ -58,7 +58,7 @@ void Geometry3D::setGridNodes()
     std::vector< float >().swap(y);
 }
 
-void Geometry3D::setCircularShots()
+void Geometry::setCircularShots()
 {
     std::vector<float> x, y;
 
@@ -95,7 +95,7 @@ void Geometry3D::setCircularShots()
     std::vector< float >().swap(y);
 }
 
-void Geometry3D::setCircularNodes()
+void Geometry::setCircularNodes()
 {
     std::vector<float> x, y;
 
@@ -132,7 +132,7 @@ void Geometry3D::setCircularNodes()
     std::vector< float >().swap(y);
 }
 
-void Geometry3D::setReciprocity()
+void Geometry::setReciprocity()
 {
     float * x = new float[ns];
     float * y = new float[ns];
@@ -182,7 +182,7 @@ void Geometry3D::setReciprocity()
     delete[] z;
 }
 
-void Geometry3D::exportPositions()
+void Geometry::exportPositions()
 {
     std::ofstream shotsFile(shotsPath);        
     std::ofstream nodesFile(nodesPath);

@@ -1,34 +1,59 @@
 # ifndef TOMOGRAPHY_HPP
 # define TOMOGRAPHY_HPP
 
-# include "../simulations/eikonal/eikonal.hpp"
+# include "../eikonal/eikonal.hpp"
 
-class Tomography3D : public Eikonal3D
+class Tomography : public Eikonal
 {
 public:    
     
-    bool generate_dobs;        
+    int iteration;
+    int maxIteration;
+
+    float msv;
+    float xMask;
+    float yMask;
+    float lambda;
+    float zMaskUp;
+    float zMaskDown;
+    float tomoTolerance;
 
     float * dobs;
     float * dcal;
     float * gradient;
+    float * slowness;
 
+    bool smoothing;
+    bool generate_dobs;        
+
+    typedef struct
+    {
+        int nx, ny, nz, nPoints;             
+        float dx, dy, dz;
+
+    } tomoModel;
+    
+    tomoModel mTomo;
+
+    std::string resPath;
     std::string dobsPath;
     std::string dcalPath;
     std::string gradPath;
+    std::string estModels;
 
     std::vector < int > iM;
     std::vector < int > jM;
     std::vector <float> vM;
 
-    int iteration;
-    int maxIteration;
-    float tomoTolerance;
+    std::vector <float> residuo;
 
-    Tomography3D(char **argv);
+    Tomography(char **argv);
 
     /* */
     void importDobs();
+
+    /* */
+    void setInitialModel();
 
     /* */
     void importDcal();
@@ -49,15 +74,25 @@ public:
     bool converged();
 
     /* */
-    void cgls_berriman_reg();
+    void cgls_Berriman();
 
     /* */
-    void cgls_tikhonov_reg();
-
-    /* */
+    void cgls_zoTikhonov();
     
+    /* */
+    void cgls_foTikhonov();
 
+    /* */
+    void cgls_soTikhonov();
 
+    /* */
+    void modelUpdate();    
+
+    /* */
+    void modelSmoothing();
+    
+    /* */
+    void exportConvergency();
 };
 
 # endif

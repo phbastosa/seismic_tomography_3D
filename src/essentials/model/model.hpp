@@ -3,7 +3,7 @@
 
 # include "../inout/inout.hpp" 
 
-class Model3D
+class Model
 {
 private:
 

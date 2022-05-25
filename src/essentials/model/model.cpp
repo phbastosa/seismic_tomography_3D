@@ -1,7 +1,7 @@
 # include "model.hpp"
 # include "../inout/inout.hpp"
 
-void Model3D::init()
+void Model::init()
 {
     this->nxx = this->nx + 2 * this->nb;
     this->nyy = this->ny + 2 * this->nb;
@@ -11,7 +11,7 @@ void Model3D::init()
     this->nPointsB = this->nxx * this->nyy * this->nzz;
 }
 
-void Model3D::readAndExpandVP()
+void Model::readAndExpandVP()
 {
     this->init();
 

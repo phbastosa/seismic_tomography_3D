@@ -47,6 +47,11 @@ nz = 31
 
 dh = 50.0
 
+v = np.array([1500, 1700, 1900, 2100, 2300, 2500, 2700, 2900, 3500],dtype=float)
+z = np.array([ 200,  400,  600,  800, 1000, 1200, 1400, 1450,nz*dh],dtype=float) // dh
+
+initModel = 1.0 / gaussian_filter(1.0 / buildModel3D(nx,ny,nz,v,z), 2.0)
+
 vi = 1500
 zi = 200
 
@@ -54,10 +59,7 @@ a = 0.8
 b = 0.0
 c = 0.0
 
-initModel = buildGradientModel3D(nx,ny,nz,dh,vi,zi,a,b,c)
 trueModel = buildGradientModel3D(nx,ny,nz,dh,vi,zi,a,b,c)
-
-initModel.flatten("F").astype("float32", order="F").tofile(f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
 
 A = -800
 
@@ -78,6 +80,7 @@ for j in range(nx):
 trueModel = 1.0 / gaussian_filter(1.0 / trueModel, 1.5)
 
 trueModel.flatten("F").astype("float32",order="F").tofile(f"inputs/models/trueModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
+initModel.flatten("F").astype("float32",order="F").tofile(f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
 
 xzPlane = int(nx/2)
 yzPlane = int(ny/2)

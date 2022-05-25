@@ -6,4 +6,4 @@ pgc++ inout.cpp inoutTest.cpp $flags -o test.exe
 
 ./test.exe
 
-rm *.o *.exe
+rm *.o *.exe ricker_400_samples.bin

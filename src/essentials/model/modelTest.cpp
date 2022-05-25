@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv)
 {
-    auto m3D = Model3D();
+    auto m3D = Model();
 
     m3D.nx = 338;
     m3D.ny = 338;
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
     m3D.readAndExpandVP();
 
-    std::string newPath = "saltDome3D_expand_test_z"+ InOut::toString(m3D.nzz) +"_x"+ InOut::toString(m3D.nxx) +"_y"+ InOut::toString(m3D.nyy) +".bin";
+    std::string newPath = "saltDome3D_expand_test_z"+ std::to_string(m3D.nzz) +"_x"+ std::to_string(m3D.nxx) +"_y"+ std::to_string(m3D.nyy) +".bin";
 
     InOut::writeBinaryFloat(newPath,m3D.vp,m3D.nPointsB);
 
@@ -28,3 +28,4 @@ int main(int argc, char **argv)
 
     return 0;
 }  
+
