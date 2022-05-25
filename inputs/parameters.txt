@@ -7,7 +7,7 @@
 eikonalType = 1                       # 0 - Jeong & Whitaker (2008); 1 - Podvin & Lecomte (1991) (int)  
 exportTravelTimes = False             # Flag to export travel times volume (bool) 
 exportFirstArrivals = True            # Flag to export first arrivals (bool) 
-generateDobs = False                  # Flag to generate sinthetic observed data
+generateDobs = False                   # Flag to generate sinthetic observed data
 
 maxIteration = 2                      # Tomography max iteration                    
 tomoTolerance = 0.001                 # Tomography tolerance to stop inversion progress
@@ -47,7 +47,7 @@ dz = 50                               # z sample spacing of model (float)
 
 nxTomo = 26                           # Resized x dimension of model (int)
 nyTomo = 26                           # Resized y dimension of model (int)
-nzTomo = 15                           # Resized z dimension of model (int)
+nzTomo = 16                           # Resized z dimension of model (int)
 
 dxTomo = 200                          # Resized model sample spacing of x dimension (float) 
 dyTomo = 200                          # Resized model sample spacing of y dimension (float)
@@ -56,7 +56,7 @@ dzTomo = 100                          # Resized model sample spacing of z dimens
 xMask = 1200                          # Mask right and left sides of axis x in meters (float)
 yMask = 1200                          # Mask right and left sides of axis y in meters (float)
 zMaskUp = 200                         # Mask top of model in meters (float)    
-zMaskDown = 0                         # Mask bottom of model in meters (float) 
+zMaskDown = 100                       # Mask bottom of model in meters (float) 
 
 maxVariation = 1e-3                   # Max slowness variation
 

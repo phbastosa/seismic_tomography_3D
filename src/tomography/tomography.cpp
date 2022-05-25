@@ -112,8 +112,6 @@ void Tomography::setInitialModel()
             }
         }
     }
-    
-    io.writeBinaryFloat("slowness.bin", slowness, mTomo.nx);
 }
 
 void Tomography::importDcal()
