@@ -23,6 +23,10 @@ public:
         float * y;         // Position y of shots or nodes
         float * z;         // Position z of shots or nodes
     
+        int xId;
+        int yId;
+        int zId;
+
     } Position;            
 
     typedef struct 
