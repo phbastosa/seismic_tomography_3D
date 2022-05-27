@@ -1,4 +1,6 @@
+*.png
 *.bin
 *.txt
+*.exe
 *.x
 *.o

@@ -105,6 +105,12 @@ int main(int argc, char **argv)
 
         eikonal.g3D.setGridShots();
 
+        if (n == 2)
+        {
+            eikonal.exportTimesVolume = true;
+            eikonal.eikonalPath = "central_";
+        }
+
         eikonal.arrivalsPath = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
 
         for (int shot = 0; shot < eikonal.g3D.ns; shot++)
