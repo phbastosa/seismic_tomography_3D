@@ -67,12 +67,11 @@ void Geometry::setCircularShots()
         float theta = 0.0f;
 
         while (theta < 2.0f * 4.0f*atan(1.0f))
-        {
-            theta += acos(1.0f - powf(circles.ds,2.0f)/(2.0f*powf(radius,2.0f)));    
-            
+        {            
             x.push_back(radius*sin(theta) + circles.xc);        
             y.push_back(radius*cos(theta) + circles.yc);        
 
+            theta += acos(1.0f - powf(circles.ds,2.0f)/(2.0f*powf(radius,2.0f)));    
         }
     }
 
@@ -105,11 +104,10 @@ void Geometry::setCircularNodes()
 
         while (theta < 2.0f * 4.0f*atan(1.0f))
         {
-            theta += acos(1.0f - powf(circles.ds,2.0f)/(2.0f*powf(radius,2.0f)));    
-            
             x.push_back(radius*sin(theta) + circles.xc);        
             y.push_back(radius*cos(theta) + circles.yc);        
 
+            theta += acos(1.0f - powf(circles.ds,2.0f)/(2.0f*powf(radius,2.0f)));    
         }
     }
 
