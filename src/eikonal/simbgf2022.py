@@ -211,7 +211,7 @@ else:
             plt.ylabel("Times [s]", fontsize=17)
 
             plt.gca().invert_yaxis()    
-            plt.text(-400,0,"a)", fontsize=30)
+            plt.text(-500,0,"a)", fontsize=30)
 
         ax2 = plt.subplot(G[4:7,:])
         for n in range(len(dh)):
@@ -226,7 +226,7 @@ else:
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("$abs(T_a - T_c)$ [s]", fontsize=17)
 
-            plt.text(-400,0.1,"b)", fontsize=30)
+            plt.text(-500,0.1,"b)", fontsize=30)
 
         ax3 = plt.subplot(G[7:,:])
         for n in range(len(dh)):
@@ -241,7 +241,7 @@ else:
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("$abs(T_a - T_c)$ [s]", fontsize=17)
 
-            plt.text(-400,0.1,"c)", fontsize=30)
+            plt.text(-500,0.1,"c)", fontsize=30)
 
         plt.tight_layout()
         plt.savefig(f"shot{sId[s]}.png", dpi=200, bbox_inches="tight")

@@ -225,28 +225,28 @@ void Eikonal::podvin()
     int aux = 0;
     int nItEikonal = 0;
 
-    aux = sqrt(sIdx*sIdx + sIdy*sIdy + sIdz*sIdz); 
+    aux = sqrtf(sIdx*sIdx + sIdy*sIdy + sIdz*sIdz); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + sIdz*sIdz);
+    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + sIdz*sIdz);
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz); 
+    aux = sqrtf(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt(sIdx*sIdx + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz)); 
+    aux = sqrtf(sIdx*sIdx + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz)); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = sqrtf(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz);
+    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz);
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
     if (aux > nItEikonal) nItEikonal = aux;
 
     nItEikonal += (int)(3 * nItEikonal / 2);
@@ -275,8 +275,7 @@ void Eikonal::podvin()
                     {
                         float h = m3D.dx;
                         float lowest = T[index];
-                        float Tijk, T1, T2, Sref, M, N, P, Q; 
-                        float hs2 = h*h*S[index]*S[index];
+                        float Tijk, T1, T2, Sref, M, N, P, Q, hs2; 
 
                         /* 1D operator head wave: i,j-1,k -> i,j,k (x direction) */
                         Tijk = T[index - m3D.nzz] + h*S[index - m3D.nzz]; 
@@ -728,6 +727,9 @@ void Eikonal::podvin()
 
                         /* 3D operator - First octant: XY plane */
 
+                        Sref = S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz];
+                        hs2 = h*h*Sref*Sref;
+
     /* i-1,j-1,k-1 */   M = T[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz];   
     /* i-1,j-1, k  */   N = T[index - 1 - m3D.nzz];             
     /* i-1, j ,k-1 */   P = T[index - 1 - m3D.nxx*m3D.nzz];       
@@ -739,7 +741,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -747,7 +749,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -755,7 +757,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -763,7 +765,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -780,7 +782,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -788,7 +790,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -796,7 +798,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -804,7 +806,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -821,7 +823,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -829,7 +831,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -837,7 +839,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -845,11 +847,14 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
                         /* 3D operator - Second octant: XY plane */
+
+                        Sref = S[index - 1 - m3D.nxx*m3D.nzz];
+                        hs2 = h*h*Sref*Sref;
 
     /* i-1,j+1,k-1 */   M = T[index - 1 + m3D.nzz - m3D.nxx*m3D.nzz];   
     /* i-1, j ,k-1 */   N = T[index - 1 - m3D.nxx*m3D.nzz];             
@@ -862,7 +867,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -870,7 +875,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -878,7 +883,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -886,7 +891,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -903,7 +908,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -911,7 +916,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -919,7 +924,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -927,7 +932,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -944,7 +949,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -952,7 +957,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -960,7 +965,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -968,12 +973,15 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
                         /* 3D operator - Third octant: XY plane */
- 
+
+                        Sref = S[index - 1];
+                        hs2 = h*h*Sref*Sref;
+
     /* i-1,j+1,k+1 */   M = T[index - 1 + m3D.nzz + m3D.nxx*m3D.nzz];   
     /* i-1,j+1, k  */   N = T[index - 1 + m3D.nzz];             
     /* i-1, j ,k+1 */   P = T[index - 1 + m3D.nxx*m3D.nzz];       
@@ -985,7 +993,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -993,7 +1001,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1001,7 +1009,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1009,7 +1017,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1026,7 +1034,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1034,7 +1042,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1042,7 +1050,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1050,7 +1058,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1067,7 +1075,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1075,7 +1083,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1083,7 +1091,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1091,11 +1099,14 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
                         /* 3D operator - Fourth octant: XY plane */
+
+                        Sref = S[index - 1 - m3D.nzz];
+                        hs2 = h*h*Sref*Sref;
 
     /* i-1,j-1,k+1 */   M = T[index - 1 - m3D.nzz + m3D.nxx*m3D.nzz];   
     /* i-1, j ,k+1 */   N = T[index - 1 + m3D.nxx*m3D.nzz];             
@@ -1108,7 +1119,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1116,7 +1127,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1124,7 +1135,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1132,7 +1143,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1149,7 +1160,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1157,7 +1168,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1165,7 +1176,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1173,7 +1184,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1190,7 +1201,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1198,7 +1209,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1206,7 +1217,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1214,11 +1225,14 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
                         /* 3D operator - Fifth octant: XY plane */
+
+                        Sref = S[index - m3D.nzz - m3D.nxx*m3D.nzz];
+                        hs2 = h*h*Sref*Sref;
 
     /* i+1,j-1,k-1 */   M = T[index + 1 - m3D.nzz - m3D.nxx*m3D.nzz];   
     /* i+1, j ,k-1 */   N = T[index + 1 - m3D.nxx*m3D.nzz];             
@@ -1231,7 +1245,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1239,7 +1253,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1247,7 +1261,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1255,7 +1269,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1272,7 +1286,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1280,7 +1294,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1288,7 +1302,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1296,7 +1310,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1313,7 +1327,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1321,7 +1335,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1329,7 +1343,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1337,11 +1351,14 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
                         /* 3D operator - Sixth octant: XY plane */
+
+                        Sref = S[index - m3D.nxx*m3D.nzz];
+                        hs2 = h*h*Sref*Sref;
 
     /* i+1,j+1,k-1 */   M = T[index + 1 + m3D.nzz - m3D.nxx*m3D.nzz];   
     /* i+1,j+1, k  */   N = T[index + 1 + m3D.nzz];             
@@ -1354,7 +1371,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1362,7 +1379,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1370,7 +1387,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1378,7 +1395,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1395,7 +1412,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1403,7 +1420,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1411,7 +1428,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1419,7 +1436,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1436,7 +1453,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1444,7 +1461,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1452,7 +1469,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1460,11 +1477,14 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
                         /* 3D operator - Seventh octant: XY plane */
+                        
+                        Sref = S[index - m3D.nzz];
+                        hs2 = h*h*Sref*Sref;
 
     /* i+1,j-1,k+1 */   M = T[index + 1 - m3D.nzz + m3D.nxx*m3D.nzz];   
     /* i+1,j-1, k  */   N = T[index + 1 - m3D.nzz];             
@@ -1477,7 +1497,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1485,7 +1505,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1493,7 +1513,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1501,7 +1521,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1518,7 +1538,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1526,7 +1546,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1534,7 +1554,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1542,7 +1562,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1559,7 +1579,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1567,7 +1587,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1575,7 +1595,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1583,12 +1603,15 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
                         /* 3D operator - Eighth octant: XY plane */
- 
+
+                        Sref = S[index];
+                        hs2 = h*h*Sref*Sref;
+
     /* i+1,j+1,k+1 */   M = T[index + 1 + m3D.nzz + m3D.nxx*m3D.nzz];   
     /* i+1, j ,k+1 */   N = T[index + 1 + m3D.nxx*m3D.nzz];             
     /* i+1,j+1, k  */   P = T[index + 1 + m3D.nzz];       
@@ -1600,7 +1623,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1608,7 +1631,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1616,7 +1639,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1624,7 +1647,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1641,7 +1664,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1649,7 +1672,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1657,7 +1680,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1665,7 +1688,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1682,7 +1705,7 @@ void Eikonal::podvin()
                            ((2.0f*(N-M)*(N-M) + (P-M)*(P-M)) <= hs2) && 
                            ((N-M)*(N-M) + (P-M)*(P-M) + (N-M)*(P-M) >= 0.5f*hs2))
                         {
-                            Tijk = N + P - M + sqrt(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
+                            Tijk = N + P - M + sqrtf(hs2 - (N-M)*(N-M) - (P-M)*(P-M));
                             if (Tijk < lowest) lowest = Tijk;
                         }   
 
@@ -1690,7 +1713,7 @@ void Eikonal::podvin()
                         if ((N <= Q) && (P <= Q) && 
                            ((Q-N)*(Q-N) + (Q-P)*(Q-P) + (Q-N)*(Q-P) <= 0.5f*hs2))    
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (Q-P)*(Q-P));    
                             if (Tijk < lowest) lowest = Tijk;
                         }
 
@@ -1698,7 +1721,7 @@ void Eikonal::podvin()
                         if ((N-M >= 0) && (N-M <= Q-N) && 
                             (2*(Q-N)*(Q-N) + (N-M)*(N-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-N)*(Q-N) - (N-M)*(N-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1706,7 +1729,7 @@ void Eikonal::podvin()
                         if ((P-M >= 0) && (P-M <= Q-P) && 
                             (2*(Q-P)*(Q-P) + (P-M)*(P-M) <= hs2))
                         {
-                            Tijk = Q + sqrt(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
+                            Tijk = Q + sqrtf(hs2 - (Q-P)*(Q-P) - (P-M)*(P-M));    
                             if (Tijk < lowest) lowest = Tijk;
                         }        
 
@@ -1823,28 +1846,28 @@ void Eikonal::jeongFIM()
     int aux = 0;
     int nItEikonal = 0;
 
-    aux = sqrt(sIdx*sIdx + sIdy*sIdy + sIdz*sIdz); 
+    aux = sqrtf(sIdx*sIdx + sIdy*sIdy + sIdz*sIdz); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + sIdz*sIdz);
+    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + sIdz*sIdz);
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz); 
+    aux = sqrtf(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt(sIdx*sIdx + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz)); 
+    aux = sqrtf(sIdx*sIdx + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz)); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = sqrtf(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz);
+    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz);
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrt((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
     if (aux > nItEikonal) nItEikonal = aux;
 
     nItEikonal += (int)(3 * nItEikonal / 2);
@@ -1888,13 +1911,13 @@ void Eikonal::jeongFIM()
 
                             if (Tijk > b)
                             {
-                                tmp = 0.5f * (b + c + sqrt(2.0f*h*h*S[index]*S[index] - (b - c)*(b - c)));           
+                                tmp = 0.5f * (b + c + sqrtf(2.0f*h*h*S[index]*S[index] - (b - c)*(b - c)));           
 
                                 if (tmp > b) Tijk = tmp;
 
                                 if (Tijk > a)
                                 {
-                                    tmp = (a + b + c)/3.0f + sqrt(2.0f*(a*(b - a) + b*(c - b) + c*(a - c)) + 3.0f*h*h*S[index]*S[index])/3.0f;
+                                    tmp = (a + b + c)/3.0f + sqrtf(2.0f*(a*(b - a) + b*(c - b) + c*(a - c)) + 3.0f*h*h*S[index]*S[index])/3.0f;
 
                                     if (tmp > a) Tijk = tmp;
                                 }
