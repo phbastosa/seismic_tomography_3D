@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -21,7 +20,6 @@ dh = 100
 noble = readBinaryVolume(nz,nx,ny,"C","noble_travelTimes3D.bin")
 jeong = readBinaryVolume2(nz,nx,ny,"fim_central_eikonal_nz12_nx221_ny221_shot_1.bin")
 podvin = readBinaryVolume2(nz,nx,ny,"pod_central_eikonal_nz12_nx221_ny221_shot_1.bin")
-
 
 plt.figure(1)
 plt.subplot(311)
