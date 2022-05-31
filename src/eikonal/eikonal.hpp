@@ -42,24 +42,6 @@ public:
     float min(float v1, float v2);
 
     /* */
-    int imin(int v1, int v2);
-    
-    /* */
-    int imax(int v1, int v2);
-       
-    /* */
-    float min3(float v1, float v2, float v3);
-
-    /* */
-    float max3(float v1, float v2, float v3);
-
-    /* Function to calculate minimum value between four inputs */
-    float min4(float v1, float v2, float v3, float v4);
-
-    /* */
-    void setup();
-
-    /* */
     void deleteVolumes();
 
     /* */
@@ -70,6 +52,13 @@ public:
     
     /* */ 
     void jeongFIM();
+
+
+    /* */
+    void nobleFSM();
+    void initSweep();
+    void fullSweep();
+    void innerSweep(int i, int j, int k, int sx, int sy, int sz, int sgntz, int sgntx, int sgnty, int sgnvz, int sgnvx, int sgnvy, float dzi, float dxi, float dyi, float dz2i, float dx2i, float dy2i, float dz2dx2, float dz2dy2, float dx2dy2, float dsum);
 
     /* */
     void writeTravelTimes();

@@ -12,7 +12,119 @@ Tomography::Tomography(char **argv)
 {
     parametersFile = argv[1];
 
-    setup();
+    eikonalType = std::stoi(io.catchParameter("eikonalType", parametersFile));    
+    exportTimesVolume = utils.str2bool(io.catchParameter("exportTravelTimes", parametersFile));
+    exportFirstArrivals = utils.str2bool(io.catchParameter("exportFirstArrivals", parametersFile));
+
+    m3D.nx = std::stoi(io.catchParameter("nx", parametersFile));
+    m3D.ny = std::stoi(io.catchParameter("ny", parametersFile));
+    m3D.nz = std::stoi(io.catchParameter("nz", parametersFile));
+    m3D.nb = std::stoi(io.catchParameter("nb", parametersFile));
+    
+    m3D.dx = std::stof(io.catchParameter("dx", parametersFile));
+    m3D.dy = std::stof(io.catchParameter("dy", parametersFile));
+    m3D.dz = std::stof(io.catchParameter("dz", parametersFile));
+
+    m3D.vpPath = io.catchParameter("vpPath", parametersFile);
+    
+    shotsGeometryType = std::stoi(io.catchParameter("shotsGeometryType", parametersFile));
+    nodesGeometryType = std::stoi(io.catchParameter("nodesGeometryType", parametersFile));
+
+    reciprocity = utils.str2bool(io.catchParameter("reciprocity", parametersFile));
+    saveGeometry = utils.str2bool(io.catchParameter("saveGeometry", parametersFile));
+
+    std::vector<std::string> splitted;
+
+    g3D.sElev = std::stof(io.catchParameter("sElev", parametersFile));
+    g3D.rElev = std::stof(io.catchParameter("rElev", parametersFile));
+
+    if (shotsGeometryType)              // Grid shots aqcuisition
+    {
+        g3D.nsx = std::stoi(io.catchParameter("nsx", parametersFile));
+        g3D.nsy = std::stoi(io.catchParameter("nsy", parametersFile));
+        
+        splitted = utils.split(io.catchParameter("SWs", parametersFile),',');
+
+        g3D.SW.x = std::stof(splitted[0]); 
+        g3D.SW.y = std::stof(splitted[1]);
+
+        splitted = utils.split(io.catchParameter("NWs", parametersFile),',');
+
+        g3D.NW.x = std::stof(splitted[0]); 
+        g3D.NW.y = std::stof(splitted[1]);
+
+        splitted = utils.split(io.catchParameter("SEs", parametersFile),',');
+
+        g3D.SE.x = std::stof(splitted[0]); 
+        g3D.SE.y = std::stof(splitted[1]);
+
+        g3D.setGridShots();
+    }
+    else                             // Circular shots aqcuisition
+    {   
+        g3D.circles.xc = std::stoi(io.catchParameter("sxc", parametersFile));
+        g3D.circles.yc = std::stoi(io.catchParameter("syc", parametersFile));
+        g3D.circles.ds = std::stof(io.catchParameter("sds", parametersFile));
+        
+        splitted = utils.split(io.catchParameter("sOffsets", parametersFile),',');
+
+        for (auto offset : splitted) 
+            g3D.circles.offsets.push_back(std::stof(offset));
+
+        g3D.setCircularShots();
+    }
+
+    if (nodesGeometryType)           // Grid nodes aqcuisition
+    {
+        g3D.nrx = std::stoi(io.catchParameter("nrx", parametersFile));
+        g3D.nry = std::stoi(io.catchParameter("nry", parametersFile));
+        
+        splitted = utils.split(io.catchParameter("SWr", parametersFile),',');
+
+        g3D.SW.x = std::stof(splitted[0]); 
+        g3D.SW.y = std::stof(splitted[1]);
+
+        splitted = utils.split(io.catchParameter("NWr", parametersFile),',');
+
+        g3D.NW.x = std::stof(splitted[0]); 
+        g3D.NW.y = std::stof(splitted[1]);
+
+        splitted = utils.split(io.catchParameter("SEr", parametersFile),',');
+
+        g3D.SE.x = std::stof(splitted[0]); 
+        g3D.SE.y = std::stof(splitted[1]);
+
+        g3D.setGridNodes();
+    }
+    else                        // Circular nodes aqcuisition
+    {
+        g3D.circles.xc = std::stoi(io.catchParameter("rxc", parametersFile));
+        g3D.circles.yc = std::stoi(io.catchParameter("ryc", parametersFile));
+        g3D.circles.ds = std::stof(io.catchParameter("rds", parametersFile));
+
+        splitted = utils.split(io.catchParameter("rOffsets", parametersFile),',');
+
+        for (auto offset : splitted) 
+            g3D.circles.offsets.push_back(std::stof(offset));
+
+        g3D.setCircularNodes();
+    }
+
+    g3D.shotsPath = io.catchParameter("shotsPositionPath", parametersFile);
+    g3D.nodesPath = io.catchParameter("nodesPositionPath", parametersFile);
+
+    eikonalPath = io.catchParameter("travelTimesFolder", parametersFile);
+    arrivalsPath = io.catchParameter("firstArrivalsFolder", parametersFile);
+
+    m3D.init();
+
+    m3D.readAndExpandVP();
+
+    g3D.exportPositions();
+
+    if (reciprocity) g3D.setReciprocity();
+
+    allocateVolumes();
 
     dobsPath = io.catchParameter("dobsFolder", parametersFile);
     dcalPath = io.catchParameter("dcalFolder", parametersFile);
