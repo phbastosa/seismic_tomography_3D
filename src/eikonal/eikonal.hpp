@@ -53,13 +53,6 @@ public:
     /* */ 
     void jeongFIM();
 
-
-    /* */
-    void nobleFSM();
-    void initSweep();
-    void fullSweep();
-    void innerSweep(int i, int j, int k, int sx, int sy, int sz, int sgntz, int sgntx, int sgnty, int sgnvz, int sgnvx, int sgnvy, float dzi, float dxi, float dyi, float dz2i, float dx2i, float dy2i, float dz2dx2, float dz2dy2, float dx2dy2, float dsum);
-
     /* */
     void writeTravelTimes();
     

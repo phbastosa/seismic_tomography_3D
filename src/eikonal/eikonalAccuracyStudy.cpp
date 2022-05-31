@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     
     std::vector<float> dh_all {100.0f, 50.0f, 25.0f};
 
-    eikonal.m3D.nb = 2;
+    eikonal.m3D.nb = 5;
 
     // Set fixed circular geometry
 
@@ -116,29 +116,29 @@ int main(int argc, char **argv)
         eikonal.arrivalsPath = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
         eikonal.eikonalPath = "pod_central_";
 
-        for (int shot = 0; shot < eikonal.g3D.ns; shot++)
-        {
-            eikonal.shotId = shot;
-            eikonal.podvin();
-        }
+        // for (int shot = 0; shot < eikonal.g3D.ns; shot++)
+        // {
+        //     eikonal.shotId = shot;
+        //     eikonal.podvin();
+        // }
 
-        eikonal.arrivalsPath = "fim_central_"+std::to_string((int) dh_all[n])+"m_";
-        eikonal.eikonalPath = "fim_central_";
-
-        for (int shot = 0; shot < eikonal.g3D.ns; shot++)
-        {
-            eikonal.shotId = shot;
-            eikonal.jeongFIM();
-        }
-
-        // eikonal.arrivalsPath = "fsm_central_"+std::to_string((int) dh_all[n])+"m_";
-        // eikonal.eikonalPath = "fsm_central_";
+        // eikonal.arrivalsPath = "fim_central_"+std::to_string((int) dh_all[n])+"m_";
+        // eikonal.eikonalPath = "fim_central_";
 
         // for (int shot = 0; shot < eikonal.g3D.ns; shot++)
         // {
         //     eikonal.shotId = shot;
-        //     eikonal.nobleFSM();
+        //     eikonal.jeongFIM();
         // }
+
+        eikonal.arrivalsPath = "fsm_central_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.eikonalPath = "fsm_central_";
+
+        for (int shot = 0; shot < eikonal.g3D.ns; shot++)
+        {
+            eikonal.shotId = shot;
+            eikonal.nobleFSM();
+        }
 
         eikonal.deleteVolumes();
     }

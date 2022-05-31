@@ -10,8 +10,8 @@ eikonal="eikonal.cpp"
 
 flags="-fast -acc -ta=tesla,cc60 -std=c++11 -g -lm"
 
-pgc++ $inout $utils $model $geom $eikonal eikonalAccuracyStudy.cpp $flags -o test.exe
-# g++ -std=c++11 $inout $utils $model $geom $eikonal eikonalAccuracyStudy.cpp -lm -O3 -o test.exe
+# pgc++ $inout $utils $model $geom $eikonal eikonalAccuracyStudy.cpp $flags -o test.exe
+g++ -std=c++11 $inout $utils $model $geom $eikonal eikonalAccuracyStudy.cpp -lm -o test.exe
 
 ./test.exe
 
