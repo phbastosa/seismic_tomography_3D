@@ -1,5 +1,5 @@
 # include <cmath>
-#include <algorithm>
+# include <algorithm>
 
 # include "../essentials/inout/inout.hpp"
 # include "../essentials/utils/utils.hpp"
