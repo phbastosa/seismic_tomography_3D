@@ -250,7 +250,7 @@ else:
             plt.plot(np.abs(tta - fsm), label = f"FSM {dh[n]} m spacing")
 
             plt.xlim([0, nrec])
-            plt.ylim([0, 0.1])
+            plt.ylim([0, 0.01])
             plt.legend(loc="upper left", fontsize=10)
             plt.title(f"FSM analytic and synthetic comparison", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
