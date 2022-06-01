@@ -167,7 +167,6 @@ else:
 
     plt.text(-150,0,"d)",fontsize=30)
 
-
     plt.tight_layout()    
     plt.savefig("modelGeometry.png", dpi=200, bbox_inches="tight")
 

@@ -99,7 +99,7 @@ int main(int argc, char **argv)
         for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
         {
             eikonal.shotId = shot;
-            eikonal.jeongFIM();
+            eikonal.nobleFSM();
         }
 
         // Generate central shot

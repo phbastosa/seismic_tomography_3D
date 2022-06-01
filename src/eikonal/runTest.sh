@@ -34,4 +34,4 @@ done
 
 python3 simbgf2022.py 0
 
-# rm *.bin *.txt
+rm *.bin *.txt
