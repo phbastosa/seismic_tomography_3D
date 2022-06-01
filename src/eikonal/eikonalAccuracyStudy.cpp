@@ -23,12 +23,12 @@ int main(int argc, char **argv)
 
     // Set fixed circular geometry
 
-    eikonal.g3D.circles.xc = 11000.0f;
-    eikonal.g3D.circles.yc = 11000.0f;
-    eikonal.g3D.circles.ds = 12.5f;
-    eikonal.g3D.rElev = 0.0f;
+    eikonal.g3D.nodes.xc = 11000.0f;
+    eikonal.g3D.nodes.yc = 11000.0f;
+    eikonal.g3D.nodes.ds = 12.5f;
+    eikonal.g3D.nodes.elevation = 0.0f;
 
-    eikonal.g3D.circles.offsets = {10000.0f}; // 10 km
+    eikonal.g3D.nodes.offsets = {10000.0f}; // 10 km
 
     eikonal.g3D.setCircularNodes();
 
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 
         // eikonal.g3D.nsx = 2; 
         // eikonal.g3D.nsy = 2; 
-        eikonal.g3D.sElev = 0.0f;
+        eikonal.g3D.shots.elevation = 0.0f;
 
         // eikonal.g3D.setGridShots();
 
@@ -101,8 +101,8 @@ int main(int argc, char **argv)
         eikonal.g3D.NW.x = 11000.0f; eikonal.g3D.NW.y = 11000.0f;    
         eikonal.g3D.SE.x = 11000.0f; eikonal.g3D.SE.y = 11000.0f;    
 
-        eikonal.g3D.nsx = 1; 
-        eikonal.g3D.nsy = 1; 
+        eikonal.g3D.shots.nx = 1; 
+        eikonal.g3D.shots.ny = 1; 
 
         eikonal.g3D.setGridShots();
 
@@ -111,12 +111,13 @@ int main(int argc, char **argv)
             eikonal.exportTimesVolume = true;
             eikonal.eikonalPath = "central_";
         }
+        
         eikonal.exportTimesVolume = true;
 
-        eikonal.arrivalsPath = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
-        eikonal.eikonalPath = "pod_central_";
+        // eikonal.arrivalsPath = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
+        // eikonal.eikonalPath = "pod_central_";
 
-        // for (int shot = 0; shot < eikonal.g3D.ns; shot++)
+        // for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
         // {
         //     eikonal.shotId = shot;
         //     eikonal.podvin();
@@ -125,7 +126,7 @@ int main(int argc, char **argv)
         // eikonal.arrivalsPath = "fim_central_"+std::to_string((int) dh_all[n])+"m_";
         // eikonal.eikonalPath = "fim_central_";
 
-        // for (int shot = 0; shot < eikonal.g3D.ns; shot++)
+        // for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
         // {
         //     eikonal.shotId = shot;
         //     eikonal.jeongFIM();
@@ -134,7 +135,7 @@ int main(int argc, char **argv)
         eikonal.arrivalsPath = "fsm_central_"+std::to_string((int) dh_all[n])+"m_";
         eikonal.eikonalPath = "fsm_central_";
 
-        for (int shot = 0; shot < eikonal.g3D.ns; shot++)
+        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
         {
             eikonal.shotId = shot;
             eikonal.nobleFSM();

@@ -1,5 +1,4 @@
 import sys
-from cairo import FONT_SLANT_ITALIC
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt

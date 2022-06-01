@@ -36,11 +36,11 @@ void Eikonal::deleteVolumes()
 
 void Eikonal::podvin()
 {
-    int sIdx = (int)(g3D.shots->x[shotId] / m3D.dx) + m3D.nb;
-    int sIdy = (int)(g3D.shots->y[shotId] / m3D.dy) + m3D.nb;
-    int sIdz = (int)(g3D.shots->z[shotId] / m3D.dz) + m3D.nb;
+    g3D.shots.idx = (int)(g3D.shots.x[shotId] / m3D.dx) + m3D.nb;
+    g3D.shots.idy = (int)(g3D.shots.y[shotId] / m3D.dy) + m3D.nb;
+    g3D.shots.idz = (int)(g3D.shots.z[shotId] / m3D.dz) + m3D.nb;
 
-    int sId = sIdz + sIdx*m3D.nzz + sIdy*m3D.nxx*m3D.nzz; 
+    int sId = g3D.shots.idz + g3D.shots.idx*m3D.nzz + g3D.shots.idy*m3D.nxx*m3D.nzz; 
 
     for (int index = 0; index < m3D.nPointsB; index++)
     {
@@ -48,11 +48,11 @@ void Eikonal::podvin()
 
         if (index == sId)
         {
-            float sx = floorf(g3D.shots->x[shotId] / m3D.dx) * m3D.dx;
-            float sy = floorf(g3D.shots->y[shotId] / m3D.dy) * m3D.dy;
-            float sz = floorf(g3D.shots->z[shotId] / m3D.dz) * m3D.dz;
+            float sx = floorf(g3D.shots.x[shotId] / m3D.dx) * m3D.dx;
+            float sy = floorf(g3D.shots.y[shotId] / m3D.dy) * m3D.dy;
+            float sz = floorf(g3D.shots.z[shotId] / m3D.dz) * m3D.dz;
 
-            float dist = sqrtf(powf(sx - g3D.shots->x[shotId],2.0f) + powf(sy - g3D.shots->y[shotId],2.0f) + powf(sz - g3D.shots->z[shotId],2.0f));
+            float dist = sqrtf(powf(sx - g3D.shots.x[shotId],2.0f) + powf(sy - g3D.shots.y[shotId],2.0f) + powf(sz - g3D.shots.z[shotId],2.0f));
 
             T[sId] = dist * S[sId];
             nT[sId] = T[sId]; 
@@ -97,28 +97,28 @@ void Eikonal::podvin()
     int aux = 0;
     int nItEikonal = 0;
 
-    aux = sqrtf(sIdx*sIdx + sIdy*sIdy + sIdz*sIdz); 
+    aux = (int)sqrtf(powf(g3D.shots.idx,2.0f) + powf(g3D.shots.idy,2.0f) + powf(g3D.shots.idz,2.0f)); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + sIdz*sIdz);
+    aux = (int)sqrtf(powf(m3D.nxx - g3D.shots.idx,2.0f) + powf(g3D.shots.idy,2.0f) + powf(g3D.shots.idz,2.0f));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz); 
+    aux = (int)sqrtf(powf(g3D.shots.idx,2.0f) + powf(m3D.nyy - g3D.shots.idy,2.0f) + powf(g3D.shots.idz,2.0f)); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf(sIdx*sIdx + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz)); 
+    aux = (int)sqrtf(powf(g3D.shots.idx,2.0f) + powf(g3D.shots.idy,2.0f) + powf(m3D.nzz - g3D.shots.idz,2.0f)); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = (int)sqrtf(powf(g3D.shots.idx,2.0f) + powf(m3D.nyy - g3D.shots.idy,2.0f) + powf(m3D.nzz - g3D.shots.idz,2.0f));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = (int)sqrtf(powf(m3D.nxx - g3D.shots.idx,2.0f) + powf(g3D.shots.idy,2.0f) + powf(m3D.nzz - g3D.shots.idz,2.0f));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz);
+    aux = (int)sqrtf(powf(m3D.nxx - g3D.shots.idx,2.0f) + powf(m3D.nyy - g3D.shots.idy,2.0f) + powf(g3D.shots.idz,2.0f));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = (int)sqrtf(powf(m3D.nxx - g3D.shots.idx,2.0f) + powf(m3D.nyy - g3D.shots.idy,2.0f) + powf(m3D.nzz - g3D.shots.idz,2.0f));
     if (aux > nItEikonal) nItEikonal = aux;
 
     nItEikonal += (int)(3 * nItEikonal / 2);
@@ -1677,11 +1677,11 @@ void Eikonal::podvin()
 
 void Eikonal::jeongFIM()
 {
-    int sIdx = (int)(g3D.shots->x[shotId] / m3D.dx) + m3D.nb;
-    int sIdy = (int)(g3D.shots->y[shotId] / m3D.dy) + m3D.nb;
-    int sIdz = (int)(g3D.shots->z[shotId] / m3D.dz) + m3D.nb;
+    g3D.shots.idx = (int)(g3D.shots.x[shotId] / m3D.dx) + m3D.nb;
+    g3D.shots.idy = (int)(g3D.shots.y[shotId] / m3D.dy) + m3D.nb;
+    g3D.shots.idz = (int)(g3D.shots.z[shotId] / m3D.dz) + m3D.nb;
 
-    int sId = sIdz + sIdx*m3D.nzz + sIdy*m3D.nxx*m3D.nzz; 
+    int sId = g3D.shots.idz + g3D.shots.idx*m3D.nzz + g3D.shots.idy*m3D.nxx*m3D.nzz; 
 
     for (int index = 0; index < m3D.nPointsB; index++)
     {
@@ -1689,11 +1689,11 @@ void Eikonal::jeongFIM()
 
         if (index == sId)
         {
-            float sx = floorf(g3D.shots->x[shotId] / m3D.dx) * m3D.dx;
-            float sy = floorf(g3D.shots->y[shotId] / m3D.dy) * m3D.dy;
-            float sz = floorf(g3D.shots->z[shotId] / m3D.dz) * m3D.dz;
+            float sx = floorf(g3D.shots.x[shotId] / m3D.dx) * m3D.dx;
+            float sy = floorf(g3D.shots.y[shotId] / m3D.dy) * m3D.dy;
+            float sz = floorf(g3D.shots.z[shotId] / m3D.dz) * m3D.dz;
 
-            float dist = sqrtf(powf(sx - g3D.shots->x[shotId],2.0f) + powf(sy - g3D.shots->y[shotId],2.0f) + powf(sz - g3D.shots->z[shotId],2.0f));
+            float dist = sqrtf(powf(sx - g3D.shots.x[shotId],2.0f) + powf(sy - g3D.shots.y[shotId],2.0f) + powf(sz - g3D.shots.z[shotId],2.0f));
 
             T[sId] = dist * S[sId];
             nT[sId] = T[sId]; 
@@ -1718,28 +1718,28 @@ void Eikonal::jeongFIM()
     int aux = 0;
     int nItEikonal = 0;
 
-    aux = sqrtf(sIdx*sIdx + sIdy*sIdy + sIdz*sIdz); 
+    aux = (int)sqrtf(powf(g3D.shots.idx,2.0f) + powf(g3D.shots.idy,2.0f) + powf(g3D.shots.idz,2.0f)); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + sIdz*sIdz);
+    aux = (int)sqrtf(powf(m3D.nxx - g3D.shots.idx,2.0f) + powf(g3D.shots.idy,2.0f) + powf(g3D.shots.idz,2.0f));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz); 
+    aux = (int)sqrtf(powf(g3D.shots.idx,2.0f) + powf(m3D.nyy - g3D.shots.idy,2.0f) + powf(g3D.shots.idz,2.0f)); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf(sIdx*sIdx + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz)); 
+    aux = (int)sqrtf(powf(g3D.shots.idx,2.0f) + powf(g3D.shots.idy,2.0f) + powf(m3D.nzz - g3D.shots.idz,2.0f)); 
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf(sIdx*sIdx + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = (int)sqrtf(powf(g3D.shots.idx,2.0f) + powf(m3D.nyy - g3D.shots.idy,2.0f) + powf(m3D.nzz - g3D.shots.idz,2.0f));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + sIdy*sIdy + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = (int)sqrtf(powf(m3D.nxx - g3D.shots.idx,2.0f) + powf(g3D.shots.idy,2.0f) + powf(m3D.nzz - g3D.shots.idz,2.0f));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + sIdz*sIdz);
+    aux = (int)sqrtf(powf(m3D.nxx - g3D.shots.idx,2.0f) + powf(m3D.nyy - g3D.shots.idy,2.0f) + powf(g3D.shots.idz,2.0f));
     if (aux > nItEikonal) nItEikonal = aux;
 
-    aux = sqrtf((m3D.nxx - sIdx)*(m3D.nxx - sIdx) + (m3D.nyy - sIdy)*(m3D.nyy - sIdy) + (m3D.nzz - sIdz)*(m3D.nzz - sIdz));
+    aux = (int)sqrtf(powf(m3D.nxx - g3D.shots.idx,2.0f) + powf(m3D.nyy - g3D.shots.idy,2.0f) + powf(m3D.nzz - g3D.shots.idz,2.0f));
     if (aux > nItEikonal) nItEikonal = aux;
 
     nItEikonal += (int)(3 * nItEikonal / 2);
@@ -1849,6 +1849,407 @@ void Eikonal::jeongFIM()
     writeFirstArrivals();
 } 
 
+void Eikonal::innerSweep()
+{
+    float ta, tb, tc, t1, t2, t3, Sref;
+    float t1D1, t1D2, t1D3, t1D, t2D1, t2D2, t2D3, t2D, t3D;
+
+    // Index of velocity nodes
+    int i1 = fsm.i - fsm.sgnvz; 
+    int j1 = fsm.j - fsm.sgnvx; 
+    int k1 = fsm.k - fsm.sgnvy;
+
+    // Get local times of surrounding points
+    float tv = T[(fsm.i - fsm.sgntz) + fsm.j*m3D.nzz + fsm.k*m3D.nxx*m3D.nzz];
+    float te = T[fsm.i + (fsm.j - fsm.sgntx)*m3D.nzz + fsm.k*m3D.nxx*m3D.nzz];
+    float tn = T[fsm.i + fsm.j*m3D.nzz + (fsm.k - fsm.sgnty)*m3D.nxx*m3D.nzz];
+    float tev = T[(fsm.i - fsm.sgntz) + (fsm.j - fsm.sgntx)*m3D.nzz + fsm.k*m3D.nxx*m3D.nzz];
+    float ten = T[fsm.i + (fsm.j - fsm.sgntx)*m3D.nzz + (fsm.k - fsm.sgnty)*m3D.nxx*m3D.nzz];
+    float tnv = T[(fsm.i - fsm.sgntz) + fsm.j*m3D.nzz + (fsm.k - fsm.sgnty)*m3D.nxx*m3D.nzz];
+    float tnve = T[(fsm.i - fsm.sgntz) + (fsm.j - fsm.sgntx)*m3D.nzz + (fsm.k - fsm.sgnty)*m3D.nxx*m3D.nzz];     
+
+    float Tijk = T[fsm.i + fsm.j*m3D.nzz + fsm.k*m3D.nxx*m3D.nzz];
+
+    //------------------- 1D operators ---------------------------------------------------------------------------------------------------
+    t1D1 = 1e5; t1D2 = 1e5; t1D3 = 1e5;     
+
+    // Z direction
+    t1D1 = tv + m3D.dz * utils.min4(S[i1 + utils.imax(fsm.j-1,1)*m3D.nzz       + utils.imax(fsm.k-1,1)*m3D.nxx*m3D.nzz], 
+                                    S[i1 + utils.imax(fsm.j-1,1)*m3D.nzz       + utils.imin(fsm.k,m3D.nyy-1)*m3D.nxx*m3D.nzz],
+                                    S[i1 + utils.imin(fsm.j,m3D.nxx-1)*m3D.nzz + utils.imax(fsm.k-1,1)*m3D.nxx*m3D.nzz], 
+                                    S[i1 + utils.imin(fsm.j,m3D.nxx-1)*m3D.nzz + utils.imin(fsm.k,m3D.nyy-1)*m3D.nxx*m3D.nzz]);
+
+    // X direction
+    t1D2 = te + m3D.dx * utils.min4(S[utils.imax(fsm.i-1,1)       + j1*m3D.nzz + utils.imax(fsm.k-1,1)*m3D.nxx*m3D.nzz], 
+                                    S[utils.imin(fsm.i,m3D.nzz-1) + j1*m3D.nzz + utils.imax(fsm.k-1,1)*m3D.nxx*m3D.nzz],
+                                    S[utils.imax(fsm.i-1,1)       + j1*m3D.nzz + utils.imin(fsm.k,m3D.nyy-1)*m3D.nxx*m3D.nzz], 
+                                    S[utils.imin(fsm.i,m3D.nzz-1) + j1*m3D.nzz + utils.imin(fsm.k,m3D.nyy-1)*m3D.nxx*m3D.nzz]);
+
+    // Y direction
+    t1D3 = tn + m3D.dy * utils.min4(S[utils.imax(fsm.i-1,1)       + utils.imax(fsm.j-1,1)*m3D.nzz       + k1*m3D.nxx*m3D.nzz], 
+                                    S[utils.imax(fsm.i-1,1)       + utils.imin(fsm.j,m3D.nxx-1)*m3D.nzz + k1*m3D.nxx*m3D.nzz],
+                                    S[utils.imin(fsm.i,m3D.nzz-1) + utils.imax(fsm.j-1,1)*m3D.nzz       + k1*m3D.nxx*m3D.nzz], 
+                                    S[utils.imin(fsm.i,m3D.nzz-1) + utils.imin(fsm.j,m3D.nxx-1)*m3D.nzz + k1*m3D.nxx*m3D.nzz]);
+
+    t1D = utils.min3(t1D1,t1D2,t1D3);
+
+    //------------------- 2D operators - 4 points operator ---------------------------------------------------------------------------------------------------
+    t2D1 = 1e6; t2D2 = 1e6; t2D3 = 1e6;
+
+    // XZ plane ----------------------------------------------------------------------------------------------------------------------------------------------
+    Sref = utils.min(S[i1 + j1*m3D.nzz + utils.imax(fsm.k-1,1)*m3D.nxx*m3D.nzz], S[i1 + j1*m3D.nzz + utils.imin(fsm.k, m3D.nyy-1)*m3D.nxx*m3D.nzz]);
+    
+    if ((tv < te + m3D.dx*Sref) && (te < tv + m3D.dz*Sref))
+    {
+        ta = tev + te - tv;
+        tb = tev - te + tv;
+
+        t2D1 = ((tb*fsm.dz2i + ta*fsm.dx2i) + sqrt(4.0f*Sref*Sref*(fsm.dz2i + fsm.dx2i) - fsm.dz2i*fsm.dx2i*(ta - tb)*(ta - tb))) / (fsm.dz2i + fsm.dx2i);
+    }
+
+    // YZ plane -------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Sref = utils.min(S[i1 + utils.imax(fsm.j-1,1)*m3D.nzz + k1*m3D.nxx*m3D.nzz], S[i1 + utils.imin(fsm.j,m3D.nxx-1)*m3D.nzz + k1*m3D.nxx*m3D.nzz]);
+
+    if((tv < tn + m3D.dy*Sref) && (tn < tv + m3D.dz*Sref))
+    {
+        ta = tv - tn + tnv;
+        tb = tn - tv + tnv;
+        
+        t2D2 = ((ta*fsm.dz2i + tb*fsm.dy2i) + sqrt(4.0f*Sref*Sref*(fsm.dz2i + fsm.dy2i) - fsm.dz2i*fsm.dy2i*(ta - tb)*(ta - tb))) / (fsm.dz2i + fsm.dy2i); 
+    }
+
+    // XY plane -------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Sref = utils.min(S[utils.imax(fsm.i-1,1) + j1*m3D.nzz + k1*m3D.nxx*m3D.nzz],S[utils.imin(fsm.i,m3D.nzz-1) + j1*m3D.nzz + k1*m3D.nxx*m3D.nzz]);
+
+    if((te < tn + m3D.dy*Sref) && (tn < te + m3D.dx*Sref))
+    {
+        ta = te - tn + ten;
+        tb = tn - te + ten;
+
+        t2D3 = ((ta*fsm.dx2i + tb*fsm.dy2i) + sqrt(4.0f*Sref*Sref*(fsm.dx2i + fsm.dy2i) - fsm.dx2i*fsm.dy2i*(ta - tb)*(ta - tb))) / (fsm.dx2i + fsm.dy2i);
+    }
+
+    t2D = utils.min3(t2D1,t2D2,t2D3);
+
+    //------------------- 3D operators ---------------------------------------------------------------------------------------------------
+    t3D = 1e6;
+
+    Sref = S[i1 + j1*m3D.nxx + k1*m3D.nxx*m3D.nzz];
+
+    ta = te - 0.5f*tn + 0.5f*ten - 0.5f*tv + 0.5f*tev - tnv + tnve;
+    tb = tv - 0.5f*tn + 0.5f*tnv - 0.5f*te + 0.5f*tev - ten + tnve;
+    tc = tn - 0.5f*te + 0.5f*ten - 0.5f*tv + 0.5f*tnv - tev + tnve;
+
+    if (utils.min(t1D,t2D) > utils.max3(tv,te,tn))
+    {
+        t2 = 9.0f*Sref*Sref*fsm.dsum;
+        
+        t3 = fsm.dz2dx2*(ta - tb)*(ta - tb) + fsm.dz2dy2*(tb - tc)*(tb - tc) + fsm.dx2dy2*(ta - tc)*(ta - tc);
+        
+        if (t2 >= t3)
+        {
+            t1 = tb*fsm.dz2i + ta*fsm.dx2i + tc*fsm.dy2i;        
+            
+            t3D = (t1 + sqrtf(t2 - t3)) / fsm.dsum;
+        }
+    }
+   
+    T[fsm.i + fsm.j*m3D.nzz + fsm.k*m3D.nxx*m3D.nzz] = utils.min4(Tijk,t1D,t2D,t3D);
+}
+
+void Eikonal::initSweep()
+{
+    // First sweeping: Top->Bottom; West->East; South->North
+    fsm.sgntz = 1; fsm.sgntx = 1; fsm.sgnty = 1; 
+    fsm.sgnvz = 1; fsm.sgnvx = 1; fsm.sgnvy = 1;
+
+    for (fsm.k = utils.imax(1, g3D.shots.idy); fsm.k < m3D.nyy; fsm.k++)
+    {
+        for (fsm.j = utils.imax(1, g3D.shots.idx); fsm.j < m3D.nxx; fsm.j++)
+        {
+            for (fsm.i = utils.imax(1, g3D.shots.idz); fsm.i < m3D.nzz; fsm.i++)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Second sweeping: Top->Bottom; East->West; South->North
+    fsm.sgntz = -1; fsm.sgntx = 1; fsm.sgnty = 1;
+    fsm.sgnvz =  0; fsm.sgnvx = 1; fsm.sgnvy = 1;
+
+    for (fsm.k = utils.imax(1, g3D.shots.idy); fsm.k < m3D.nyy; fsm.k++)
+    {
+        for (fsm.j = utils.imax(1, g3D.shots.idx); fsm.j < m3D.nxx; fsm.j++)
+        {
+            for (fsm.i = g3D.shots.idz + 1; fsm.i >= 0 ; fsm.i--)
+            {
+                innerSweep();
+            }
+        }
+    }
+    
+    // Third sweeping: Top->Bottom; West->East; North->South
+    fsm.sgntz = 1; fsm.sgntx = 1; fsm.sgnty = -1;
+    fsm.sgnvz = 1; fsm.sgnvx = 1; fsm.sgnvy =  0;
+
+    for (fsm.k = g3D.shots.idy + 1; fsm.k >= 0; fsm.k--)
+    {
+        for (fsm.j = utils.imax(1, g3D.shots.idx); fsm.j < m3D.nxx; fsm.j++)
+        {
+            for (fsm.i = utils.imax(1, g3D.shots.idz); fsm.i < m3D.nzz; fsm.i++)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Fourth sweeping: Top->Bottom ; East->West ; North->South
+    fsm.sgntz = -1; fsm.sgntx = 1; fsm.sgnty = -1;
+    fsm.sgnvz =  0; fsm.sgnvx = 1; fsm.sgnvy =  0;
+
+    for (fsm.k = g3D.shots.idy + 1; fsm.k >= 0; fsm.k--)
+    {
+        for (fsm.j = utils.imax(1, g3D.shots.idx); fsm.j < m3D.nxx; fsm.j++)
+        {
+            for (fsm.i = g3D.shots.idz + 1; fsm.i >= 0 ; fsm.i--)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Fifth sweeping: Bottom->Top; West->East; South->North
+    fsm.sgntz = 1; fsm.sgntx = -1; fsm.sgnty = 1;
+    fsm.sgnvz = 1; fsm.sgnvx =  0; fsm.sgnvy = 1;
+
+    for (fsm.k = utils.imax(1, g3D.shots.idy); fsm.k < m3D.nyy; fsm.k++)
+    {
+        for (fsm.j = g3D.shots.idx + 1; fsm.j >= 0; fsm.j--)
+        {
+            for (fsm.i = utils.imax(1, g3D.shots.idz); fsm.i < m3D.nzz; fsm.i++)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Sixth sweeping: Bottom->Top; East->West; South->North
+    fsm.sgntz = -1; fsm.sgntx = -1; fsm.sgnty = 1;
+    fsm.sgnvz =  0; fsm.sgnvx =  0; fsm.sgnvy = 1;
+
+    for (fsm.k = utils.imax(1, g3D.shots.idy); fsm.k < m3D.nyy; fsm.k++)
+    {
+        for (fsm.j = g3D.shots.idx + 1; fsm.j >= 0; fsm.j--)
+        {
+            for (fsm.i = g3D.shots.idz + 1; fsm.i >= 0; fsm.i--)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Seventh sweeping: Bottom->Top; West->East; North->South
+    fsm.sgntz = 1; fsm.sgntx = -1; fsm.sgnty = -1;
+    fsm.sgnvz = 1; fsm.sgnvx =  0; fsm.sgnvy =  0;
+
+    for (fsm.k = g3D.shots.idy + 1; fsm.k >= 0; fsm.k--)
+    {
+        for (fsm.j = g3D.shots.idx + 1; fsm.j >= 0; fsm.j--)
+        {
+            for (fsm.i = utils.imax(1, g3D.shots.idz); fsm.i < m3D.nzz; fsm.i++)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Eighth sweeping: Bottom->Top; East->West; North->South
+    fsm.sgntz = -1; fsm.sgntx = -1; fsm.sgnty = -1;
+    fsm.sgnvz =  0; fsm.sgnvx =  0; fsm.sgnvy =  0;
+
+    for (fsm.k = g3D.shots.idy + 1; fsm.k >= 0; fsm.k--)
+    {
+        for (fsm.j = g3D.shots.idx + 1; fsm.j >= 0; fsm.j--)
+        {
+            for (fsm.i = g3D.shots.idz + 1; fsm.i >= 0; fsm.i--)
+            {
+                innerSweep();
+            }
+        }
+    }
+}
+
+void Eikonal::fullSweep()
+{
+    // First sweeping: Top->Bottom; West->East; South->North 
+    fsm.sgntz = 1; fsm.sgntx = 1; fsm.sgnty = 1; 
+    fsm.sgnvz = 1; fsm.sgnvx = 1; fsm.sgnvy = 1;
+
+    for (fsm.k = 1; fsm.k < m3D.nyy; fsm.k++)
+    {
+        for (fsm.j = 1; fsm.j < m3D.nxx; fsm.j++)
+        {
+            for (fsm.i = 1; fsm.i < m3D.nzz; fsm.i++)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Second sweeping: Top->Bottom; East->West; South->North
+    fsm.sgntz = -1; fsm.sgntx = 1; fsm.sgnty = 1;
+    fsm.sgnvz =  0; fsm.sgnvx = 1; fsm.sgnvy = 1;
+
+    for (fsm.k = 1; fsm.k < m3D.nyy; fsm.k++)
+    {
+        for (fsm.j = 1; fsm.j < m3D.nxx; fsm.j++)
+        {
+            for (fsm.i = m3D.nzz - 2; fsm.i >= 0; fsm.i--)
+            {
+                innerSweep();
+            }
+        }
+    }
+    
+    // Third sweeping: Top->Bottom; West->East; North->South
+    fsm.sgntz = 1; fsm.sgntx = 1; fsm.sgnty = -1;
+    fsm.sgnvz = 1; fsm.sgnvx = 1; fsm.sgnvy =  0;
+
+    for (fsm.k = m3D.nyy - 2; fsm.k >= 0; fsm.k--)
+    {
+        for (fsm.j = 1; fsm.j < m3D.nxx; fsm.j++)
+        {
+            for (fsm.i = 1; fsm.i < m3D.nzz; fsm.i++)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Fourth sweeping: Top->Bottom ; East->West ; North->South
+    fsm.sgntz = -1; fsm.sgntx = 1; fsm.sgnty = -1;
+    fsm.sgnvz =  0; fsm.sgnvx = 1; fsm.sgnvy =  0;
+
+    for (fsm.k = m3D.nyy - 2; fsm.k >= 0; fsm.k--)
+    {
+        for (fsm.j = 1; fsm.j < m3D.nxx; fsm.j++)
+        {
+            for (fsm.i = m3D.nzz - 2; fsm.i >= 0; fsm.i--)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Fifth sweeping: Bottom->Top; West->East; South->North
+    fsm.sgntz = 1; fsm.sgntx = -1; fsm.sgnty = 1;
+    fsm.sgnvz = 1; fsm.sgnvx =  0; fsm.sgnvy = 1;
+
+    for (fsm.k = 1; fsm.k < m3D.nyy; fsm.k++)
+    {
+        for (fsm.j = m3D.nxx - 2; fsm.j >= 0; fsm.j--)
+        {
+            for (fsm.i = 1; fsm.i < m3D.nzz; fsm.i++)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Sixth sweeping: Bottom->Top; East->West; South->North
+    fsm.sgntz = -1; fsm.sgntx = -1; fsm.sgnty = 1;
+    fsm.sgnvz =  0; fsm.sgnvx =  0; fsm.sgnvy = 1;
+
+    for (fsm.k = 1; fsm.k < m3D.nyy; fsm.k++)
+    {
+        for (fsm.j = m3D.nxx - 2; fsm.j >= 0; fsm.j--)
+        {
+            for (fsm.i = m3D.nzz - 2; fsm.i >= 0; fsm.i--)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Seventh sweeping: Bottom->Top; West->East; North->South
+    fsm.sgntz = 1; fsm.sgntx = -1; fsm.sgnty = -1;
+    fsm.sgnvz = 1; fsm.sgnvx =  0; fsm.sgnvy =  0;
+
+    for (fsm.k = m3D.nyy - 2; fsm.k >= 0; fsm.k--)
+    {
+        for (fsm.j = m3D.nxx - 2; fsm.j >= 0; fsm.j--)
+        {
+            for (fsm.i = 1; fsm.i < m3D.nzz; fsm.i++)
+            {
+                innerSweep();
+            }
+        }
+    }
+
+    // Eighth sweeping: Bottom->Top; East->West; North->South
+    fsm.sgntz = -1; fsm.sgntx = -1; fsm.sgnty = -1;
+    fsm.sgnvz =  0; fsm.sgnvx =  0; fsm.sgnvy =  0;
+
+    for (fsm.k = m3D.nyy - 2; fsm.k >= 0; fsm.k--)
+    {
+        for (fsm.j = m3D.nxx - 2; fsm.j >= 0; fsm.j--)
+        {
+            for (fsm.i = m3D.nzz - 2; fsm.i >= 0; fsm.i--)
+            {
+                innerSweep();
+            }
+        }
+    }
+}
+
+void Eikonal::nobleFSM()
+{
+    g3D.shots.idx = (int)(g3D.shots.x[shotId] / m3D.dx);
+    g3D.shots.idy = (int)(g3D.shots.y[shotId] / m3D.dy);
+    g3D.shots.idz = (int)(g3D.shots.z[shotId] / m3D.dz);
+
+    int sId = (g3D.shots.idz + m3D.nb) + (g3D.shots.idx + m3D.nb)*m3D.nzz + (g3D.shots.idy + m3D.nb)*m3D.nxx*m3D.nzz;     
+
+    for (int index = 0; index < m3D.nPointsB; index++)
+    {
+        T[index] = 1e6f;
+        S[index] = 1.0f / m3D.vp[index];
+    }
+
+    T[sId] = S[sId] * sqrtf(powf(g3D.shots.idx*m3D.dx - g3D.shots.x[shotId], 2.0f) + powf(g3D.shots.idy*m3D.dy - g3D.shots.y[shotId], 2.0f) + powf(g3D.shots.idz*m3D.dz - g3D.shots.z[shotId], 2.0f));
+    T[sId + 1] = S[sId] * sqrtf(powf(g3D.shots.idx*m3D.dx - g3D.shots.x[shotId], 2.0f) + powf(g3D.shots.idy*m3D.dy - g3D.shots.y[shotId], 2.0f) + powf((g3D.shots.idz+1)*m3D.dz - g3D.shots.z[shotId], 2.0f));
+    T[sId + m3D.nzz] = S[sId] * sqrtf(powf((g3D.shots.idx+1)*m3D.dx - g3D.shots.x[shotId], 2.0f) + powf(g3D.shots.idy*m3D.dy - g3D.shots.y[shotId], 2.0f) + powf(g3D.shots.idz*m3D.dz - g3D.shots.z[shotId], 2.0f));
+    T[sId + m3D.nxx*m3D.nzz] = S[sId] * sqrtf(powf(g3D.shots.idx*m3D.dx - g3D.shots.x[shotId], 2.0f) + powf((g3D.shots.idy+1)*m3D.dy - g3D.shots.y[shotId], 2.0f) + powf(g3D.shots.idz*m3D.dz - g3D.shots.z[shotId], 2.0f));
+    T[sId + 1 + m3D.nzz] = S[sId] * sqrtf(powf((g3D.shots.idx+1)*m3D.dx - g3D.shots.x[shotId], 2.0f) + powf(g3D.shots.idy*m3D.dy - g3D.shots.y[shotId], 2.0f) + powf((g3D.shots.idz+1)*m3D.dz - g3D.shots.z[shotId], 2.0f));
+    T[sId + 1 + m3D.nxx*m3D.nzz] = S[sId] * sqrtf(powf(g3D.shots.idx*m3D.dx - g3D.shots.x[shotId], 2.0f) + powf((g3D.shots.idy+1)*m3D.dy - g3D.shots.y[shotId], 2.0f) + powf((g3D.shots.idz+1)*m3D.dz - g3D.shots.z[shotId], 2.0f));
+    T[sId + m3D.nzz + m3D.nxx*m3D.nzz] = S[sId] * sqrtf(powf((g3D.shots.idx+1)*m3D.dx - g3D.shots.x[shotId], 2.0f) + powf((g3D.shots.idy+1)*m3D.dy - g3D.shots.y[shotId], 2.0f) + powf(g3D.shots.idz*m3D.dz - g3D.shots.z[shotId], 2.0f));
+    T[sId + 1 + m3D.nzz + m3D.nxx*m3D.nzz] = S[sId] * sqrtf(powf((g3D.shots.idx+1)*m3D.dx - g3D.shots.x[shotId], 2.0f) + powf((g3D.shots.idy+1)*m3D.dy - g3D.shots.y[shotId], 2.0f) + powf((g3D.shots.idz+1)*m3D.dz - g3D.shots.z[shotId], 2.0f));
+
+    fsm.dzi = 1.0f / m3D.dz;
+    fsm.dxi = 1.0f / m3D.dx;
+    fsm.dyi = 1.0f / m3D.dy;
+    fsm.dz2i = 1.0f / (m3D.dz*m3D.dz);
+    fsm.dx2i = 1.0f / (m3D.dx*m3D.dx);
+    fsm.dy2i = 1.0f / (m3D.dy*m3D.dy);
+    fsm.dz2dx2 = fsm.dz2i * fsm.dx2i;
+    fsm.dz2dy2 = fsm.dz2i * fsm.dy2i;
+    fsm.dx2dy2 = fsm.dx2i * fsm.dy2i;
+    fsm.dsum = fsm.dz2i + fsm.dx2i + fsm.dy2i;
+
+    g3D.shots.idx += m3D.nb;
+    g3D.shots.idy += m3D.nb;
+    g3D.shots.idz += m3D.nb;
+
+    initSweep();
+    
+    for (int s = 0; s < 5; s++) 
+        fullSweep();
+
+    writeTravelTimes();
+    writeFirstArrivals();
+}
+
 void Eikonal::writeTravelTimes()
 {
     if (exportTimesVolume)
@@ -1879,19 +2280,19 @@ void::Eikonal::writeFirstArrivals()
     {
         Utils::point3D p;    
         
-        float * firstArrivals = new float[g3D.nr]();
+        float * firstArrivals = new float[g3D.nodes.n]();
         
-        for (int r = 0; r < g3D.nr; r++)
+        for (int r = 0; r < g3D.nodes.n; r++)
         {
-            p.x = g3D.nodes->x[r];
-            p.y = g3D.nodes->y[r];
-            p.z = g3D.nodes->z[r];
+            p.x = g3D.nodes.x[r];
+            p.y = g3D.nodes.y[r];
+            p.z = g3D.nodes.z[r];
 
             firstArrivals[r] = utils.triLinearInterpolation(p, m3D, T);
             // firstArrivals[r] = utils.triCubicInterpolation(p, m3D, T);            
         }
 
-        io.writeBinaryFloat(arrivalsPath + "times_nr" + std::to_string(g3D.nr) + "_shot_" + std::to_string(shotId+1) + ".bin", firstArrivals, g3D.nr);
+        io.writeBinaryFloat(arrivalsPath + "times_nr" + std::to_string(g3D.nodes.n) + "_shot_" + std::to_string(shotId+1) + ".bin", firstArrivals, g3D.nodes.n);
 
         delete[] firstArrivals;
     }

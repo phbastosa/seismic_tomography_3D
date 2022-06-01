@@ -6,15 +6,7 @@
 
 class Geometry
 {
-public:
-    int ns;                // Total shots in simulation
-    int nr;                // Total receivers in simulation 
-
-    int nsx, nrx;          // Total geometry unit in xline
-    int nsy, nry;          // Total geometry unit in crossline   
-
-    float sElev;           // Shots elevation
-    float rElev;           // Nodes elevation  
+public:  
 
     /* Position struct to storage coordinates */
     typedef struct
@@ -23,23 +15,27 @@ public:
         float * y;         // Position y of shots or nodes
         float * z;         // Position z of shots or nodes
     
-    } Position;            
+        int idx;
+        int idy;
+        int idz;
 
-    typedef struct 
-    {
+        int n;             // Total elements in simulation
+        int nx;            // Total geometry unit in xline
+        int ny;            // Total geometry unit in crossline
+
         float xc;
         float yc;
 
         float ds;
 
+        float elevation;
+
         std::vector<float> offsets;  
 
-    } Circles;
+    } Position;            
     
-    Position * shots;      // Struct to storage x,y,z coordinates of shots
-    Position * nodes;      // Struct to storage x,y,z coordinates of nodes
-
-    Circles circles;
+    Position shots;      // Struct to storage x,y,z coordinates of shots
+    Position nodes;      // Struct to storage x,y,z coordinates of nodes
 
     Utils::point2D SW;
     Utils::point2D NW;
