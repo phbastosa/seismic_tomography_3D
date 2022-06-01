@@ -1868,7 +1868,7 @@ void Eikonal::innerSweep()
     float tnv = T[(fsm.i - fsm.sgntz) + fsm.j*m3D.nzz + (fsm.k - fsm.sgnty)*m3D.nxx*m3D.nzz];
     float tnve = T[(fsm.i - fsm.sgntz) + (fsm.j - fsm.sgntx)*m3D.nzz + (fsm.k - fsm.sgnty)*m3D.nxx*m3D.nzz];     
 
-    float Tijk = T[fsm.i + fsm.j*m3D.nzz + fsm.k*m3D.nxx*m3D.nzz];
+    int ijk = fsm.i + fsm.j*m3D.nzz + fsm.k*m3D.nxx*m3D.nzz;
 
     //------------------- 1D operators ---------------------------------------------------------------------------------------------------
     t1D1 = 1e5; t1D2 = 1e5; t1D3 = 1e5;     
@@ -1904,7 +1904,7 @@ void Eikonal::innerSweep()
         ta = tev + te - tv;
         tb = tev - te + tv;
 
-        t2D1 = ((tb*fsm.dz2i + ta*fsm.dx2i) + sqrt(4.0f*Sref*Sref*(fsm.dz2i + fsm.dx2i) - fsm.dz2i*fsm.dx2i*(ta - tb)*(ta - tb))) / (fsm.dz2i + fsm.dx2i);
+        t2D1 = ((tb*fsm.dz2i + ta*fsm.dx2i) + sqrtf(4.0f*Sref*Sref*(fsm.dz2i + fsm.dx2i) - fsm.dz2i*fsm.dx2i*(ta - tb)*(ta - tb))) / (fsm.dz2i + fsm.dx2i);
     }
 
     // YZ plane -------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1915,7 +1915,7 @@ void Eikonal::innerSweep()
         ta = tv - tn + tnv;
         tb = tn - tv + tnv;
         
-        t2D2 = ((ta*fsm.dz2i + tb*fsm.dy2i) + sqrt(4.0f*Sref*Sref*(fsm.dz2i + fsm.dy2i) - fsm.dz2i*fsm.dy2i*(ta - tb)*(ta - tb))) / (fsm.dz2i + fsm.dy2i); 
+        t2D2 = ((ta*fsm.dz2i + tb*fsm.dy2i) + sqrtf(4.0f*Sref*Sref*(fsm.dz2i + fsm.dy2i) - fsm.dz2i*fsm.dy2i*(ta - tb)*(ta - tb))) / (fsm.dz2i + fsm.dy2i); 
     }
 
     // XY plane -------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1926,7 +1926,7 @@ void Eikonal::innerSweep()
         ta = te - tn + ten;
         tb = tn - te + ten;
 
-        t2D3 = ((ta*fsm.dx2i + tb*fsm.dy2i) + sqrt(4.0f*Sref*Sref*(fsm.dx2i + fsm.dy2i) - fsm.dx2i*fsm.dy2i*(ta - tb)*(ta - tb))) / (fsm.dx2i + fsm.dy2i);
+        t2D3 = ((ta*fsm.dx2i + tb*fsm.dy2i) + sqrtf(4.0f*Sref*Sref*(fsm.dx2i + fsm.dy2i) - fsm.dx2i*fsm.dy2i*(ta - tb)*(ta - tb))) / (fsm.dx2i + fsm.dy2i);
     }
 
     t2D = utils.min3(t2D1,t2D2,t2D3);
@@ -1934,7 +1934,7 @@ void Eikonal::innerSweep()
     //------------------- 3D operators ---------------------------------------------------------------------------------------------------
     t3D = 1e6;
 
-    Sref = S[i1 + j1*m3D.nxx + k1*m3D.nxx*m3D.nzz];
+    Sref = S[i1 + j1*m3D.nzz + k1*m3D.nxx*m3D.nzz];
 
     ta = te - 0.5f*tn + 0.5f*ten - 0.5f*tv + 0.5f*tev - tnv + tnve;
     tb = tv - 0.5f*tn + 0.5f*tnv - 0.5f*te + 0.5f*tev - ten + tnve;
@@ -1954,7 +1954,7 @@ void Eikonal::innerSweep()
         }
     }
    
-    T[fsm.i + fsm.j*m3D.nzz + fsm.k*m3D.nxx*m3D.nzz] = utils.min4(Tijk,t1D,t2D,t3D);
+    T[ijk] = utils.min4(T[ijk],t1D,t2D,t3D);
 }
 
 void Eikonal::initSweep()
@@ -2242,9 +2242,7 @@ void Eikonal::nobleFSM()
     g3D.shots.idz += m3D.nb;
 
     initSweep();
-    
-    for (int s = 0; s < 5; s++) 
-        fullSweep();
+    fullSweep();
 
     writeTravelTimes();
     writeFirstArrivals();

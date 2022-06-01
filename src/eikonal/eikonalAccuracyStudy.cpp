@@ -42,8 +42,7 @@ int main(int argc, char **argv)
     // Setting model 
 
     std::cout<<"\n\n";
-    // for (int n = 0; n < dh_all.size(); n++)
-    for (int n = 0; n < 1; n++)
+    for (int n = 0; n < dh_all.size(); n++)
     {
         std::cout<<"Generating data with dh = "<<dh_all[n]<<"\n";
 
@@ -63,37 +62,45 @@ int main(int argc, char **argv)
 
         eikonal.m3D.readAndExpandVP();
 
-        // // Setting extern shot points  
+        // Setting extern shot points  
 
-        // eikonal.g3D.SW.x = 1000.0f; eikonal.g3D.SW.y = 1000.0f;    
-        // eikonal.g3D.NW.x = 1000.0f; eikonal.g3D.NW.y = 21000.0f;    
-        // eikonal.g3D.SE.x = 21000.0f; eikonal.g3D.SE.y = 1000.0f;    
+        eikonal.g3D.SW.x = 1000.0f; eikonal.g3D.SW.y = 1000.0f;    
+        eikonal.g3D.NW.x = 1000.0f; eikonal.g3D.NW.y = 21000.0f;    
+        eikonal.g3D.SE.x = 21000.0f; eikonal.g3D.SE.y = 1000.0f;    
 
-        // eikonal.g3D.nsx = 2; 
-        // eikonal.g3D.nsy = 2; 
+        eikonal.g3D.shots.nx = 2; 
+        eikonal.g3D.shots.ny = 2; 
         eikonal.g3D.shots.elevation = 0.0f;
 
-        // eikonal.g3D.setGridShots();
+        eikonal.g3D.setGridShots();
 
         // Shots loop
 
         eikonal.allocateVolumes();    
 
-        // eikonal.arrivalsPath = "pod_extern_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.arrivalsPath = "pod_extern_"+std::to_string((int) dh_all[n])+"m_";
 
-        // for (int shot = 0; shot < eikonal.g3D.ns; shot++)
-        // {
-        //     eikonal.shotId = shot;
-        //     eikonal.podvin();
-        // }
+        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
+        {
+            eikonal.shotId = shot;
+            eikonal.podvin();
+        }
 
-        // eikonal.arrivalsPath = "fim_extern_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.arrivalsPath = "fim_extern_"+std::to_string((int) dh_all[n])+"m_";
 
-        // for (int shot = 0; shot < eikonal.g3D.ns; shot++)
-        // {
-        //     eikonal.shotId = shot;
-        //     eikonal.jeongFIM();
-        // }
+        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
+        {
+            eikonal.shotId = shot;
+            eikonal.jeongFIM();
+        }
+
+        eikonal.arrivalsPath = "fsm_extern_"+std::to_string((int) dh_all[n])+"m_";
+
+        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
+        {
+            eikonal.shotId = shot;
+            eikonal.jeongFIM();
+        }
 
         // Generate central shot
 
@@ -105,35 +112,30 @@ int main(int argc, char **argv)
         eikonal.g3D.shots.ny = 1; 
 
         eikonal.g3D.setGridShots();
+        
+        eikonal.arrivalsPath = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
+
+        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
+        {
+            eikonal.shotId = shot;
+            eikonal.podvin();
+        }
+
+        eikonal.arrivalsPath = "fim_central_"+std::to_string((int) dh_all[n])+"m_";
+
+        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
+        {
+            eikonal.shotId = shot;
+            eikonal.jeongFIM();
+        }
 
         if (n == 2)
         {
             eikonal.exportTimesVolume = true;
             eikonal.eikonalPath = "central_";
         }
-        
-        eikonal.exportTimesVolume = true;
-
-        // eikonal.arrivalsPath = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
-        // eikonal.eikonalPath = "pod_central_";
-
-        // for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
-        // {
-        //     eikonal.shotId = shot;
-        //     eikonal.podvin();
-        // }
-
-        // eikonal.arrivalsPath = "fim_central_"+std::to_string((int) dh_all[n])+"m_";
-        // eikonal.eikonalPath = "fim_central_";
-
-        // for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
-        // {
-        //     eikonal.shotId = shot;
-        //     eikonal.jeongFIM();
-        // }
 
         eikonal.arrivalsPath = "fsm_central_"+std::to_string((int) dh_all[n])+"m_";
-        eikonal.eikonalPath = "fsm_central_";
 
         for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
         {
