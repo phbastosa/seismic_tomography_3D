@@ -11,7 +11,7 @@ main=main/tomography3D_main.cpp
 
 essentials="$inout $model $utils $geom"
 paramFile="inputs/parameters.txt"
-flags="-acc -fast -ta=tesla,cc60 -g -std::c++11 -lm"
+flags="-acc -fast -ta=tesla,cc60 -g -std::c++11 -fopenmp -lm"
 
 target=bin/tomography3D.x 
 

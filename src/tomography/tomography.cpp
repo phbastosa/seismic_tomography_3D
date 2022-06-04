@@ -24,8 +24,6 @@ Tomography::Tomography(char **argv)
     m3D.dx = std::stof(io.catchParameter("dx", parametersFile));
     m3D.dy = std::stof(io.catchParameter("dy", parametersFile));
     m3D.dz = std::stof(io.catchParameter("dz", parametersFile));
-
-    m3D.vpPath = io.catchParameter("vpPath", parametersFile);
     
     shotsGeometryType = std::stoi(io.catchParameter("shotsGeometryType", parametersFile));
     nodesGeometryType = std::stoi(io.catchParameter("nodesGeometryType", parametersFile));
@@ -35,13 +33,13 @@ Tomography::Tomography(char **argv)
 
     std::vector<std::string> splitted;
 
-    g3D.sElev = std::stof(io.catchParameter("sElev", parametersFile));
-    g3D.rElev = std::stof(io.catchParameter("rElev", parametersFile));
+    g3D.shots.elevation = std::stof(io.catchParameter("sElev", parametersFile));
+    g3D.nodes.elevation = std::stof(io.catchParameter("rElev", parametersFile));
 
     if (shotsGeometryType)              // Grid shots aqcuisition
     {
-        g3D.nsx = std::stoi(io.catchParameter("nsx", parametersFile));
-        g3D.nsy = std::stoi(io.catchParameter("nsy", parametersFile));
+        g3D.shots.nx = std::stoi(io.catchParameter("nsx", parametersFile));
+        g3D.shots.ny = std::stoi(io.catchParameter("nsy", parametersFile));
         
         splitted = utils.split(io.catchParameter("SWs", parametersFile),',');
 
@@ -62,22 +60,22 @@ Tomography::Tomography(char **argv)
     }
     else                             // Circular shots aqcuisition
     {   
-        g3D.circles.xc = std::stoi(io.catchParameter("sxc", parametersFile));
-        g3D.circles.yc = std::stoi(io.catchParameter("syc", parametersFile));
-        g3D.circles.ds = std::stof(io.catchParameter("sds", parametersFile));
+        g3D.shots.xc = std::stoi(io.catchParameter("sxc", parametersFile));
+        g3D.shots.yc = std::stoi(io.catchParameter("syc", parametersFile));
+        g3D.shots.ds = std::stof(io.catchParameter("sds", parametersFile));
         
         splitted = utils.split(io.catchParameter("sOffsets", parametersFile),',');
 
         for (auto offset : splitted) 
-            g3D.circles.offsets.push_back(std::stof(offset));
+            g3D.shots.offsets.push_back(std::stof(offset));
 
         g3D.setCircularShots();
     }
 
     if (nodesGeometryType)           // Grid nodes aqcuisition
     {
-        g3D.nrx = std::stoi(io.catchParameter("nrx", parametersFile));
-        g3D.nry = std::stoi(io.catchParameter("nry", parametersFile));
+        g3D.nodes.nx = std::stoi(io.catchParameter("nrx", parametersFile));
+        g3D.nodes.ny = std::stoi(io.catchParameter("nry", parametersFile));
         
         splitted = utils.split(io.catchParameter("SWr", parametersFile),',');
 
@@ -98,14 +96,14 @@ Tomography::Tomography(char **argv)
     }
     else                        // Circular nodes aqcuisition
     {
-        g3D.circles.xc = std::stoi(io.catchParameter("rxc", parametersFile));
-        g3D.circles.yc = std::stoi(io.catchParameter("ryc", parametersFile));
-        g3D.circles.ds = std::stof(io.catchParameter("rds", parametersFile));
+        g3D.nodes.xc = std::stoi(io.catchParameter("rxc", parametersFile));
+        g3D.nodes.yc = std::stoi(io.catchParameter("ryc", parametersFile));
+        g3D.nodes.ds = std::stof(io.catchParameter("rds", parametersFile));
 
         splitted = utils.split(io.catchParameter("rOffsets", parametersFile),',');
 
         for (auto offset : splitted) 
-            g3D.circles.offsets.push_back(std::stof(offset));
+            g3D.nodes.offsets.push_back(std::stof(offset));
 
         g3D.setCircularNodes();
     }
@@ -116,15 +114,9 @@ Tomography::Tomography(char **argv)
     eikonalPath = io.catchParameter("travelTimesFolder", parametersFile);
     arrivalsPath = io.catchParameter("firstArrivalsFolder", parametersFile);
 
-    m3D.init();
-
-    m3D.readAndExpandVP();
-
     g3D.exportPositions();
 
     if (reciprocity) g3D.setReciprocity();
-
-    allocateVolumes();
 
     dobsPath = io.catchParameter("dobsFolder", parametersFile);
     dcalPath = io.catchParameter("dcalFolder", parametersFile);
@@ -145,8 +137,7 @@ Tomography::Tomography(char **argv)
     mTomo.nPoints = mTomo.nx * mTomo.ny * mTomo.nz;
 
     resPath = io.catchParameter("convergencyFolder", parametersFile);
-    estModels = io.catchParameter("estimatedModelsFolder", parametersFile); 
-    msv = std::stof(io.catchParameter("maxVariation", parametersFile)); 
+    estModels = io.catchParameter("estimatedModelsFolder", parametersFile);
 
     xMask = std::stof(io.catchParameter("xMask", parametersFile));
     yMask = std::stof(io.catchParameter("yMask", parametersFile));
@@ -157,6 +148,10 @@ Tomography::Tomography(char **argv)
 
     generate_dobs = utils.str2bool(io.catchParameter("generateDobs", parametersFile));
 
+    m3D.init();
+
+    allocateVolumes();
+
     if (generate_dobs)
     {
         arrivalsPath = dobsPath;
@@ -165,16 +160,26 @@ Tomography::Tomography(char **argv)
 
         m3D.readAndExpandVP();
 
-        for (int shot = 0; shot < g3D.ns; shot++)
+        for (int shot = 0; shot < g3D.shots.n; shot++)
         {
-            std::cout<<"Computing observed data shot "<<shot+1<<" of "<<g3D.ns<<"\n";
+            std::cout<<"Computing observed data shot "<<shot+1<<" of "<<g3D.shots.n<<"\n";
 
             shotId = shot;
 
-            if (eikonalType == 1) 
-                podvin();
-            else 
-                jeongFIM();
+            switch (eikonalType)
+            {
+                case 0:
+                    podvin();
+                    break;
+
+                case 1:
+                    jeongFIM();
+                    break;
+
+                case 2:
+                    nobleFSM();
+                    break;
+            }
         }
     }
 
@@ -186,8 +191,8 @@ Tomography::Tomography(char **argv)
 
     residuo.reserve(maxIteration);
 
-    dobs = new float[g3D.ns * g3D.nr]();
-    dcal = new float[g3D.ns * g3D.nr]();
+    dobs = new float[g3D.shots.n * g3D.nodes.n]();
+    dcal = new float[g3D.shots.n * g3D.nodes.n]();
 
     gradient = new float[mTomo.nPoints]();
     slowness = new float[mTomo.nPoints]();
@@ -214,23 +219,23 @@ void Tomography::infoMessage()
     else
         std::cout<<"------- Computing iteration "<<iteration+1<<" ------------\n\n";
 
-    std::cout<<"Shot "<<shotId+1<<" of "<<g3D.ns<<" at position: (x = "<<g3D.shots->x[shotId]<<" m, y = "<<g3D.shots->y[shotId]<<" m, z = "<<g3D.shots->z[shotId]<<" m)\n\n";
+    std::cout<<"Shot "<<shotId+1<<" of "<<g3D.shots.n<<" at position: (x = "<<g3D.shots.x[shotId]<<" m, y = "<<g3D.shots.y[shotId]<<" m, z = "<<g3D.shots.z[shotId]<<" m)\n\n";
 
     if (iteration > 1) std::cout<<"\nPrevious iteration residuous: "<<residuo.back()<<"\n";
 } 
 
 void Tomography::importDobs()
 {   
-    float * data = new float[g3D.nr]();    
+    float * data = new float[g3D.nodes.n]();    
     
     int ptr = 0; 
-    for (int shot = 0; shot < g3D.ns; shot++)
+    for (int shot = 0; shot < g3D.shots.n; shot++)
     {
-        io.readBinaryFloat(dobsPath + "times_nr" + std::to_string(g3D.nr) + "_shot_" + std::to_string(shot+1) + ".bin", data, g3D.nr);
+        io.readBinaryFloat(dobsPath + "times_nr" + std::to_string(g3D.nodes.n) + "_shot_" + std::to_string(shot+1) + ".bin", data, g3D.nodes.n);
 
-        for (int d = ptr; d < ptr + g3D.nr; d++) dobs[d] = data[d - ptr];
+        for (int d = ptr; d < ptr + g3D.nodes.n; d++) dobs[d] = data[d - ptr];
 
-        ptr += g3D.nr;
+        ptr += g3D.nodes.n;
     }
 
     delete[] data;
@@ -256,17 +261,17 @@ void Tomography::setInitialModel()
 
 void Tomography::importDcal()
 {
-    float * data = new float[g3D.nr]();    
+    float * data = new float[g3D.nodes.n]();    
     
     int ptr = 0; 
-    for (int shot = 0; shot < g3D.ns; shot++)
+    for (int shot = 0; shot < g3D.shots.n; shot++)
     {
-        io.readBinaryFloat(dcalPath + "times_nr" + std::to_string(g3D.nr) + "_shot_" + std::to_string(shot+1) + ".bin", data, g3D.nr);
+        io.readBinaryFloat(dcalPath + "times_nr" + std::to_string(g3D.nodes.n) + "_shot_" + std::to_string(shot+1) + ".bin", data, g3D.nodes.n);
 
-        for (int d = ptr; d < ptr + g3D.nr; d++) 
+        for (int d = ptr; d < ptr + g3D.nodes.n; d++) 
             dcal[d] = data[d - ptr];
 
-        ptr += g3D.nr;
+        ptr += g3D.nodes.n;
     }
 
     delete[] data;
@@ -276,14 +281,24 @@ void Tomography::fwdModeling()
 {
     arrivalsPath = dcalPath;
 
-    for (int shot = 0; shot < g3D.ns; shot++)
+    for (int shot = 0; shot < g3D.shots.n; shot++)
     {
         shotId = shot;
 
-        if (eikonalType) 
-            podvin();
-        else 
-            jeongFIM();
+        switch (eikonalType)
+        {
+            case 0:
+                podvin();
+                break;
+
+            case 1:
+                jeongFIM();
+                break;
+
+            case 2:
+                nobleFSM();
+                break;
+        }
 
         gradientRayTracing();
     
@@ -293,20 +308,20 @@ void Tomography::fwdModeling()
 
 void Tomography::gradientRayTracing()
 {   
-    int sIdz = (int)(g3D.shots->z[shotId] / mTomo.dz);
-    int sIdx = (int)(g3D.shots->x[shotId] / mTomo.dx);
-    int sIdy = (int)(g3D.shots->y[shotId] / mTomo.dy);
+    int sIdz = (int)(g3D.shots.z[shotId] / mTomo.dz);
+    int sIdx = (int)(g3D.shots.x[shotId] / mTomo.dx);
+    int sIdy = (int)(g3D.shots.y[shotId] / mTomo.dy);
 
     int sId = sIdz + sIdx*mTomo.nz + sIdy*mTomo.nx*mTomo.nz;     
 
     int maxRayLength = 100000;
     float rayStep = 0.2f * m3D.dx;
     
-    for (int rayId = 0; rayId < g3D.nr; rayId++)
+    for (int rayId = 0; rayId < g3D.nodes.n; rayId++)
     {
-        float zi = g3D.nodes->z[rayId];
-        float xi = g3D.nodes->x[rayId];
-        float yi = g3D.nodes->y[rayId];
+        float zi = g3D.nodes.z[rayId];
+        float xi = g3D.nodes.x[rayId];
+        float yi = g3D.nodes.y[rayId];
 
         std::vector < int > rayInd;
 
@@ -336,7 +351,7 @@ void Tomography::gradientRayTracing()
         }
 
         float distance = rayStep;    
-        float finalDist = sqrtf(powf(zi - g3D.shots->z[shotId],2.0f) + powf(xi - g3D.shots->x[shotId],2.0f) + powf(yi - g3D.shots->y[shotId],2.0f));
+        float finalDist = sqrtf(powf(zi - g3D.shots.z[shotId],2.0f) + powf(xi - g3D.shots.x[shotId],2.0f) + powf(yi - g3D.shots.y[shotId],2.0f));
 
         std::sort(rayInd.begin(), rayInd.end());
 
@@ -352,7 +367,7 @@ void Tomography::gradientRayTracing()
             {
                 vM.push_back(distance);
                 jM.push_back(current);
-                iM.push_back(rayId + shotId * g3D.nr);
+                iM.push_back(rayId + shotId * g3D.nodes.n);
 
                 if (current == sId) vM.back() = finalDist;
 
@@ -365,13 +380,13 @@ void Tomography::gradientRayTracing()
         {
             vM.push_back(finalDist);
             jM.push_back(sId);
-            iM.push_back(rayId + shotId * g3D.nr);
+            iM.push_back(rayId + shotId * g3D.nodes.n);
         }
         else 
         {
             vM.push_back(distance);
             jM.push_back(current);
-            iM.push_back(rayId + shotId * g3D.nr);
+            iM.push_back(rayId + shotId * g3D.nodes.n);
         }
 
         std::vector < int >().swap(rayInd);
@@ -389,7 +404,7 @@ void Tomography::makeGradient()
 bool Tomography::converged()
 {
     float r = 0.0f;
-    for (int i = 0; i < g3D.nr * g3D.ns; i++)
+    for (int i = 0; i < g3D.nodes.n * g3D.shots.n; i++)
         r += powf(dobs[i] - dcal[i], 2.0f);
 
     residuo.emplace_back(sqrt(r));
@@ -415,7 +430,7 @@ void Tomography::cgls_Berriman()
     int nnz = vM.size();
 
     int nM = mTomo.nPoints;                 // Model dimension
-    int nD = g3D.ns * g3D.nr;               // Data dimension
+    int nD = g3D.shots.n * g3D.nodes.n;               // Data dimension
 
     int * iG = new int[nnz + nM]();
     int * jG = new int[nnz + nM]();
@@ -484,7 +499,7 @@ void Tomography::cgls_Berriman()
 
         if ((i >= zcutUp) && (i < mTomo.nz - zcutDown) && (j >= xcut) && (j < mTomo.nx - xcut - 1) && (k >= ycut) && (k < mTomo.ny - ycut - 1))
         {
-            if (fabs(x[index]) < msv) slowness[index] += x[index];
+            slowness[index] += x[index];
         }
     }
 
@@ -634,7 +649,7 @@ void Tomography::exportConvergency()
     for (int r = 0; r < residuo.size(); r++)
         resFile<<residuo[r]<<"\n";
 
-    resFile.close();  
+    resFile.close();
 }
 
 

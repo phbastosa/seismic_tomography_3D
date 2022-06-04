@@ -1,8 +1,12 @@
+# include <omp.h>
+
 # include "../src/tomography/tomography.hpp"
 
 int main(int argc, char **argv)
 {
     auto tomography = Tomography(argv);
+
+    double start = omp_get_wtime();
 
     tomography.importDobs();
 
@@ -28,6 +32,8 @@ int main(int argc, char **argv)
     tomography.exportConvergency();
 
     tomography.deleteVolumes();
+
+    std::cout<<"\nRun time "<<omp_get_wtime() - start<<" s."<<std::endl;
 
     return 0;
 }

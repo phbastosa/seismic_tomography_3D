@@ -10,7 +10,6 @@ public:
     int iteration;
     int maxIteration;
 
-    float msv;
     float xMask;
     float yMask;
     float lambda;
