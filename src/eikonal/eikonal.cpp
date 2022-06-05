@@ -150,81 +150,81 @@ void Eikonal::podvin()
                         float Tijk, T1, T2, Sref, M, N, P, Q, hs2; 
 
                         /* 1D operator head wave: i,j-1,k -> i,j,k (x direction) */
-                        Tijk = T[index - m3D.nzz] + h*S[index - m3D.nzz]; 
+                        Tijk = T[index - m3D.nzz] + h*min(S[index - m3D.nzz], min(S[index - 1 - m3D.nzz], min(S[index - m3D.nzz - m3D.nxx*m3D.nzz], S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]))); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i,j+1,k -> i,j,k (x direction) */
-                        Tijk = T[index + m3D.nzz] + h*S[index];
+                        Tijk = T[index + m3D.nzz] + h*min(S[index], min(S[index - 1], min(S[index - m3D.nxx*m3D.nzz], S[index - 1 - m3D.nxx*m3D.nzz])));
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i,j,k-1 -> i,j,k (y direction) */
-                        Tijk = T[index - m3D.nxx*m3D.nzz] + h*S[index - m3D.nxx*m3D.nzz]; 
+                        Tijk = T[index - m3D.nxx*m3D.nzz] + h*min(S[index - m3D.nxx*m3D.nzz], min(S[index - m3D.nzz - m3D.nxx*m3D.nzz], min(S[index - 1 - m3D.nxx*m3D.nzz], S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]))); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i,j,k+1 -> i,j,k (y direction) */
-                        Tijk = T[index + m3D.nxx*m3D.nzz] + h*S[index]; 
+                        Tijk = T[index + m3D.nxx*m3D.nzz] + h*min(S[index],min(S[index - 1], min(S[index - m3D.nzz], S[index - 1 - m3D.nzz]))); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i-1,j,k -> i,j,k (z direction) */
-                        Tijk = T[index - 1] + h*S[index - 1]; 
+                        Tijk = T[index - 1] + h*min(S[index - 1], min(S[index - 1 - m3D.nzz], min(S[index - 1 - m3D.nxx*m3D.nzz], S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]))); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i+1,j,k -> i,j,k (z direction) */
-                        Tijk = T[index + 1] + h*S[index]; 
+                        Tijk = T[index + 1] + h*min(S[index], min(S[index - m3D.nzz], min(S[index - m3D.nxx*m3D.nzz], S[index - m3D.nzz - m3D.nxx*m3D.nzz]))); 
                         if (Tijk < lowest) lowest = Tijk;
                     
                         /* 1D operator diffraction XZ plane */
                         
                         // i-1,j-1,k -> i,j,k
-                        Tijk = T[index - 1 - m3D.nzz] + h*sqrt2*min(S[index - 1 - m3D.nzz], S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]); 
+                        Tijk = T[index - 1 - m3D.nzz] + h*sqrt2*S[index - 1 - m3D.nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i-1,j+1,k -> i,j,k
-                        Tijk = T[index - 1 + m3D.nzz] + h*sqrt2*min(S[index - 1], S[index - 1 - m3D.nxx*m3D.nzz]); 
+                        Tijk = T[index - 1 + m3D.nzz] + h*sqrt2*S[index - 1]; 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j-1,k -> i,j,k
-                        Tijk = T[index + 1 - m3D.nzz] + h*sqrt2*min(S[index - m3D.nzz], S[index - m3D.nzz - m3D.nxx*m3D.nzz]); 
+                        Tijk = T[index + 1 - m3D.nzz] + h*sqrt2*S[index - m3D.nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j+1,k -> i,j,k
-                        Tijk = T[index + 1 + m3D.nzz] + h*sqrt2*min(S[index], S[index - m3D.nxx*m3D.nzz]); 
+                        Tijk = T[index + 1 + m3D.nzz] + h*sqrt2*S[index]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator diffraction YZ plane */
 
                         // i-1,j,k-1 -> i,j,k
-                        Tijk = T[index - 1 - m3D.nxx*m3D.nzz] + h*sqrt2*min(S[index - 1], S[index - 1 - m3D.nzz]); 
+                        Tijk = T[index - 1 - m3D.nxx*m3D.nzz] + h*sqrt2*S[index - 1 - m3D.nxx*m3D.nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i-1,j,k+1 -> i,j,k
-                        Tijk = T[index - 1 + m3D.nxx*m3D.nzz] + h*sqrt2*min(S[index - 1 + m3D.nxx*m3D.nzz], S[index - 1 - m3D.nzz + m3D.nxx*m3D.nzz]); 
+                        Tijk = T[index - 1 + m3D.nxx*m3D.nzz] + h*sqrt2*S[index - 1]; 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j,k-1 -> i,j,k
-                        Tijk = T[index + 1 - m3D.nxx*m3D.nzz] + h*sqrt2*min(S[index], S[index - m3D.nzz]); 
+                        Tijk = T[index + 1 - m3D.nxx*m3D.nzz] + h*sqrt2*S[index - m3D.nxx*m3D.nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j,k+1 -> i,j,k
-                        Tijk = T[index + 1 + m3D.nxx*m3D.nzz] + h*sqrt2*min(S[index + m3D.nxx*m3D.nzz], S[index - m3D.nzz + m3D.nxx*m3D.nzz]); 
+                        Tijk = T[index + 1 + m3D.nxx*m3D.nzz] + h*sqrt2*S[index]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator diffraction XY plane */
                         
                         // i,j-1,k-1 -> i,j,k
-                        Tijk = T[index - m3D.nzz - m3D.nxx*m3D.nzz] + h*sqrt2*min(S[index - m3D.nzz - m3D.nxx*m3D.nzz], S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]); 
+                        Tijk = T[index - m3D.nzz - m3D.nxx*m3D.nzz] + h*sqrt2*S[index - m3D.nzz - m3D.nxx*m3D.nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i,j-1,k+1 -> i,j,k
-                        Tijk = T[index - m3D.nzz + m3D.nxx*m3D.nzz] + h*sqrt2*min(S[index - m3D.nzz], S[index - 1 - m3D.nzz]); 
+                        Tijk = T[index - m3D.nzz + m3D.nxx*m3D.nzz] + h*sqrt2*S[index - m3D.nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i,j+1,k-1 -> i,j,k
-                        Tijk = T[index + m3D.nzz - m3D.nxx*m3D.nzz] + h*sqrt2*min(S[index - m3D.nxx*m3D.nzz], S[index - 1 - m3D.nxx*m3D.nzz]); 
+                        Tijk = T[index + m3D.nzz - m3D.nxx*m3D.nzz] + h*sqrt2*S[index - m3D.nxx*m3D.nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i,j+1,k+1 -> i,j,k
-                        Tijk = T[index + m3D.nzz + m3D.nxx*m3D.nzz] + h*sqrt2*min(S[index], S[index - 1]); 
+                        Tijk = T[index + m3D.nzz + m3D.nxx*m3D.nzz] + h*sqrt2*S[index]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator corner diffractions */
@@ -263,7 +263,7 @@ void Eikonal::podvin()
 
                         /* 2D operator XZ plane: First Quadrant*/
 
-                        Sref = min(S[index - 1 - m3D.nzz], S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]);
+                        Sref = S[index - 1 - m3D.nzz];
 
                         // i,j-1,k - i-1,j-1,k -> i,j,k
                         T1 = T[index - m3D.nzz];
@@ -291,7 +291,7 @@ void Eikonal::podvin()
 
                         /* 2D operator XZ plane: Second Quadrant*/                        
 
-                        Sref = min(S[index - m3D.nzz],S[index - m3D.nzz - m3D.nxx*m3D.nzz]);
+                        Sref = S[index - m3D.nzz];
 
                         // i,j-1,k - i+1,j-1,k -> i,j,k
                         T1 = T[index - m3D.nzz];
@@ -319,7 +319,7 @@ void Eikonal::podvin()
 
                         /* 2D operator XZ plane: Third Quadrant*/                        
 
-                        Sref = min(S[index], S[index - m3D.nxx*m3D.nzz]);
+                        Sref = S[index];
 
                         // i+1,j,k - i+1,j+1,k -> i,j,k
                         T1 = T[index + 1];
@@ -347,7 +347,7 @@ void Eikonal::podvin()
 
                         /* 2D operator XZ plane: Fourth Quadrant*/                        
 
-                        Sref = min(S[index - 1], S[index - 1 - m3D.nxx*m3D.nzz]);
+                        Sref = S[index - 1];
 
                         // i,j+1,k - i-1,j+1,k -> i,j,k
                         T1 = T[index + m3D.nzz];
@@ -375,7 +375,7 @@ void Eikonal::podvin()
 
                         /* 2D operator YZ plane: First Quadrant */                        
 
-                        Sref = min(S[index - 1 - m3D.nxx*m3D.nzz], S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]);
+                        Sref = S[index - 1 - m3D.nxx*m3D.nzz];
 
                         // i,j,k-1 - i-1,j,k-1 -> i,j,k
                         T1 = T[index - m3D.nxx*m3D.nzz];
@@ -403,7 +403,7 @@ void Eikonal::podvin()
 
                         /* 2D operator YZ plane: Second Quadrant */                        
 
-                        Sref = min(S[index - m3D.nxx*m3D.nzz], S[index - m3D.nzz - m3D.nxx*m3D.nzz]);
+                        Sref = S[index - m3D.nxx*m3D.nzz];
 
                         // i,j,k-1 - i+1,j,k-1 -> i,j,k
                         T1 = T[index - m3D.nxx*m3D.nzz];
@@ -431,7 +431,7 @@ void Eikonal::podvin()
 
                         /* 2D operator YZ plane: Third Quadrant*/                        
 
-                        Sref = min(S[index], S[index - m3D.nzz]);
+                        Sref = S[index];
 
                         // i+1,j,k - i+1,j,k+1 -> i,j,k
                         T1 = T[index + 1];
@@ -459,7 +459,7 @@ void Eikonal::podvin()
 
                         /* 2D operator YZ plane: Fourth Quadrant*/                        
 
-                        Sref = min(S[index - 1], S[index - 1 - m3D.nzz]);
+                        Sref = S[index - 1];
 
                         // i,j,k+1 - i-1,j,k+1 -> i,j,k
                         T1 = T[index + m3D.nxx*m3D.nzz];
@@ -487,7 +487,7 @@ void Eikonal::podvin()
 
                         /* 2D operator XY plane: First Quadrant*/                        
 
-                        Sref = min(S[index - m3D.nzz - m3D.nxx*m3D.nzz],S[index - 1 - m3D.nzz - m3D.nxx*m3D.nzz]);
+                        Sref = S[index - m3D.nzz - m3D.nxx*m3D.nzz];
 
                         // i,j-1,k - i,j-1,k-1 -> i,j,k
                         T1 = T[index - m3D.nzz];
@@ -515,7 +515,7 @@ void Eikonal::podvin()
 
                         /* 2D operator XY plane: Second Quadrant*/                        
 
-                        Sref = min(S[index - m3D.nzz],S[index - 1 - m3D.nzz]);
+                        Sref = S[index - m3D.nzz];
 
                         // i,j-1,k - i,j-1,k+1 -> i,j,k
                         T1 = T[index - m3D.nzz];
@@ -543,7 +543,7 @@ void Eikonal::podvin()
 
                         /* 2D operator XY plane: Third Quadrant*/                        
 
-                        Sref = min(S[index],S[index - 1]);
+                        Sref = S[index];
 
                         // i,j,k+1 - i,j+1,k+1 -> i,j,k
                         T1 = T[index + m3D.nxx*m3D.nzz];
@@ -571,7 +571,7 @@ void Eikonal::podvin()
 
                         /* 2D operator XY plane: Fourth Quadrant*/                        
 
-                        Sref = min(S[index - m3D.nxx*m3D.nzz], S[index - 1 - m3D.nxx*m3D.nzz]);
+                        Sref = S[index - m3D.nxx*m3D.nzz];
 
                         // i,j+1,k - i,j+1,k-1 -> i,j,k
                         T1 = T[index + m3D.nzz];

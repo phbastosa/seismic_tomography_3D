@@ -220,13 +220,13 @@ else:
             plt.plot(np.abs(tta - pod), label = f"Podvin {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
-            plt.ylim([0, 0.1])
+            plt.ylim([0, 0.05])
             plt.legend(loc="upper left", fontsize=10)
             plt.title(f"Podvin analytic and synthetic comparison", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("$abs(T_a - T_c)$ [s]", fontsize=13)
 
-            plt.text(-850,0.1,"b)", fontsize=30)
+            plt.text(-850,0.05,"b)", fontsize=30)
 
         ax3 = plt.subplot(G[6:8,:])
         for n in range(len(dh)):
@@ -250,13 +250,13 @@ else:
             plt.plot(np.abs(tta - fsm), label = f"FSM {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
-            plt.ylim([0, 0.01])
+            plt.ylim([0, 0.005])
             plt.legend(loc="upper left", fontsize=10)
             plt.title(f"FSM analytic and synthetic comparison", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("$abs(T_a - T_c)$ [s]", fontsize=13)
 
-            plt.text(-850,0.01,"d)", fontsize=30)
+            plt.text(-850,0.001,"d)", fontsize=30)
 
         plt.tight_layout()
         plt.savefig(f"shot{sId[s]}.png", dpi=200, bbox_inches="tight")
