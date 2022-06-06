@@ -211,52 +211,52 @@ else:
             plt.ylabel("Times [s]", fontsize=17)
 
             plt.gca().invert_yaxis()    
-            plt.text(-850,0,"a)", fontsize=30)
+            plt.text(-700,0,"a)", fontsize=30)
 
         ax2 = plt.subplot(G[4:6,:])
         for n in range(len(dh)):
             pod = readBinaryArray(nrec,f"pod_{s+1}_{dh[n]:.0f}m.bin")
 
-            plt.plot(np.abs(tta - pod), label = f"Podvin {dh[n]:.0f} m spacing")
+            plt.plot(np.abs(tta - pod) * 1e3, label = f"Podvin {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
-            plt.ylim([0, 0.05])
+            plt.ylim([0, 50])
             plt.legend(loc="upper left", fontsize=10)
             plt.title(f"Podvin analytic and synthetic comparison", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
-            plt.ylabel("$abs(T_a - T_c)$ [s]", fontsize=13)
+            plt.ylabel("$abs(T_a - T_c)$ [ms]", fontsize=13)
 
-            plt.text(-850,0.05,"b)", fontsize=30)
+            plt.text(-700,50,"b)", fontsize=30)
 
         ax3 = plt.subplot(G[6:8,:])
         for n in range(len(dh)):
             fim = readBinaryArray(nrec,f"fim_{s+1}_{dh[n]:.0f}m.bin")
 
-            plt.plot(np.abs(tta - fim), label = f"FIM {dh[n]:.0f} m spacing")
+            plt.plot(np.abs(tta - fim) * 1e3, label = f"FIM {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
-            plt.ylim([0, 0.1])
+            plt.ylim([0, 100])
             plt.legend(loc="upper left", fontsize=10)
             plt.title(f"FIM analytic and synthetic comparison", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
-            plt.ylabel("$abs(T_a - T_c)$ [s]", fontsize=13)
+            plt.ylabel("$abs(T_a - T_c)$ [ms]", fontsize=13)
 
-            plt.text(-850,0.1,"c)", fontsize=30)
+            plt.text(-700,100,"c)", fontsize=30)
 
         ax4 = plt.subplot(G[8:,:])
         for n in range(len(dh)):
             fsm = readBinaryArray(nrec,f"fsm_{s+1}_{dh[n]:.0f}m.bin")
 
-            plt.plot(np.abs(tta - fsm), label = f"FSM {dh[n]:.0f} m spacing")
+            plt.plot(np.abs(tta - fsm) * 1e3, label = f"FSM {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
-            plt.ylim([0, 0.005])
+            plt.ylim([0, 10])
             plt.legend(loc="upper left", fontsize=10)
             plt.title(f"FSM analytic and synthetic comparison", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
-            plt.ylabel("$abs(T_a - T_c)$ [s]", fontsize=13)
+            plt.ylabel("$abs(T_a - T_c)$ [ms]", fontsize=13)
 
-            plt.text(-850,0.001,"d)", fontsize=30)
+            plt.text(-700,10,"d)", fontsize=30)
 
         plt.tight_layout()
         plt.savefig(f"shot{sId[s]}.png", dpi=200, bbox_inches="tight")
