@@ -193,7 +193,7 @@ else:
         ax1 = plt.subplot(G[:4,:])
 
         plt.plot(tta, label = "Analytic travel times")
-
+	
         for n in range(len(dh)):
             pod = readBinaryArray(nrec,f"pod_{s+1}_{dh[n]:.0f}m.bin")
             fim = readBinaryArray(nrec,f"fim_{s+1}_{dh[n]:.0f}m.bin")
@@ -204,15 +204,21 @@ else:
             plt.plot(fsm, label = f"FSM {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
-            plt.ylim([0, 14])
+            
             plt.legend(loc="upper left", fontsize=10)
             plt.title(f"Refraction seismogram for shot {sId[s]}", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("Times [s]", fontsize=17)
 
-            plt.gca().invert_yaxis()    
-            plt.text(-700,0,"a)", fontsize=30)
+            if s == 4:
+                plt.ylim([5.85, 6])
+                plt.text(-700,5.85,"a)", fontsize=30)
+            else:
+                plt.ylim([0, 14])
+                plt.text(-700,0,"a)", fontsize=30)
 
+            plt.gca().invert_yaxis()    
+ 
         ax2 = plt.subplot(G[4:6,:])
         for n in range(len(dh)):
             pod = readBinaryArray(nrec,f"pod_{s+1}_{dh[n]:.0f}m.bin")
@@ -250,13 +256,13 @@ else:
             plt.plot(np.abs(tta - fsm) * 1e3, label = f"FSM {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
-            plt.ylim([0, 10])
+            plt.ylim([0, 5])
             plt.legend(loc="upper left", fontsize=10)
             plt.title(f"FSM analytic and synthetic comparison", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("$abs(T_a - T_c)$ [ms]", fontsize=13)
 
-            plt.text(-700,10,"d)", fontsize=30)
+            plt.text(-700,5,"d)", fontsize=30)
 
         plt.tight_layout()
         plt.savefig(f"shot{sId[s]}.png", dpi=200, bbox_inches="tight")
