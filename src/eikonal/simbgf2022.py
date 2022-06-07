@@ -199,9 +199,9 @@ else:
             fim = readBinaryArray(nrec,f"fim_{s+1}_{dh[n]:.0f}m.bin")
             fsm = readBinaryArray(nrec,f"fsm_{s+1}_{dh[n]:.0f}m.bin")
 
-            plt.plot(pod, label = f"Podvin {dh[n]:.0f} m spacing")
-            plt.plot(fim, label = f"FIM {dh[n]:.0f} m spacing")
-            plt.plot(fsm, label = f"FSM {dh[n]:.0f} m spacing")
+            plt.plot(pod, label = f"Podvin (1991) {dh[n]:.0f} m spacing")
+            plt.plot(fim, label = f"Jeong (2008) {dh[n]:.0f} m spacing")
+            plt.plot(fsm, label = f"Noble (2014) {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
             
@@ -223,12 +223,12 @@ else:
         for n in range(len(dh)):
             pod = readBinaryArray(nrec,f"pod_{s+1}_{dh[n]:.0f}m.bin")
 
-            plt.plot(np.abs(tta - pod) * 1e3, label = f"Podvin {dh[n]:.0f} m spacing")
+            plt.plot(np.abs(tta - pod) * 1e3, label = f"Podvin (1991) {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
             plt.ylim([0, 50])
             plt.legend(loc="upper left", fontsize=10)
-            plt.title(f"Podvin analytic and synthetic comparison", fontsize=20)
+            plt.title(f"Podvin (1991) error comparison", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("$abs(T_a - T_c)$ [ms]", fontsize=13)
 
@@ -238,12 +238,12 @@ else:
         for n in range(len(dh)):
             fim = readBinaryArray(nrec,f"fim_{s+1}_{dh[n]:.0f}m.bin")
 
-            plt.plot(np.abs(tta - fim) * 1e3, label = f"FIM {dh[n]:.0f} m spacing")
+            plt.plot(np.abs(tta - fim) * 1e3, label = f"Jeong (2008) {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
             plt.ylim([0, 100])
             plt.legend(loc="upper left", fontsize=10)
-            plt.title(f"FIM analytic and synthetic comparison", fontsize=20)
+            plt.title(f"Jeong (2008) error comparison", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("$abs(T_a - T_c)$ [ms]", fontsize=13)
 
@@ -253,12 +253,12 @@ else:
         for n in range(len(dh)):
             fsm = readBinaryArray(nrec,f"fsm_{s+1}_{dh[n]:.0f}m.bin")
 
-            plt.plot(np.abs(tta - fsm) * 1e3, label = f"FSM {dh[n]:.0f} m spacing")
+            plt.plot(np.abs(tta - fsm) * 1e3, label = f"Noble (2014) {dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
             plt.ylim([0, 5])
             plt.legend(loc="upper left", fontsize=10)
-            plt.title(f"FSM analytic and synthetic comparison", fontsize=20)
+            plt.title(f"Noble (2014) error comparison", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("$abs(T_a - T_c)$ [ms]", fontsize=13)
 
