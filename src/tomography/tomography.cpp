@@ -430,7 +430,7 @@ void Tomography::cgls_Berriman()
     int nnz = vM.size();
 
     int nM = mTomo.nPoints;                 // Model dimension
-    int nD = g3D.shots.n * g3D.nodes.n;               // Data dimension
+    int nD = g3D.shots.n * g3D.nodes.n;     // Data dimension
 
     int * iG = new int[nnz + nM]();
     int * jG = new int[nnz + nM]();
@@ -508,18 +508,96 @@ void Tomography::cgls_Berriman()
 
 void Tomography::cgls_zoTikhonov()
 {
+    std::cout<<"Solving linear system...\n\n";
+
+    // G matrix construction
+
+    int nnz = vM.size();
+
+    int nM = mTomo.nPoints;                 // Model dimension
+    int nD = g3D.shots.n * g3D.nodes.n;     // Data dimension
+
+    int * iG = new int[nnz + nM]();
+    int * jG = new int[nnz + nM]();
+    float * vG = new float[nnz + nM]();
+
+    for (int index = 0; index < nnz; index++)
+    {
+        iG[index] = iM[index];
+        jG[index] = jM[index];
+        vG[index] = vM[index];
+    }
+
+    std::vector<  int  >().swap(iM);
+    std::vector<  int  >().swap(jM);
+    std::vector< float >().swap(vM);
+
+    for (int index = 0; index < nM; index++) 
+    {
+        iG[nnz + index] = nD + index;
+        jG[nnz + index] = index;
+        vG[nnz + index] = lambda;
+    }
+
+
 
 
 }
 
 void Tomography::cgls_foTikhonov()
 {
+    std::cout<<"Solving linear system...\n\n";
+
+    // G matrix construction
+
+    int nnz = vM.size();
+
+    int nM = mTomo.nPoints;                 // Model dimension
+    int nD = g3D.shots.n * g3D.nodes.n;     // Data dimension
+
+    int * iG = new int[nnz + nM]();
+    int * jG = new int[nnz + nM]();
+    float * vG = new float[nnz + nM]();
+
+    for (int index = 0; index < nnz; index++)
+    {
+        iG[index] = iM[index];
+        jG[index] = jM[index];
+        vG[index] = vM[index];
+    }
+
+    std::vector<  int  >().swap(iM);
+    std::vector<  int  >().swap(jM);
+    std::vector< float >().swap(vM);
 
 
 }
 
 void Tomography::cgls_soTikhonov()
 {
+    std::cout<<"Solving linear system...\n\n";
+
+    // G matrix construction
+
+    int nnz = vM.size();
+
+    int nM = mTomo.nPoints;                 // Model dimension
+    int nD = g3D.shots.n * g3D.nodes.n;     // Data dimension
+
+    int * iG = new int[nnz + nM]();
+    int * jG = new int[nnz + nM]();
+    float * vG = new float[nnz + nM]();
+
+    for (int index = 0; index < nnz; index++)
+    {
+        iG[index] = iM[index];
+        jG[index] = jM[index];
+        vG[index] = vM[index];
+    }
+
+    std::vector<  int  >().swap(iM);
+    std::vector<  int  >().swap(jM);
+    std::vector< float >().swap(vM);
 
     
 }
