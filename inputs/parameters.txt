@@ -4,7 +4,7 @@
 # Do not remove the comments!!
 # Keep it organized!!
 
-eikonalType = 2                       # 0 - Podvin & Lecomte (1991); 1 - Jeong & Whitaker (2008); 2 - Noble (2014) <int>  
+eikonalType = 1                       # 0 - Podvin & Lecomte (1991); 1 - Jeong & Whitaker (2008); 2 - Noble (2014) <int>  
 exportTravelTimes = False             # Flag to export travel times volume <bool> 
 exportFirstArrivals = True            # Flag to export first arrivals <bool> 
 generateDobs = True                   # Flag to generate sinthetic observed data <bool>
