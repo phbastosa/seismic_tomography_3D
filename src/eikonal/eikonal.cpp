@@ -2256,7 +2256,7 @@ void Eikonal::writeTravelTimes()
 
         for (int indb = 0; indb < m3D.nPointsB; indb++)
         {
-            int yb = (int) (indb / (m3D.nxx*m3D.nzz));              // y direction
+            int yb = (int) (indb / (m3D.nxx*m3D.nzz));               // y direction
             int xb = (int) (indb - yb*m3D.nxx*m3D.nzz) / m3D.nzz;    // x direction
             int zb = (int) (indb - xb*m3D.nzz - yb*m3D.nxx*m3D.nzz); // z direction
 
@@ -2276,7 +2276,7 @@ void::Eikonal::writeFirstArrivals()
 {
     if (exportFirstArrivals) 
     {
-        Utils::point3D p;    
+        Utils::Point p;    
         
         float * firstArrivals = new float[g3D.nodes.n]();
         
@@ -2286,8 +2286,7 @@ void::Eikonal::writeFirstArrivals()
             p.y = g3D.nodes.y[r];
             p.z = g3D.nodes.z[r];
 
-            firstArrivals[r] = utils.triLinearInterpolation(p, m3D, T);
-            // firstArrivals[r] = utils.triCubicInterpolation(p, m3D, T);            
+            firstArrivals[r] = utils.triLinearInterpolation(p, m3D, T);        
         }
 
         io.writeBinaryFloat(arrivalsPath + "times_nr" + std::to_string(g3D.nodes.n) + "_shot_" + std::to_string(shotId+1) + ".bin", firstArrivals, g3D.nodes.n);

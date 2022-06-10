@@ -148,7 +148,7 @@ Tomography::Tomography(char **argv)
 
     generate_dobs = utils.str2bool(io.catchParameter("generateDobs", parametersFile));
 
-    m3D.init();
+    m3D.initialize();
 
     allocateVolumes();
 
@@ -158,7 +158,7 @@ Tomography::Tomography(char **argv)
 
         m3D.vpPath = io.catchParameter("trueModelPath", parametersFile);
 
-        m3D.readAndExpandVP();
+        m3D.vp = m3D.readAndExpandModel(m3D.vpPath);
 
         for (int shot = 0; shot < g3D.shots.n; shot++)
         {
@@ -185,7 +185,7 @@ Tomography::Tomography(char **argv)
 
     m3D.vpPath = io.catchParameter("initModelPath", parametersFile);
 
-    m3D.readAndExpandVP();
+    m3D.vp = m3D.readAndExpandModel(m3D.vpPath);
 
     iteration = 0;
 

@@ -223,7 +223,7 @@ else:
         for n in range(len(dh)):
             pod = readBinaryArray(nrec,f"pod_{s+1}_{dh[n]:.0f}m.bin")
 
-            plt.plot(np.abs(tta - pod) * 1e3, label = f"Podvin (1991) {dh[n]:.0f} m spacing")
+            plt.plot(np.abs(tta - pod) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
             plt.ylim([0, 50])
@@ -238,7 +238,7 @@ else:
         for n in range(len(dh)):
             fim = readBinaryArray(nrec,f"fim_{s+1}_{dh[n]:.0f}m.bin")
 
-            plt.plot(np.abs(tta - fim) * 1e3, label = f"Jeong (2008) {dh[n]:.0f} m spacing")
+            plt.plot(np.abs(tta - fim) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
             plt.ylim([0, 100])
@@ -253,7 +253,7 @@ else:
         for n in range(len(dh)):
             fsm = readBinaryArray(nrec,f"fsm_{s+1}_{dh[n]:.0f}m.bin")
 
-            plt.plot(np.abs(tta - fsm) * 1e3, label = f"Noble (2014) {dh[n]:.0f} m spacing")
+            plt.plot(np.abs(tta - fsm) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
             plt.xlim([0, nrec])
             plt.ylim([0, 5])

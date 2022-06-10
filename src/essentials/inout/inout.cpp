@@ -49,7 +49,6 @@ std::string InOut::catchParameter(std::string target, std::string file)
         }
         parameters.close();
     }        
-    else std::cout<<"Unable to open a parameter file!"<<std::endl;
 
     // Quality control for file paths
 

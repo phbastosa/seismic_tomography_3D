@@ -24,13 +24,16 @@ public:
     float dz;                // Sample spacing in z direction
 
     float * vp;              // P wave velocity volume         
-
+    float * vs;              // S wave velocity volume
+    float * rho;             // Density volume
+    
     std::string vpPath;
+    std::string vsPath;
+    std::string rhoPath;
 
-    void init();
+    void initialize();
 
-    void readAndExpandVP();
+    float * readAndExpandModel(std::string path);
 };
-
 
 # endif

@@ -6,23 +6,24 @@
 
 int main(int argc, char **argv)
 {
-    std::vector<float> x = Utils::linspace(0.25f,0.75f,5);
+    auto utils = Utils();
+    
+    std::vector<float> x = utils.linspace(0.25f,0.75f,5);
 
-    for (int i = 0; i < x.size(); i++) std::cout<<x[i]<<std::endl;
+    for (int i = 0; i < x.size(); i++) std::cout<<x[i]<<" ";
 
-    Utils::point2D p2d;
+    Utils::Point p;
 
-    p2d.x = 20.4f;
-    p2d.y = 50.3f;
+    p.x = 10.0f;
+    p.y = 12.4f;
+    p.z = 19.8f;
 
-    Utils::point3D p3d;
+    std::cout<<"\n\nPoint 3D ("<<p.x<<", "<<p.y<<" ,"<<p.z<<") correctly written!"<<std::endl;
 
-    p3d.x = 10.0f;
-    p3d.x = 12.4f;
-    p3d.x = 19.8f;
-
-    std::cout<<"Ponto 2D ("<<p2d.x<<", "<<p2d.y<<") correctly written!"<<std::endl;
-    std::cout<<"Ponto 2D ("<<p3d.x<<", "<<p3d.y<<" ,"<<p3d.z<<") correctly written!"<<std::endl;
+    std::cout<<"\nmax of 2 and 5 is "<<utils.imax(2,5)<<std::endl;
+    std::cout<<"min of 2 and 5 is "<<utils.imin(2,5)<<std::endl;
+    std::cout<<"max of 2.0f and 5.0f is "<<utils.max(2.0f,5.0f)<<std::endl;
+    std::cout<<"min of 2.0f and 5.0f is "<<utils.min(2.0f,5.0f)<<std::endl;
 
     // Little linear tomography
 
@@ -82,7 +83,7 @@ int main(int argc, char **argv)
         std::cout<<1.0f/xCalc[i]<<" ";
     std::cout<<"\n";
 
-    std::cout<<"Model difference!"<<std::endl;
+    std::cout<<"\nModel difference!"<<std::endl;
     for (int i = 0; i < nM; i++)    
         std::cout<<(1.0f/xCalc[i]) - xTrue[i]<<" ";
     std::cout<<"\n";

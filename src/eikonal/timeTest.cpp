@@ -14,17 +14,17 @@ int main(int argc, char **argv)
     eikonal.m3D.ny = 881;    
     eikonal.m3D.nz = 45;
 
-    eikonal.m3D.dx = 25;
-    eikonal.m3D.dy = 25;
-    eikonal.m3D.dz = 25;
+    eikonal.m3D.dx = 25.0f;
+    eikonal.m3D.dy = 25.0f;
+    eikonal.m3D.dz = 25.0f;
 
     eikonal.m3D.nb = 2;
 
-    eikonal.m3D.init();
+    eikonal.m3D.initialize();
 
     eikonal.m3D.vp = new float[eikonal.m3D.nPointsB];
 
-    int interface = (int)(1000/eikonal.m3D.dz) + eikonal.m3D.nxx*eikonal.m3D.nzz + eikonal.m3D.nyy*eikonal.m3D.nxx*eikonal.m3D.nzz;
+    int interface = (int)(1000.0f/eikonal.m3D.dz) + eikonal.m3D.nxx*eikonal.m3D.nzz + eikonal.m3D.nyy*eikonal.m3D.nxx*eikonal.m3D.nzz;
 
     for (int i = 0; i < eikonal.m3D.nPointsB; ++i) 
     {
