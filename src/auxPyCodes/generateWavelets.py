@@ -88,6 +88,9 @@ def minPhasing(nsrc, dt, fmax, sg):
     t_ref = np.arange(nsrc_ref) * dt_ref
     t = np.arange(nsrc) * dt
 
+    rickerReconst[0] = 0.0
+    rickerReconst[-2:] = 0.0
+
     interp = interpolate.interp1d(t_ref, rickerReconst, kind = 'cubic')
 
     return interp(t), z, z_in, p
@@ -108,8 +111,8 @@ sourceZeroPhase *= 1.0 / np.max(np.abs(sourceZeroPhase))
 
 sourceZeroPhase[0] = 0.0
 
-sourceMinPhase.astype("float32", order = "F").tofile(f"inputs/wavelets/sourceMinPhase_{nsrc}_{dt*1e4:.0f}ms.bin")
-sourceZeroPhase.astype("float32", order = "F").tofile(f"inputs/wavelets/sourceZeroPhase_{nsrc}_{dt*1e4:.0f}ms.bin")
+sourceMinPhase.astype("float32", order = "F").tofile(f"inputs/wavelets/sourceMinPhase_{nsrc}_{dt*1e3:.0f}ms.bin")
+sourceZeroPhase.astype("float32", order = "F").tofile(f"inputs/wavelets/sourceZeroPhase_{nsrc}_{dt*1e3:.0f}ms.bin")
 
 tmp = np.arange(nsrc) * dt           # t min phase
 tzp = (np.arange(nsrc) - ilag) * dt  # t zero phase
@@ -118,6 +121,7 @@ plt.figure(1, figsize = (12,8))
 
 plt.subplot(321)
 plt.plot(tzp, sourceZeroPhase)
+plt.xlim([np.min(tzp), np.max(tzp)])
 plt.ylim(np.min(sourceZeroPhase)-0.1,np.max(sourceZeroPhase)+0.1)
 plt.title("Zero phase wavelet - first gaussian derivative")
 plt.xlabel("Time [s]")
@@ -145,6 +149,7 @@ plt.ylabel("Amplitude normalized")
 
 plt.subplot(323)
 plt.plot(tmp, sourceMinPhase)
+plt.xlim([np.min(tmp), np.max(tmp)])
 plt.ylim(np.min(sourceMinPhase)-0.1,np.max(sourceMinPhase)+0.2)
 plt.title("Min phase wavelet - first gaussian derivative")
 plt.xlabel("Time [s]")

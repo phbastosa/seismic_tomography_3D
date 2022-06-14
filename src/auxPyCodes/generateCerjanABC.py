@@ -8,7 +8,7 @@ ny = 21
 nz = 451
 dh = 10.0
 nabc = 50
-parameter = 0.045
+parameter = 0.0045
 
 nxx = nx + 2*nabc
 nyy = ny + 2*nabc

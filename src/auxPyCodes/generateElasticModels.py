@@ -119,7 +119,7 @@ G = gridspec.GridSpec(2, 7)
 
 axes_1 = plt.subplot(G[:1,:3])
 plt.title(f"2.5 D refractive geometry", fontsize = 20)
-plt.xlabel("X axis [m]", fontsize = 15)
+plt.xlabel("X axis [km]", fontsize = 15)
 plt.ylabel("Y axis [m]", fontsize = 15)
 
 xr = np.arange(0,nx*dh,2*dh)

@@ -54,13 +54,13 @@ int main(int argc, char **argv)
         eikonal.m3D.dy = dh_all[n];
         eikonal.m3D.dz = dh_all[n];
 
-        eikonal.m3D.init();
+        eikonal.m3D.initialize();
 
         eikonal.m3D.vp = new float[eikonal.m3D.nPointsB];
 
         eikonal.m3D.vpPath = modelNames[n];
 
-        eikonal.m3D.readAndExpandVP();
+        eikonal.m3D.vp = eikonal.m3D.readAndExpandModel(eikonal.m3D.vpPath);
 
         // Setting extern shot points  
 
