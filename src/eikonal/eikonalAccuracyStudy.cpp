@@ -52,13 +52,7 @@ int main(int argc, char **argv)
 
         eikonal.initialize();
 
-        float * model = new float[eikonal.nPoints]; 
-
-        eikonal.readBinaryFloat(modelNames[n], model, eikonal.nPoints);
-
-        eikonal.vp = eikonal.expandModel(model);
-
-        delete[] model;
+        eikonal.vp = eikonal.expandModel(eikonal.readBinaryFloat(modelNames[n], eikonal.nPoints));
 
         // Setting extern shot points  
 
@@ -74,17 +68,24 @@ int main(int argc, char **argv)
 
         // Shots loop
 
-        eikonal.arrivalFolder = "pod_extern_"+std::to_string((int) dh_all[n])+"m_";
-        eikonal.eikonalType = 0;
-        eikonal.forwardModeling();
+        eikonal.T = new float[eikonal.nPointsB]();
 
-        eikonal.arrivalFolder = "fim_extern_"+std::to_string((int) dh_all[n])+"m_";
-        eikonal.eikonalType = 1;
-        eikonal.forwardModeling();
+        for (eikonal.shotId = 0; eikonal.shotId < eikonal.shots.all; eikonal.shotId++) 
+        {   
+            eikonal.arrivalFolder = "pod_extern_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.eikonalType = 0;
+            eikonal.eikonalComputing();
 
-        eikonal.arrivalFolder = "fsm_extern_"+std::to_string((int) dh_all[n])+"m_";
-        eikonal.eikonalType = 2;
-        eikonal.forwardModeling();
+            eikonal.arrivalFolder = "fim_extern_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.eikonalType = 1;
+            eikonal.eikonalComputing();
+
+            eikonal.arrivalFolder = "fsm_extern_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.eikonalType = 2;
+            eikonal.eikonalComputing();
+        }
+        
+        delete[] eikonal.T;
 
         // Generate central shot
 
@@ -96,24 +97,31 @@ int main(int argc, char **argv)
         eikonal.shots.n_yline = 1; 
 
         eikonal.setGridShots();
-        
-        eikonal.arrivalFolder = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
-        eikonal.eikonalType = 0;
-        eikonal.forwardModeling();
 
-        eikonal.arrivalFolder = "fim_central_"+std::to_string((int) dh_all[n])+"m_";
-        eikonal.eikonalType = 1;
-        eikonal.forwardModeling();
+        eikonal.T = new float[eikonal.nPointsB]();
 
-        if (n == 2)
-        {
-            eikonal.exportTimesVolume = true;
-            eikonal.eikonalFolder = "central_";
+        for (eikonal.shotId = 0; eikonal.shotId < eikonal.shots.all; eikonal.shotId++) 
+        {   
+            eikonal.arrivalFolder = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.eikonalType = 0;
+            eikonal.eikonalComputing();
+
+            eikonal.arrivalFolder = "fim_central_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.eikonalType = 1;
+            eikonal.eikonalComputing();
+
+            if (n == 0)
+            {
+                eikonal.exportTimesVolume = true;
+                eikonal.eikonalFolder = "central_";
+            }
+
+            eikonal.arrivalFolder = "fsm_central_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.eikonalType = 2;
+            eikonal.eikonalComputing();
         }
-
-        eikonal.arrivalFolder = "fsm_central_"+std::to_string((int) dh_all[n])+"m_";
-        eikonal.eikonalType = 2;
-        eikonal.forwardModeling();
+        
+        delete[] eikonal.T;
     }
 
     return 0;

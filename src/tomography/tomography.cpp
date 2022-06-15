@@ -136,15 +136,11 @@ Tomography::Tomography(char **argv)
 
     initialize();
     
-    float * model = new float[nPoints];
-
     if (generate_dobs)
     {
         arrivalFolder = dobsPath;
 
-        readBinaryFloat(catchParameter("trueModelPath", argv[1]), model, nPoints);
-
-        vp = expandModel(model);
+        vp = expandModel(readBinaryFloat(catchParameter("trueModelPath", argv[1]), nPoints));
 
         std::cout<<"Computing observed data"<<std::endl;
 
@@ -158,9 +154,7 @@ Tomography::Tomography(char **argv)
         delete[] T;
     }
 
-    readBinaryFloat(catchParameter("initModelPath", argv[1]), model, nPoints);
-
-    vp = expandModel(model); delete[] model;
+    vp = expandModel(readBinaryFloat(catchParameter("initModelPath", argv[1]), nPoints));
 
     iteration = 0;
 
@@ -200,20 +194,19 @@ void Tomography::infoMessage()
 } 
 
 void Tomography::importDobs()
-{   
-    float * data = new float[nodes.all]();    
-    
+{       
     int ptr = 0; 
+    
     for (int shot = 0; shot < shots.all; shot++)
     {
-        readBinaryFloat(dobsPath + "times_nr" + std::to_string(nodes.all) + "_shot_" + std::to_string(shot+1) + ".bin", data, nodes.all);
+        float * data = readBinaryFloat(dobsPath + "times_nr" + std::to_string(nodes.all) + "_shot_" + std::to_string(shot+1) + ".bin", nodes.all);
 
         for (int d = ptr; d < ptr + nodes.all; d++) dobs[d] = data[d - ptr];
 
         ptr += nodes.all;
+        
+        delete[] data;
     }
-
-    delete[] data;
 }
 
 void Tomography::setInitialModel()
@@ -236,20 +229,18 @@ void Tomography::setInitialModel()
 
 void Tomography::importDcal()
 {
-    float * data = new float[nodes.all]();    
-    
     int ptr = 0; 
+ 
     for (int shot = 0; shot < shots.all; shot++)
     {
-        readBinaryFloat(dcalPath + "times_nr" + std::to_string(nodes.all) + "_shot_" + std::to_string(shot+1) + ".bin", data, nodes.all);
+        float * data = readBinaryFloat(dcalPath + "times_nr" + std::to_string(nodes.all) + "_shot_" + std::to_string(shot+1) + ".bin", nodes.all);
 
-        for (int d = ptr; d < ptr + nodes.all; d++) 
-            dcal[d] = data[d - ptr];
+        for (int d = ptr; d < ptr + nodes.all; d++) dcal[d] = data[d - ptr];
 
         ptr += nodes.all;
+     
+        delete[] data;
     }
-
-    delete[] data;
 }
 
 void Tomography::forwardModeling()
@@ -279,7 +270,7 @@ void Tomography::gradientRayTracing()
     int sId = sIdz + sIdx*mTomo.nz + sIdy*mTomo.nx*mTomo.nz;     
 
     int maxRayLength = 100000;
-    float rayStep = 0.2f * dx;
+    float rayStep = 0.2f * (dx + dy + dz) / 3.0f;
     
     for (int rayId = 0; rayId < nodes.all; rayId++)
     {

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-inout="../essentials/inout/inout.cpp"
 model="../essentials/model/model.cpp"
 utils="../essentials/utils/utils.cpp"
 geom="../essentials/geometry/geometry.cpp"

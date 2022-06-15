@@ -1,4 +1,3 @@
-# include "../essentials/inout/inout.hpp"
 # include "../essentials/utils/utils.hpp"
 # include "../essentials/model/model.hpp"
 # include "../essentials/geometry/geometry.hpp"
@@ -9,58 +8,53 @@ int main(int argc, char **argv)
 {
     auto elastic = Elastic();
 
-    elastic.nt = 7001;
+    elastic.nt = 1001;
     elastic.dt = 1e-3f;    
 
-    elastic.m3D.nx = 2001;
-    elastic.m3D.ny = 21;
-    elastic.m3D.nz = 451;
-    elastic.m3D.nb = 50;
+    elastic.nx = 101;
+    elastic.ny = 101;
+    elastic.nz = 101;
+    elastic.nb = 50;
 
-    elastic.m3D.dx = 10.0f;
-    elastic.m3D.dy = 10.0f;
-    elastic.m3D.dz = 10.0f;
+    elastic.dx = 10.0f;
+    elastic.dy = 10.0f;
+    elastic.dz = 10.0f;
 
-    elastic.m3D.initialize();
+    elastic.initialize();
 
     elastic.nsrc = 201;
-    elastic.source = new float[elastic.nsrc];
-    elastic.io.readBinaryFloat("../../inputs/wavelets/sourceZeroPhase_201_1ms.bin", elastic.source, elastic.nsrc);
-    // elastic.io.readBinaryFloat("../../inputs/wavelets/sourceMinPhase_201_1ms.bin", elastic.source, elastic.nsrc);
+    // elastic.source = elastic.readBinaryFloat("../../inputs/wavelets/sourceMinPhase_201_1ms.bin", elastic.nsrc);
+    elastic.source = elastic.readBinaryFloat("../../inputs/wavelets/sourceZeroPhase_201_1ms.bin", elastic.nsrc);
 
-    elastic.g3D.SW.x = 0.0f; elastic.g3D.SW.y = 100.0f;    
-    elastic.g3D.NW.x = 0.0f; elastic.g3D.NW.y = 100.0f;    
-    elastic.g3D.SE.x = 0.0f; elastic.g3D.SE.y = 100.0f;   
+    elastic.set_SW(500.0f, 500.0f);    
+    elastic.set_NW(500.0f, 500.0f);    
+    elastic.set_SE(500.0f, 500.0f);   
 
-    elastic.g3D.shots.nx = 1;
-    elastic.g3D.shots.ny = 1;
-    elastic.g3D.shots.elevation = 0.0f;
+    elastic.shots.n_xline = 1;
+    elastic.shots.n_yline = 1;
+    elastic.shots.elevation = 0.0f;
 
-    elastic.g3D.setGridShots();
+    elastic.setGridShots();
 
-    elastic.g3D.SW.x =     0.0f; elastic.g3D.SW.y = 100.0f;    
-    elastic.g3D.NW.x =     0.0f; elastic.g3D.NW.y = 100.0f;    
-    elastic.g3D.SE.x = 20000.0f; elastic.g3D.SE.y = 100.0f;   
+    elastic.set_SW(0.0f, 500.0f);    
+    elastic.set_NW(0.0f, 500.0f);    
+    elastic.set_SE(1000.0f, 500.0f);   
 
-    elastic.g3D.nodes.nx = 1001;
-    elastic.g3D.nodes.ny = 1;
-    elastic.g3D.nodes.elevation = 0.0f;
+    elastic.nodes.n_xline = 21;
+    elastic.nodes.n_yline = 1;
+    elastic.nodes.elevation = 0.0f;
 
-    elastic.g3D.setGridNodes();
-
-    elastic.cerjan = new float[elastic.m3D.nPointsB];
-    elastic.m3D.vp = new float[elastic.m3D.nPointsB];
-    elastic.m3D.vs = new float[elastic.m3D.nPointsB];
-    elastic.m3D.rho = new float[elastic.m3D.nPointsB];
-
-    elastic.cerjan = elastic.m3D.readAndExpandModel("../../inputs/models/cerjanVolumeABC.bin");
-    elastic.m3D.vp = elastic.m3D.readAndExpandModel("../../inputs/models/vpModel_451x2001x21_10m.bin");
-    elastic.m3D.vs = elastic.m3D.readAndExpandModel("../../inputs/models/vsModel_451x2001x21_10m.bin");
-    elastic.m3D.rho = elastic.m3D.readAndExpandModel("../../inputs/models/rhoModel_451x2001x21_10m.bin");
-
+    elastic.setGridNodes();
+    
+    elastic.vp = elastic.expandModel(elastic.readBinaryFloat("../../inputs/models/vpModel_101x101x101_10m.bin", elastic.nPoints));
+    elastic.vs = elastic.expandModel(elastic.readBinaryFloat("../../inputs/models/vsModel_101x101x101_10m.bin", elastic.nPoints));
+    elastic.rho = elastic.expandModel(elastic.readBinaryFloat("../../inputs/models/rhoModel_101x101x101_10m.bin", elastic.nPoints));
+        
+    elastic.cerjan = elastic.readBinaryFloat("../../inputs/models/cerjanVolumeABC.bin", elastic.nPointsB);
+    
     elastic.forwardModeling();
 
-    elastic.io.writeBinaryFloat("seismogram.bin",elastic.seismogram,elastic.nt*elastic.g3D.nodes.n);
+    elastic.writeBinaryFloat("seismogram.bin", elastic.seismogram, elastic.nt*elastic.nodes.all);
 
     return 0;
 }

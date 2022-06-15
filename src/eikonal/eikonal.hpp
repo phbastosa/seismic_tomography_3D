@@ -33,6 +33,8 @@ private:
 
     FSM fsm;                             // Compressing fast sweeping method variables
 
+
+
     /* */
     void writeTravelTimes();
     
@@ -74,6 +76,8 @@ public:
 
     std::string eikonalFolder;           // Folder to write travel times volume 
     std::string arrivalFolder;           // Folder to write first arrivals
+
+    float min(float v1, float v2);
 
     /* */
     void eikonalComputing();

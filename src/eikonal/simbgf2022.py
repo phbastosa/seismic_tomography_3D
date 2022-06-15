@@ -243,7 +243,7 @@ else:
             plt.xlim([0, nrec])
             plt.ylim([0, 100])
             plt.legend(loc="upper left", fontsize=10)
-            plt.title(f"Jeong (2008) error comparison", fontsize=20)
+            plt.title(f"Jeong (2008) error comparison - FIM", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("$abs(T_a - T_c)$ [ms]", fontsize=13)
 
@@ -258,7 +258,7 @@ else:
             plt.xlim([0, nrec])
             plt.ylim([0, 5])
             plt.legend(loc="upper left", fontsize=10)
-            plt.title(f"Noble (2014) error comparison", fontsize=20)
+            plt.title(f"Noble (2014) error comparison - FSM", fontsize=20)
             plt.xlabel("Trace number", fontsize=17)
             plt.ylabel("$abs(T_a - T_c)$ [ms]", fontsize=13)
 

@@ -52,24 +52,27 @@ def createGaussianSurface(nx,ny,dx,dy,A,xc,yc,sigx,sigy):
 
     return surface.T
 
-nx = 2001
-ny = 21
-nz = 451
+nx = 101
+ny = 101
+nz = 101
 
-nt = 7001
+nt = 1001
 dt = 1e-3
 
 dh = 10.0
 recSpacing = 50.0
 
-vp = np.array([1500, 2000, 3000, 4000, 5000])
+vp = np.array([1500, 1600, 1700, 1800, 2000])
+
 vs = vp / np.sqrt(3.0); vs[0] = 0.0 
 rho = 310 * vp ** 0.25; rho[0] = 1000.0 
 
-z = np.array([200, 800, 1000, 2000])
-depth = np.array([ 200, 1000, 2000, 4000, nz*dh],dtype=float) // dh
+z = np.array([200, 200, 200, 200])
+depth = np.array([ 200, 400, 600, 800, nz*dh],dtype=float) // dh
 
 x = np.arange(0,nx*dh,recSpacing)
+
+print(len(x))
 
 td, t = analiticalRefraction2D(vp,z,x)
 
@@ -122,7 +125,7 @@ plt.title(f"2.5 D refractive geometry", fontsize = 20)
 plt.xlabel("X axis [km]", fontsize = 15)
 plt.ylabel("Y axis [m]", fontsize = 15)
 
-xr = np.arange(0,nx*dh,2*dh)
+xr = np.arange(0,nx*dh,recSpacing)
 yr = np.ones(len(xr)) * (ny-1)*dh/2
 
 plt.plot(xr,yr, "ok", markersize = 5, label = "Receivers position")
@@ -159,13 +162,13 @@ axes_4 = plt.subplot(G[:,5:])
 
 plt.plot(x,td)
 
-a = np.around(td,decimals=2)
-for i in range(len(z)):
-    b = np.around(t[i],decimals=1)
+# a = np.around(td,decimals=2)
+# for i in range(len(z)):
+#     b = np.around(t[i],decimals=1)
 
-    xc = np.where(a == b)[0][0]
+#     xc = np.where(a == b)[0][0]
 
-    plt.plot(x[xc:],t[i,xc:])
+#     plt.plot(x[xc:],t[i,xc:])
 
 plt.plot(x,fb,"k")
 

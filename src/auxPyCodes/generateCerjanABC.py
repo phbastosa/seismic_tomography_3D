@@ -3,9 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-nx = 2001
-ny = 21
-nz = 451
+nx = 101
+ny = 101
+nz = 101
 dh = 10.0
 nabc = 50
 parameter = 0.0045
@@ -154,7 +154,7 @@ plt.xticks(xloc,xlab)
 plt.yticks(zloc,zlab)
 
 axes_2 = plt.subplot(G[1:,:3])
-plt.imshow(damp3D[:,yzPlane,:],aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
+plt.imshow(damp3D[:,yzPlane,:],aspect="auto",cmap="Greys")
 plt.title(f"YZ plane")
 plt.xlabel("Y axis [m]")
 plt.ylabel("Z axis [m]")
@@ -163,7 +163,7 @@ plt.xticks(yloc,ylab)
 plt.yticks(zloc,zlab)
 
 axes_3 = plt.subplot(G[:,3:])
-plt.imshow(damp3D[xyPlane,:,:].T,aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
+plt.imshow(damp3D[xyPlane,:,:].T,aspect="auto",cmap="Greys")
 plt.title(f"XY plane")
 plt.xlabel("X axis [m]")
 plt.ylabel("Y axis [m]")

@@ -3,6 +3,8 @@
 
 # include "eikonal.hpp"
 
+float Eikonal::min(float v1, float v2) { return !(v1 > v2) ? v1 : v2; }
+
 void Eikonal::writeTravelTimes()
 {
     if (exportTimesVolume)
@@ -49,14 +51,14 @@ void::Eikonal::writeFirstArrivals()
 
             int id = ((int)(z/dz) + nb) + ((int)(x/dx) + nb)*nzz + ((int)(y/dy) + nb)*nxx*nzz;
 
-            float c000 = 1.0f / T[id];
-            float c001 = 1.0f / T[id + 1];
-            float c100 = 1.0f / T[id + nzz]; 
-            float c101 = 1.0f / T[id + 1 + nzz]; 
-            float c010 = 1.0f / T[id + nxx*nzz]; 
-            float c011 = 1.0f / T[id + 1 + nxx*nzz]; 
-            float c110 = 1.0f / T[id + nzz + nxx*nzz]; 
-            float c111 = 1.0f / T[id + 1 + nzz + nxx*nzz];
+            float c000 = T[id];
+            float c001 = T[id + 1];
+            float c100 = T[id + nzz]; 
+            float c101 = T[id + 1 + nzz]; 
+            float c010 = T[id + nxx*nzz]; 
+            float c011 = T[id + 1 + nxx*nzz]; 
+            float c110 = T[id + nzz + nxx*nzz]; 
+            float c111 = T[id + 1 + nzz + nxx*nzz];
 
             firstArrivals[r] = triLinearInterpolation(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);        
         }
@@ -2318,10 +2320,6 @@ void Eikonal::eikonalComputing()
         break;
 
     case 2:
-        nobleFSM();
-        break;
-
-    default:
         nobleFSM();
         break;
     }

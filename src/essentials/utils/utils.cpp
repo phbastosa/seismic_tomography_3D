@@ -21,10 +21,12 @@ float Utils::min3(float v1, float v2, float v3) { return min(v1, min(v2, v3)); }
 
 float Utils::min4(float v1, float v2, float v3, float v4) { return min(v1, min(v2, min(v3, v4))); }
 
-void Utils::readBinaryFloat(std::string path, float *array, int n)
+float * Utils::readBinaryFloat(std::string path, int n)
 {
     std::ifstream file(path, std::ios::in);
     
+    float * array = new float[n];
+
     if (file.is_open()) 
     {    
         file.read((char *) array, n * sizeof(float));
@@ -35,6 +37,8 @@ void Utils::readBinaryFloat(std::string path, float *array, int n)
     }
 
     file.close();    
+
+    return array;
 }
 
 void Utils::writeBinaryFloat(std::string path, float *array, int n)

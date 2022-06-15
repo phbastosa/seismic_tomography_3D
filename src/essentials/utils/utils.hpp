@@ -1,17 +1,20 @@
 # ifndef UTILS_HPP
 # define UTILS_HPP
 
+# include <vector>
+# include <string>
+
 class Utils
 {
 public:
     /* */
-    static void readBinaryFloat(std::string path, float *array, int n);
+    float * readBinaryFloat(std::string path, int n);
 
     /* */
-    static void writeBinaryFloat(std::string path, float *array, int n);
+    void writeBinaryFloat(std::string path, float *array, int n);
 
     /* */
-    static std::string catchParameter(std::string target, std::string file);
+    std::string catchParameter(std::string target, std::string file);
 
     /* Function to calculate minimum value between two float inputs */
     float min(float v1, float v2);
@@ -35,10 +38,10 @@ public:
     float min4(float v1, float v2, float v3, float v4);
 
     /* Function to convert string to boolean */
-    static bool str2bool(std::string s);
+    bool str2bool(std::string s);
 
     /* Function to separete values with a delimiter */
-    static std::vector<std::string> split(std::string s, char delimiter);
+    std::vector<std::string> split(std::string s, char delimiter);
 
     /* Function to compute a sparse matrix least square conjugate gradient 
     
@@ -55,11 +58,11 @@ public:
         maxIt - max iterations 
         cgTol - tolerance 
     */
-    static float * sparse_cgls(int * iA, int * jA, float * vA, float * B, int n, int m, int nnz, int maxIt, float cgTol);
+    float * sparse_cgls(int * iA, int * jA, float * vA, float * B, int n, int m, int nnz, int maxIt, float cgTol);
 
     /* Function to compute a trilinear interpolation */
-    static float triLinearInterpolation(float c000, float c001, float c100, float c101, float c010, float c011, float c110, float c111, 
-                                        float x0, float x1, float y0, float y1, float z0, float z1, float x, float y, float z);
+    float triLinearInterpolation(float c000, float c001, float c100, float c101, float c010, float c011, float c110, float c111, 
+                                 float x0, float x1, float y0, float y1, float z0, float z1, float x, float y, float z);
 };
 
 # endif

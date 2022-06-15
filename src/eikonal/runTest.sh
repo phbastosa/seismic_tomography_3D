@@ -2,7 +2,6 @@
 
 python3 simbgf2022.py 1
 
-inout="../essentials/inout/inout.cpp"
 model="../essentials/model/model.cpp"
 utils="../essentials/utils/utils.cpp"
 geom="../essentials/geometry/geometry.cpp"
@@ -10,7 +9,7 @@ eikonal="eikonal.cpp"
 
 flags="-fopenmp -fast -acc -ta=tesla,cc60 -std=c++11 -g -lm"
 
-pgc++ $inout $utils $model $geom $eikonal eikonalAccuracyStudy.cpp $flags -o test.exe
+pgc++ $utils $model $geom $eikonal eikonalAccuracyStudy.cpp $flags -o test.exe
 
 ./test.exe
 

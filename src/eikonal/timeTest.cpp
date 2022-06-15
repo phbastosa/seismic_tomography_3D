@@ -62,8 +62,9 @@ int main(int argc, char **argv)
 
     std::vector <std::string> labels {"pod_", "fim_", "fsm_"};
 
-
     // Comparing eikonal execution time
+
+    eikonal.T = new float[eikonal.nPointsB]();
 
     for (int i = 0; i < n; i++)
     {
@@ -72,9 +73,10 @@ int main(int argc, char **argv)
 
         t0 = omp_get_wtime();
 
+        eikonal.shotId = 0;   
         eikonal.eikonalType = i;
-        eikonal.forwardModeling();
-
+        eikonal.eikonalComputing();
+        
         switch (i)
         {
         case 0:
@@ -88,6 +90,8 @@ int main(int argc, char **argv)
             break;
         }
     }
+
+    delete[] eikonal.T;
 
     return 0;
 }
