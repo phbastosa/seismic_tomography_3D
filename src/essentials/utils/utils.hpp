@@ -1,23 +1,17 @@
 # ifndef UTILS_HPP
 # define UTILS_HPP
 
-# include <vector>
-# include <string>
-
-# include "../model/model.hpp"
-
 class Utils
 {
-private:
-
 public:
-    typedef struct   // To storage a simple point in space
-    {
-        float x;     // x position of point  
-        float y;     // y position of point
-        float z;     // z position of point   
-        
-    } Point;
+    /* */
+    static void readBinaryFloat(std::string path, float *array, int n);
+
+    /* */
+    static void writeBinaryFloat(std::string path, float *array, int n);
+
+    /* */
+    static std::string catchParameter(std::string target, std::string file);
 
     /* Function to calculate minimum value between two float inputs */
     float min(float v1, float v2);
@@ -43,9 +37,6 @@ public:
     /* Function to convert string to boolean */
     static bool str2bool(std::string s);
 
-    /* Function to calculate a linear spaced position */
-    static std::vector<float> linspace(float start, float end, int num);        
-
     /* Function to separete values with a delimiter */
     static std::vector<std::string> split(std::string s, char delimiter);
 
@@ -67,7 +58,8 @@ public:
     static float * sparse_cgls(int * iA, int * jA, float * vA, float * B, int n, int m, int nnz, int maxIt, float cgTol);
 
     /* Function to compute a trilinear interpolation */
-    static float triLinearInterpolation(Point p, Model m, float * volume);
+    static float triLinearInterpolation(float c000, float c001, float c100, float c101, float c010, float c011, float c110, float c111, 
+                                        float x0, float x1, float y0, float y1, float z0, float z1, float x, float y, float z);
 };
 
 # endif

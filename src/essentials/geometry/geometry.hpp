@@ -1,8 +1,7 @@
 # ifndef GEOMETRY_HPP
 # define GEOMETRY_HPP
 
-# include "../inout/inout.hpp"
-# include "../utils/utils.hpp"
+# include <vector>
 
 class Geometry
 {
@@ -18,32 +17,55 @@ private:
         int idy;                     // Y index position of geometry element
         int idz;                     // Z index position of geometry element
 
-        int n;                       // Total elements in simulation
-        int nx;                      // Total geometry unit in xline
-        int ny;                      // Total geometry unit in crossline
+        int all;                     // Total elements in simulation
+        int n_xline;                 // Total geometry unit in xline
+        int n_yline;                 // Total geometry unit in yline
 
-        float xc;                    // X center circle position
-        float yc;                    // Y center circle position   
-
-        float ds;                    // Distance between geometry element in circle 
-
+        float xcenter;               // X center circle position
+        float ycenter;               // Y center circle position   
         float elevation;             // Geometry element elevation (always positive number)
+        float circle_spacing;        // Distance between geometry element in circle 
 
         std::vector<float> offsets;  // Circle ratios
 
-    } Position;             
+    } Position;
+
+    typedef struct                   // Struct to storage a simple 2D point
+    {
+        float x;                     // x plane position
+        float y;                     // y plane position
+
+    } Point;            
+
+    Point SW;                        // South western point
+    Point NW;                        // North western point
+    Point SE;                        // South eastern point
 
 public:  
 
     Position shots;                  // Struct to storage x,y,z coordinates of shots
     Position nodes;                  // Struct to storage x,y,z coordinates of nodes
 
-    Utils::Point SW;               // South western point
-    Utils::Point NW;               // North western point
-    Utils::Point SE;               // South eastern point
-
     std::string shotsPath;           // Location to export shots position in .txt file
     std::string nodesPath;           // Location to export nodes position in .txt file
+
+    int shotsGeometryType;           // 0 - circular shots | 1 - grid shots
+    int nodesGeometryType;           // 0 - circular nodes | 1 - grid nodes
+
+    bool reciprocity;                // To set reciprocity 
+    bool saveGeometry;               // To save geometry
+
+    /* Function to calculate a linear spaced position */
+    std::vector<float> linspace(float xi, float xf, int n);        
+
+    /* */
+    void set_SW(float x, float y) {SW.x = x; SW.y = y;}
+
+    /* */
+    void set_NW(float x, float y) {NW.x = x; NW.y = y;}
+    
+    /* */
+    void set_SE(float x, float y) {SE.x = x; SE.y = y;}
 
     /* Method to set shots positions giving three points in grid */
     void setGridShots();
@@ -60,7 +82,7 @@ public:
     /* Switch the nodes position to shots position */
     void setReciprocity();
 
-    /* Methood to save geometry in hard drive */
+    /* Method to save geometry in hard drive */
     void exportPositions();
 };
 

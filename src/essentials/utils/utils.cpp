@@ -2,10 +2,10 @@
 # include <vector>
 # include <string>
 # include <sstream>
+# include <fstream>
 # include <algorithm>
 
 # include "utils.hpp"
-# include "../model/model.hpp"
 
 int Utils::imin(int v1, int v2) { return !(v1 > v2) ? v1 : v2; }
 
@@ -21,27 +21,84 @@ float Utils::min3(float v1, float v2, float v3) { return min(v1, min(v2, v3)); }
 
 float Utils::min4(float v1, float v2, float v3, float v4) { return min(v1, min(v2, min(v3, v4))); }
 
-std::vector<float> Utils::linspace(float start, float end, int num)
+void Utils::readBinaryFloat(std::string path, float *array, int n)
 {
-    std::vector<float> linspaced;
+    std::ifstream file(path, std::ios::in);
     
-    if (num == 0) return linspaced;
-    if (num == 1)
+    if (file.is_open()) 
+    {    
+        file.read((char *) array, n * sizeof(float));
+    }
+    else
     {
-        linspaced.push_back(start);
-        return linspaced;
-    } 
-
-    linspaced.reserve(num);
-
-    float delta = (end - start) / (num - 1);
-
-    for (int i = 0; i < num; i++)
-    {
-        linspaced.emplace_back(start + (float)(delta*i));
+        throw std::invalid_argument("Error: file could not be opened!");
     }
 
-    return linspaced;
+    file.close();    
+}
+
+void Utils::writeBinaryFloat(std::string path, float *array, int n)
+{
+    std::ofstream file(path, std::ios::out);
+    
+    if (file.is_open()) 
+    {    
+        file.write((char *) array, n * sizeof(float));
+    }
+    else
+    {
+        throw std::invalid_argument("Error: file could not be opened!");
+    }
+
+    file.close();
+}
+
+std::string Utils::catchParameter(std::string target, std::string file)
+{
+    char spaces = ' ';
+    char comment = '#';
+
+    std::string line;
+    std::string variable;
+
+    std::ifstream parameters(file);
+
+    if (parameters.is_open())
+    {
+        while (getline(parameters, line))
+        {           
+            if ((line.front() != comment) && (line.front() != spaces))        
+            {
+                if (line.find(target) == 0)
+                {
+                    for (int i = line.find("=")+2; i < line.size(); i++)
+                    {    
+                        if (line[i] == '#') break;
+                        variable += line[i];            
+                    }
+
+                    break;
+                }
+            }                 
+        }
+        parameters.close();
+    }        
+
+    // Quality control for file paths
+
+    if (variable.find('"') == 0)
+    {
+        remove(variable.begin(), variable.end(), '"');
+    }
+    else if (variable.find("[") == 0)
+    {
+        remove(variable.begin(), variable.end(), '[');
+        remove(variable.begin(), variable.end(), ']');
+    }
+
+    variable.erase(remove(variable.begin(), variable.end(), ' '), variable.end());
+
+    return variable;
 }
 
 std::vector<std::string> Utils::split(std::string s, char delimiter)
@@ -143,34 +200,12 @@ float * Utils::sparse_cgls(int * iA, int * jA, float * vA, float * B, int n, int
     return x;
 }
 
-float Utils::triLinearInterpolation(Point p, Model m, float * volume)
+float Utils::triLinearInterpolation(float c000, float c001, float c100, float c101, float c010, float c011, float c110, float c111, 
+                                    float x0, float x1, float y0, float y1, float z0, float z1, float x, float y, float z)
 {
-    float x0 = floorf(p.x / m.dx) * m.dx;
-    float y0 = floorf(p.y / m.dy) * m.dy;
-    float z0 = floorf(p.z / m.dz) * m.dz;
-
-    float x1 = floorf(p.x / m.dx) * m.dx + m.dx;
-    float y1 = floorf(p.y / m.dy) * m.dy + m.dy;
-    float z1 = floorf(p.z / m.dz) * m.dz + m.dz;
-
-    int xi = (int)(p.x / m.dx) + m.nb;    
-    int yi = (int)(p.y / m.dy) + m.nb;    
-    int zi = (int)(p.z / m.dz) + m.nb;    
-
-    int id = zi + xi*m.nzz + yi*m.nxx*m.nzz;
-
-    float c000 = 1.0f / volume[id];
-    float c001 = 1.0f / volume[id + 1];
-    float c100 = 1.0f / volume[id + m.nzz]; 
-    float c101 = 1.0f / volume[id + 1 + m.nzz]; 
-    float c010 = 1.0f / volume[id + m.nxx*m.nzz]; 
-    float c011 = 1.0f / volume[id + 1 + m.nxx*m.nzz]; 
-    float c110 = 1.0f / volume[id + m.nzz + m.nxx*m.nzz]; 
-    float c111 = 1.0f / volume[id + 1 + m.nzz + m.nxx*m.nzz];
-
-    float xd = (p.x - x0) / (x1 - x0);
-    float yd = (p.y - y0) / (y1 - y0);
-    float zd = (p.z - z0) / (z1 - z0);
+    float xd = (x - x0) / (x1 - x0);
+    float yd = (y - y0) / (y1 - y0);
+    float zd = (z - z0) / (z1 - z0);
 
     float c00 = c000*(1 - xd) + c100*xd;    
     float c01 = c001*(1 - xd) + c101*xd;    
@@ -180,5 +215,5 @@ float Utils::triLinearInterpolation(Point p, Model m, float * volume)
     float c0 = c00*(1 - yd) + c10*yd;
     float c1 = c01*(1 - yd) + c11*yd;
 
-    return 1.0f / (c0*(1 - zd) + c1*zd);
+    return (c0*(1 - zd) + c1*zd);
 }

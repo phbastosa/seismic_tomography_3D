@@ -1,76 +1,69 @@
 # include "model.hpp"
 
-# include "../inout/inout.hpp"
-
 void Model::initialize()
 {
-    this->nxx = this->nx + 2 * this->nb;
-    this->nyy = this->ny + 2 * this->nb;
-    this->nzz = this->nz + 2 * this->nb;
+    nxx = nx + 2 * nb;
+    nyy = ny + 2 * nb;
+    nzz = nz + 2 * nb;
 
-    this->nPoints = this->nx * this->ny * this->nz;
-    this->nPointsB = this->nxx * this->nyy * this->nzz;
+    nPoints = nx * ny * nz;
+    nPointsB = nxx * nyy * nzz;
 }
 
-float * Model::readAndExpandModel(std::string path)
+float * Model::expandModel(float * model)
 {
-    float * model = new float[this->nPoints];
-    float * expModel = new float[this->nPointsB];
-
-    InOut::readBinaryFloat(path, model, this->nPoints);  
+    float * expModel = new float[nPointsB];
 
     // Centering
-    for (int z = this->nb; z < this->nzz - this->nb; z++)
+    for (int z = nb; z < nzz - nb; z++)
     {
-        for (int y = this->nb; y < this->nyy - this->nb; y++)
+        for (int y = nb; y < nyy - nb; y++)
         {
-            for (int x = this->nb; x < this->nxx - this->nb; x++)
+            for (int x = nb; x < nxx - nb; x++)
             {
-                expModel[z + x*this->nzz + y*this->nxx*this->nzz] = model[(z - this->nb) + (x - this->nb)*this->nz + (y - this->nb)*this->nx*this->nz];
+                expModel[z + x*nzz + y*nxx*nzz] = model[(z - nb) + (x - nb)*nz + (y - nb)*nx*nz];
             }
         }
     }
 
     // Z direction
-    for (int z = 0; z < this->nb; z++)
+    for (int z = 0; z < nb; z++)
     {
-        for (int y = this->nb; y < this->nyy - this->nb; y++)
+        for (int y = nb; y < nyy - nb; y++)
         {
-            for (int x = this->nb; x < this->nxx - this->nb; x++)
+            for (int x = nb; x < nxx - nb; x++)
             {
-                expModel[z + x*this->nzz + y*this->nxx*this->nzz] = model[0 + (x - this->nb)*this->nz + (y - this->nb)*this->nx*this->nz];
-                expModel[(this->nzz - z - 1) + x*this->nzz + y*this->nxx*this->nzz] = model[(this->nz - 1) + (x - this->nb)*this->nz + (y - this->nb)*this->nx*this->nz];
+                expModel[z + x*nzz + y*nxx*nzz] = model[0 + (x - nb)*nz + (y - nb)*nx*nz];
+                expModel[(nzz - z - 1) + x*nzz + y*nxx*nzz] = model[(nz - 1) + (x - nb)*nz + (y - nb)*nx*nz];
             }
         }
     }
 
     // X direction
-    for (int x = 0; x < this->nb; x++)
+    for (int x = 0; x < nb; x++)
     {
-        for (int z = 0; z < this->nzz; z++)
+        for (int z = 0; z < nzz; z++)
         {
-            for (int y = this->nb; y < this->nyy - this->nb; y++)
+            for (int y = nb; y < nyy - nb; y++)
             {
-                expModel[z + x*this->nzz + y*this->nxx*this->nzz] = expModel[z + this->nb*this->nzz + y*this->nxx*this->nzz];
-                expModel[z + (this->nxx - x - 1)*this->nzz + y*this->nxx*this->nzz] = expModel[z + (this->nxx - this->nb - 1)*this->nzz + y*this->nxx*this->nzz];
+                expModel[z + x*nzz + y*nxx*nzz] = expModel[z + nb*nzz + y*nxx*nzz];
+                expModel[z + (nxx - x - 1)*nzz + y*nxx*nzz] = expModel[z + (nxx - nb - 1)*nzz + y*nxx*nzz];
             }
         }
     }
 
     // Y direction
-    for (int y = 0; y < this->nb; y++)
+    for (int y = 0; y < nb; y++)
     {
-        for (int z = 0; z < this->nzz; z++)
+        for (int z = 0; z < nzz; z++)
         {
-            for (int x = 0; x < this->nxx; x++)
+            for (int x = 0; x < nxx; x++)
             {
-                expModel[z + x*this->nzz + y*this->nxx*this->nzz] = expModel[z + x*this->nzz + this->nb*this->nxx*this->nzz];
-                expModel[z + x*this->nzz + (this->nyy - y - 1)*this->nxx*this->nzz] = expModel[z + x*this->nzz + (this->nyy - this->nb - 1)*this->nxx*this->nzz];
+                expModel[z + x*nzz + y*nxx*nzz] = expModel[z + x*nzz + nb*nxx*nzz];
+                expModel[z + x*nzz + (nyy - y - 1)*nxx*nzz] = expModel[z + x*nzz + (nyy - nb - 1)*nxx*nzz];
             }
         }
     }
 
-    delete[] model;
-    
     return expModel;
 }

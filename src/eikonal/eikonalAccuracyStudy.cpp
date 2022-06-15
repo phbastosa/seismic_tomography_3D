@@ -1,9 +1,6 @@
-# include "eikonal.hpp"
+# include <iostream>
 
-# include "../essentials/inout/inout.hpp"
-# include "../essentials/utils/utils.hpp"
-# include "../essentials/model/model.hpp"
-# include "../essentials/geometry/geometry.hpp"
+# include "eikonal.hpp"
 
 int main(int argc, char **argv)
 {
@@ -19,22 +16,21 @@ int main(int argc, char **argv)
     
     std::vector<float> dh_all {100.0f, 50.0f, 25.0f};
 
-    eikonal.m3D.nb = 5;
+    eikonal.nb = 5;
 
     // Set fixed circular geometry
 
-    eikonal.g3D.nodes.xc = 11000.0f;
-    eikonal.g3D.nodes.yc = 11000.0f;
-    eikonal.g3D.nodes.ds = 12.5f;
-    eikonal.g3D.nodes.elevation = 0.0f;
+    eikonal.nodes.xcenter = 11000.0f;
+    eikonal.nodes.ycenter = 11000.0f;
+    eikonal.nodes.offsets = {10000.0f}; // 10 km
+    eikonal.nodes.elevation = 0.0f;
+    eikonal.nodes.circle_spacing = 12.5f;
 
-    eikonal.g3D.nodes.offsets = {10000.0f}; // 10 km
+    eikonal.setCircularNodes();
 
-    eikonal.g3D.setCircularNodes();
+    eikonal.nodesPath = "nodesPosition.txt";
 
-    eikonal.g3D.nodesPath = "nodesPosition.txt";
-
-    eikonal.g3D.exportPositions();
+    eikonal.exportPositions();
 
     eikonal.exportTimesVolume = false;
     eikonal.exportFirstArrivals = true;
@@ -46,104 +42,78 @@ int main(int argc, char **argv)
     {
         std::cout<<"Generating data with dh = "<<dh_all[n]<<"\n";
 
-        eikonal.m3D.nx = nx_all[n];
-        eikonal.m3D.ny = ny_all[n];    
-        eikonal.m3D.nz = nz_all[n];
+        eikonal.nx = nx_all[n];
+        eikonal.ny = ny_all[n];    
+        eikonal.nz = nz_all[n];
 
-        eikonal.m3D.dx = dh_all[n];
-        eikonal.m3D.dy = dh_all[n];
-        eikonal.m3D.dz = dh_all[n];
+        eikonal.dx = dh_all[n];
+        eikonal.dy = dh_all[n];
+        eikonal.dz = dh_all[n];
 
-        eikonal.m3D.initialize();
+        eikonal.initialize();
 
-        eikonal.m3D.vp = new float[eikonal.m3D.nPointsB];
+        float * model = new float[eikonal.nPoints]; 
 
-        eikonal.m3D.vpPath = modelNames[n];
+        eikonal.readBinaryFloat(modelNames[n], model, eikonal.nPoints);
 
-        eikonal.m3D.vp = eikonal.m3D.readAndExpandModel(eikonal.m3D.vpPath);
+        eikonal.vp = eikonal.expandModel(model);
+
+        delete[] model;
 
         // Setting extern shot points  
 
-        eikonal.g3D.SW.x = 1000.0f; eikonal.g3D.SW.y = 1000.0f;    
-        eikonal.g3D.NW.x = 1000.0f; eikonal.g3D.NW.y = 21000.0f;    
-        eikonal.g3D.SE.x = 21000.0f; eikonal.g3D.SE.y = 1000.0f;    
+        eikonal.set_SW( 1000.0f,  1000.0f);    
+        eikonal.set_NW( 1000.0f, 21000.0f);    
+        eikonal.set_SE(21000.0f,  1000.0f);    
 
-        eikonal.g3D.shots.nx = 2; 
-        eikonal.g3D.shots.ny = 2; 
-        eikonal.g3D.shots.elevation = 0.0f;
+        eikonal.shots.n_xline = 2; 
+        eikonal.shots.n_yline = 2; 
+        eikonal.shots.elevation = 0.0f;
 
-        eikonal.g3D.setGridShots();
+        eikonal.setGridShots();
 
         // Shots loop
 
-        eikonal.allocateVolumes();    
+        eikonal.arrivalFolder = "pod_extern_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.eikonalType = 0;
+        eikonal.forwardModeling();
 
-        eikonal.arrivalsPath = "pod_extern_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.arrivalFolder = "fim_extern_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.eikonalType = 1;
+        eikonal.forwardModeling();
 
-        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
-        {
-            eikonal.shotId = shot;
-            eikonal.podvin();
-        }
-
-        eikonal.arrivalsPath = "fim_extern_"+std::to_string((int) dh_all[n])+"m_";
-
-        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
-        {
-            eikonal.shotId = shot;
-            eikonal.jeongFIM();
-        }
-
-        eikonal.arrivalsPath = "fsm_extern_"+std::to_string((int) dh_all[n])+"m_";
-
-        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
-        {
-            eikonal.shotId = shot;
-            eikonal.nobleFSM();
-        }
+        eikonal.arrivalFolder = "fsm_extern_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.eikonalType = 2;
+        eikonal.forwardModeling();
 
         // Generate central shot
 
-        eikonal.g3D.SW.x = 11000.0f; eikonal.g3D.SW.y = 11000.0f;    
-        eikonal.g3D.NW.x = 11000.0f; eikonal.g3D.NW.y = 11000.0f;    
-        eikonal.g3D.SE.x = 11000.0f; eikonal.g3D.SE.y = 11000.0f;    
+        eikonal.set_SW(11000.0f, 11000.0f);    
+        eikonal.set_NW(11000.0f, 11000.0f);    
+        eikonal.set_SE(11000.0f, 11000.0f);    
 
-        eikonal.g3D.shots.nx = 1; 
-        eikonal.g3D.shots.ny = 1; 
+        eikonal.shots.n_xline = 1; 
+        eikonal.shots.n_yline = 1; 
 
-        eikonal.g3D.setGridShots();
+        eikonal.setGridShots();
         
-        eikonal.arrivalsPath = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.arrivalFolder = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.eikonalType = 0;
+        eikonal.forwardModeling();
 
-        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
-        {
-            eikonal.shotId = shot;
-            eikonal.podvin();
-        }
-
-        eikonal.arrivalsPath = "fim_central_"+std::to_string((int) dh_all[n])+"m_";
-
-        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
-        {
-            eikonal.shotId = shot;
-            eikonal.jeongFIM();
-        }
+        eikonal.arrivalFolder = "fim_central_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.eikonalType = 1;
+        eikonal.forwardModeling();
 
         if (n == 2)
         {
             eikonal.exportTimesVolume = true;
-            eikonal.eikonalPath = "central_";
+            eikonal.eikonalFolder = "central_";
         }
 
-        eikonal.arrivalsPath = "fsm_central_"+std::to_string((int) dh_all[n])+"m_";
-
-        for (int shot = 0; shot < eikonal.g3D.shots.n; shot++)
-        {
-            eikonal.shotId = shot;
-            eikonal.nobleFSM();
-        }
-
-        eikonal.deleteVolumes();
+        eikonal.arrivalFolder = "fsm_central_"+std::to_string((int) dh_all[n])+"m_";
+        eikonal.eikonalType = 2;
+        eikonal.forwardModeling();
     }
 
     return 0;

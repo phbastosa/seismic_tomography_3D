@@ -64,7 +64,7 @@ public:
     void generateDobs();
 
     /* */
-    void fwdModeling();
+    void forwardModeling();
 
     /* */
     void gradientRayTracing();

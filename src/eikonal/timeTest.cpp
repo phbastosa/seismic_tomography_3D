@@ -1,90 +1,93 @@
 # include <omp.h>
-# include "eikonal.hpp"
+# include <iostream>
 
-# include "../essentials/inout/inout.hpp"
-# include "../essentials/utils/utils.hpp"
-# include "../essentials/model/model.hpp"
-# include "../essentials/geometry/geometry.hpp"
+# include "eikonal.hpp"
 
 int main(int argc, char **argv)
 {
     auto eikonal = Eikonal();
 
-    eikonal.m3D.nx = 881;
-    eikonal.m3D.ny = 881;    
-    eikonal.m3D.nz = 45;
+    eikonal.nx = 881;
+    eikonal.ny = 881;    
+    eikonal.nz = 45;
 
-    eikonal.m3D.dx = 25.0f;
-    eikonal.m3D.dy = 25.0f;
-    eikonal.m3D.dz = 25.0f;
+    eikonal.dx = 25.0f;
+    eikonal.dy = 25.0f;
+    eikonal.dz = 25.0f;
 
-    eikonal.m3D.nb = 2;
+    eikonal.nb = 2;
 
-    eikonal.m3D.initialize();
+    eikonal.initialize();
 
-    eikonal.m3D.vp = new float[eikonal.m3D.nPointsB];
+    eikonal.vp = new float[eikonal.nPointsB];
 
-    int interface = (int)(1000.0f/eikonal.m3D.dz) + eikonal.m3D.nxx*eikonal.m3D.nzz + eikonal.m3D.nyy*eikonal.m3D.nxx*eikonal.m3D.nzz;
+    int interface = (int)(1000.0f/eikonal.dz) + eikonal.nxx*eikonal.nzz + eikonal.nyy*eikonal.nxx*eikonal.nzz;
 
-    for (int i = 0; i < eikonal.m3D.nPointsB; ++i) 
+    for (int i = 0; i < eikonal.nPointsB; ++i) 
     {
-        eikonal.m3D.vp[i] = 1500.0f;
+        eikonal.vp[i] = 1500.0f;
         
-        if (i >= interface)
-            eikonal.m3D.vp[i] = 2000.0f;
+        if (i >= interface) eikonal.vp[i] = 2000.0f;
     }
 
     // Generate central shot
 
-    eikonal.g3D.SW.x = 11000.0f; eikonal.g3D.SW.y = 11000.0f;    
-    eikonal.g3D.NW.x = 11000.0f; eikonal.g3D.NW.y = 11000.0f;    
-    eikonal.g3D.SE.x = 11000.0f; eikonal.g3D.SE.y = 11000.0f;    
+    eikonal.set_SW(11000.0f, 11000.0f);     
+    eikonal.set_NW(11000.0f, 11000.0f);    
+    eikonal.set_SE(11000.0f, 11000.0f);    
 
-    eikonal.g3D.shots.nx = 1; 
-    eikonal.g3D.shots.ny = 1; 
-    eikonal.g3D.shots.elevation = 0.0f;
+    eikonal.shots.n_xline = 1; 
+    eikonal.shots.n_yline = 1; 
+    eikonal.shots.elevation = 0.0f;
+    
+    eikonal.setGridShots();
 
-    eikonal.g3D.setGridShots();
+    // Generate circular receiver survey
+    
+    eikonal.nodes.xcenter = 11000.0f;
+    eikonal.nodes.ycenter = 11000.0f;
+    eikonal.nodes.offsets = {10000.0f};
+    eikonal.nodes.elevation = 0.0f;
+    eikonal.nodes.circle_spacing = 12.5f;
+    
+    eikonal.setCircularNodes();
 
-    eikonal.allocateVolumes();    
+    // Compressing in a for loop
+
+    int n = 3;
+    double t0;
 
     eikonal.exportTimesVolume = true;
-    eikonal.exportFirstArrivals = false;
+    eikonal.exportFirstArrivals = true;
 
-    eikonal.eikonalPath = "pod_";
-    eikonal.arrivalsPath = "pod_";
+    std::vector <std::string> labels {"pod_", "fim_", "fsm_"};
 
-    double t0 = omp_get_wtime();
-    for (int shot = 0; shot < eikonal.g3D.shots.n; ++shot)
+
+    // Comparing eikonal execution time
+
+    for (int i = 0; i < n; i++)
     {
-        eikonal.shotId = shot;
-        eikonal.podvin();
+        eikonal.eikonalFolder = labels[i];
+        eikonal.arrivalFolder = labels[i];
+
+        t0 = omp_get_wtime();
+
+        eikonal.eikonalType = i;
+        eikonal.forwardModeling();
+
+        switch (i)
+        {
+        case 0:
+            std::cout<<"\nPodvin & Lecomte (1991) time = "<<omp_get_wtime() - t0<<" s."<<std::endl;
+            break;
+        case 1:
+            std::cout<<"\nJeong & Whitaker (2008) time = "<<omp_get_wtime() - t0<<" s."<<std::endl;
+            break;
+        case 2:
+            std::cout<<"\nNoble, Gesret and Belayouni (2014) time = "<<omp_get_wtime() - t0<<" s."<<std::endl;
+            break;
+        }
     }
-    std::cout<<"\nPodvin & Lecomte (1991) time = "<<omp_get_wtime() - t0<<" s."<<std::endl;
-
-    eikonal.eikonalPath = "fim_";
-    eikonal.arrivalsPath = "fim_";
-
-    t0 = omp_get_wtime();
-    for (int shot = 0; shot < eikonal.g3D.shots.n; ++shot)
-    {
-        eikonal.shotId = shot;
-        eikonal.jeongFIM();
-    }
-    std::cout<<"\nJeong & Whitaker (2008) time = "<<omp_get_wtime() - t0<<" s."<<std::endl;
-
-    eikonal.eikonalPath = "fsm_";
-    eikonal.arrivalsPath = "fsm_";
-
-    t0 = omp_get_wtime();
-    for (int shot = 0; shot < eikonal.g3D.shots.n; ++shot)
-    {
-        eikonal.shotId = shot;
-        eikonal.nobleFSM();
-    }
-    std::cout<<"\nNoble, Gesret and Belayouni (2014) time = "<<omp_get_wtime() - t0<<" s."<<std::endl;
-
-    eikonal.deleteVolumes();
 
     return 0;
 }
