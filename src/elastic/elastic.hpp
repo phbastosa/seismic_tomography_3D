@@ -28,10 +28,10 @@ public:
 
     int nt;
     float dt;                            // 
-    float * cerjan;                      //
     
-    int nsrc;                            // 
-    float * source;                      // 
+    float fmax;
+    float * wavelet;                     // 
+    int nSamplesWavelet;                 // 
 
     int shotId;                          // Current source index available
     int timeId;                          //
@@ -45,6 +45,8 @@ public:
     
     /* */
     void allocateVolumes();
+
+    void setWavelet();
 
     /* */
     void setWavefields();

@@ -5,10 +5,12 @@ utils="../essentials/utils/utils.cpp"
 geom="../essentials/geometry/geometry.cpp"
 elastic="elastic.cpp"
 
-flags="-fopenmp -std=c++11 -g -lm -O3"
+flags="-fopenmp -acc -fast -ta=multicore -std=c++11 -g -lm -O3"
 
-g++ $inout $utils $model $geom $elastic refractionAnalysis.cpp $flags -o test.exe
+pgc++ $utils $model $geom $elastic elasticTest.cpp $flags -o test.exe
 
 ./test.exe
 
 rm *.o *.exe
+
+ximage n1=1001 <seismogram.bin perc=99 &

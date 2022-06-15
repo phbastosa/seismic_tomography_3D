@@ -11,6 +11,12 @@ public:
     float * readBinaryFloat(std::string path, int n);
 
     /* */
+    float * rickerGeneration(int ns, float dt, float fmax);
+
+    /* */
+    float * intRickerGeneration(int ns, float dt, float fmax);
+
+    /* */
     void writeBinaryFloat(std::string path, float *array, int n);
 
     /* */
