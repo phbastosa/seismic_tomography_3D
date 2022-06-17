@@ -1,4 +1,5 @@
 # include <omp.h>
+# include <iostream>
 
 # include "../src/tomography/tomography.hpp"
 
@@ -14,7 +15,7 @@ int main(int argc, char **argv)
 
     while (true)
     {
-        tomography.fwdModeling();
+        tomography.forwardModeling();
         
         tomography.importDcal();
 
@@ -30,8 +31,6 @@ int main(int argc, char **argv)
     }
 
     tomography.exportConvergency();
-
-    tomography.deleteVolumes();
 
     std::cout<<"\nRun time "<<omp_get_wtime() - start<<" s."<<std::endl;
 

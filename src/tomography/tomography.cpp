@@ -140,7 +140,8 @@ Tomography::Tomography(char **argv)
     {
         arrivalFolder = dobsPath;
 
-        vp = expandModel(readBinaryFloat(catchParameter("trueModelPath", argv[1]), nPoints));
+        model = readBinaryFloat(catchParameter("trueModelPath", argv[1]), nPoints);
+        Vp = expandModel();
 
         std::cout<<"Computing observed data"<<std::endl;
 
@@ -154,7 +155,8 @@ Tomography::Tomography(char **argv)
         delete[] T;
     }
 
-    vp = expandModel(readBinaryFloat(catchParameter("initModelPath", argv[1]), nPoints));
+    model = readBinaryFloat(catchParameter("initModelPath", argv[1]), nPoints);
+    Vp = expandModel();
 
     iteration = 0;
 
@@ -221,7 +223,7 @@ void Tomography::setInitialModel()
                 int jm = (int) ((float)(j)*mTomo.dx/dx) + nb;
                 int km = (int) ((float)(k)*mTomo.dy/dy) + nb;
                 
-                slowness[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = 1.0f / vp[im + jm*nzz + km*nxx*nzz];    
+                slowness[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = 1.0f / Vp[im + jm*nzz + km*nxx*nzz];    
             }
         }
     }
@@ -592,7 +594,7 @@ void Tomography::modelUpdate()
 
         float s = triLinearInterpolation(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);
 
-        if (s > 0.0f) vp[(i + nb) + (j+nb)*nzz + (k+nb)*nxx*nzz] = 1.0f / s;
+        if (s > 0.0f) Vp[(i + nb) + (j+nb)*nzz + (k+nb)*nxx*nzz] = 1.0f / s;
     }
 
     float * mm = new float[nPoints]();
@@ -603,7 +605,7 @@ void Tomography::modelUpdate()
         int j = (int) (index - k*nx*nz) / nz;    // x direction
         int i = (int) (index - j*nz - k*nx*nz);  // z direction
 
-        mm[i + j*nz + k*nx*nz] = vp[(i + nb) + (j + nb)*nzz + (k + nb)*nxx*nzz];
+        mm[i + j*nz + k*nx*nz] = Vp[(i + nb) + (j + nb)*nzz + (k + nb)*nxx*nzz];
     }
 
     writeBinaryFloat(estModels + "estimatedModel_iteration_" + std::to_string(iteration) + ".bin", mm, nPoints);    
@@ -622,7 +624,7 @@ void Tomography::modelSmoothing()
     {
         float * smoothSlowness = new float[nPointsB];
 
-        for (int i = 0; i < nPointsB; i++) smoothSlowness[i] = 1.0f / vp[i];
+        for (int i = 0; i < nPointsB; i++) smoothSlowness[i] = 1.0f / Vp[i];
 
         for (int i = init; i < nzz - init; i++)
         {
@@ -652,7 +654,7 @@ void Tomography::modelSmoothing()
             }   
         }
 
-        for (int i = 0; i < nPointsB; i++) vp[i] = 1.0f / smoothSlowness[i];
+        for (int i = 0; i < nPointsB; i++) Vp[i] = 1.0f / smoothSlowness[i];
 
         delete[] smoothSlowness;
     }

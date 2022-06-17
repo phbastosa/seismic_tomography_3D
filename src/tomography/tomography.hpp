@@ -5,8 +5,8 @@
 
 class Tomography : public Eikonal
 {
-public:    
-    
+private:
+
     int iteration;
     int maxIteration;
 
@@ -46,6 +46,9 @@ public:
 
     std::vector <float> residuo;
 
+public:    
+    
+    /* */
     Tomography(char **argv);
 
     /* */
