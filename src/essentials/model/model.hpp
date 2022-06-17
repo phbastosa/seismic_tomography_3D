@@ -20,15 +20,13 @@ public:
     int nPoints;             // Total samples in model 
     int nPointsB;            // Total samples in expanded model 
 
-    float * vp;              // P wave velocity volume         
-    float * vs;              // S wave velocity volume
-    float * rho;             // Density volume
-    
+    float * model;           // Generic model to read files
+
     /* Fill model variables with other attributes dependance, invoke before declare model volumes */
     void initialize();
 
     /* Returns the expanded model based on input model properties */
-    float * expandModel(float * model);
+    float * expandModel();
 };
 
 # endif

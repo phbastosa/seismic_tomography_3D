@@ -10,7 +10,7 @@ void Model::initialize()
     nPointsB = nxx * nyy * nzz;
 }
 
-float * Model::expandModel(float * model)
+float * Model::expandModel()
 {
     float * expModel = new float[nPointsB];
 
@@ -64,6 +64,8 @@ float * Model::expandModel(float * model)
             }
         }
     }
+
+    delete[] model;
 
     return expModel;
 }

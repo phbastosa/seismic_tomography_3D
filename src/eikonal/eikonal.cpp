@@ -1,3 +1,4 @@
+# include <omp.h>
 # include <cmath>
 # include <algorithm>
 
@@ -72,9 +73,9 @@ void::Eikonal::writeFirstArrivals()
 void Eikonal::podvin()
 {
     S = new float[nPointsB]();    
-    K = new float[nPointsB]();    
-    nT = new float[nPointsB]();    
-    nK = new float[nPointsB]();  
+    float * K = new float[nPointsB]();    
+    float * nT = new float[nPointsB]();    
+    float * nK = new float[nPointsB]();  
 
     shots.idx = (int)(shots.x[shotId] / dx) + nb;
     shots.idy = (int)(shots.y[shotId] / dy) + nb;
@@ -84,7 +85,7 @@ void Eikonal::podvin()
 
     for (int index = 0; index < nPointsB; index++)
     {
-        S[index] = 1.0f / vp[index];
+        S[index] = 1.0f / Vp[index];
 
         if (index == sId)
         {
@@ -1723,9 +1724,9 @@ void Eikonal::podvin()
 void Eikonal::jeongFIM()
 {
     S = new float[nPointsB]();    
-    K = new float[nPointsB]();    
-    nT = new float[nPointsB]();    
-    nK = new float[nPointsB]();  
+    float * K = new float[nPointsB]();    
+    float * nT = new float[nPointsB]();    
+    float * nK = new float[nPointsB]();  
 
     shots.idx = (int)(shots.x[shotId] / dx) + nb;
     shots.idy = (int)(shots.y[shotId] / dy) + nb;
@@ -1735,7 +1736,7 @@ void Eikonal::jeongFIM()
 
     for (int index = 0; index < nPointsB; index++)
     {
-        S[index] = 1.0f / vp[index];
+        S[index] = 1.0f / Vp[index];
 
         if (index == sId)
         {
@@ -1929,22 +1930,22 @@ void Eikonal::innerSweep()
     t1D1 = 1e5; t1D2 = 1e5; t1D3 = 1e5;     
 
     // Z direction
-    t1D1 = tv + dz * min4(S[i1 + imax(fsm.j-1,1)*nzz       + imax(fsm.k-1,1)*nxx*nzz], 
-                                    S[i1 + imax(fsm.j-1,1)*nzz       + imin(fsm.k,nyy-1)*nxx*nzz],
-                                    S[i1 + imin(fsm.j,nxx-1)*nzz + imax(fsm.k-1,1)*nxx*nzz], 
-                                    S[i1 + imin(fsm.j,nxx-1)*nzz + imin(fsm.k,nyy-1)*nxx*nzz]);
+    t1D1 = tv + dz * min4(S[i1 + imax(fsm.j-1,1)*nzz   + imax(fsm.k-1,1)*nxx*nzz], 
+                          S[i1 + imax(fsm.j-1,1)*nzz   + imin(fsm.k,nyy-1)*nxx*nzz],
+                          S[i1 + imin(fsm.j,nxx-1)*nzz + imax(fsm.k-1,1)*nxx*nzz], 
+                          S[i1 + imin(fsm.j,nxx-1)*nzz + imin(fsm.k,nyy-1)*nxx*nzz]);
 
     // X direction
-    t1D2 = te + dx * min4(S[imax(fsm.i-1,1)       + j1*nzz + imax(fsm.k-1,1)*nxx*nzz], 
-                                    S[imin(fsm.i,nzz-1) + j1*nzz + imax(fsm.k-1,1)*nxx*nzz],
-                                    S[imax(fsm.i-1,1)       + j1*nzz + imin(fsm.k,nyy-1)*nxx*nzz], 
-                                    S[imin(fsm.i,nzz-1) + j1*nzz + imin(fsm.k,nyy-1)*nxx*nzz]);
+    t1D2 = te + dx * min4(S[imax(fsm.i-1,1)   + j1*nzz + imax(fsm.k-1,1)*nxx*nzz], 
+                          S[imin(fsm.i,nzz-1) + j1*nzz + imax(fsm.k-1,1)*nxx*nzz],
+                          S[imax(fsm.i-1,1)   + j1*nzz + imin(fsm.k,nyy-1)*nxx*nzz], 
+                          S[imin(fsm.i,nzz-1) + j1*nzz + imin(fsm.k,nyy-1)*nxx*nzz]);
 
     // Y direction
-    t1D3 = tn + dy * min4(S[imax(fsm.i-1,1)       + imax(fsm.j-1,1)*nzz       + k1*nxx*nzz], 
-                                    S[imax(fsm.i-1,1)       + imin(fsm.j,nxx-1)*nzz + k1*nxx*nzz],
-                                    S[imin(fsm.i,nzz-1) + imax(fsm.j-1,1)*nzz       + k1*nxx*nzz], 
-                                    S[imin(fsm.i,nzz-1) + imin(fsm.j,nxx-1)*nzz + k1*nxx*nzz]);
+    t1D3 = tn + dy * min4(S[imax(fsm.i-1,1)   + imax(fsm.j-1,1)*nzz   + k1*nxx*nzz], 
+                          S[imax(fsm.i-1,1)   + imin(fsm.j,nxx-1)*nzz + k1*nxx*nzz],
+                          S[imin(fsm.i,nzz-1) + imax(fsm.j-1,1)*nzz   + k1*nxx*nzz], 
+                          S[imin(fsm.i,nzz-1) + imin(fsm.j,nxx-1)*nzz + k1*nxx*nzz]);
 
     t1D = min3(t1D1,t1D2,t1D3);
 
@@ -2271,7 +2272,7 @@ void Eikonal::nobleFSM()
     for (int index = 0; index < nPointsB; index++)
     {
         T[index] = 1e6f;
-        S[index] = 1.0f / vp[index];
+        S[index] = 1.0f / Vp[index];
     }
 
     T[sId] = S[sId] * sqrtf(powf(shots.idx*dx - shots.x[shotId], 2.0f) + powf(shots.idy*dy - shots.y[shotId], 2.0f) + powf(shots.idz*dz - shots.z[shotId], 2.0f));

@@ -19,15 +19,15 @@ int main(int argc, char **argv)
 
     eikonal.initialize();
 
-    eikonal.vp = new float[eikonal.nPointsB];
+    eikonal.Vp = new float[eikonal.nPointsB];
 
     int interface = (int)(1000.0f/eikonal.dz) + eikonal.nxx*eikonal.nzz + eikonal.nyy*eikonal.nxx*eikonal.nzz;
 
     for (int i = 0; i < eikonal.nPointsB; ++i) 
     {
-        eikonal.vp[i] = 1500.0f;
+        eikonal.Vp[i] = 1500.0f;
         
-        if (i >= interface) eikonal.vp[i] = 2000.0f;
+        if (i >= interface) eikonal.Vp[i] = 2000.0f;
     }
 
     // Generate central shot

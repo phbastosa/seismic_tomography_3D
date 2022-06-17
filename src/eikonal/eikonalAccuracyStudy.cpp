@@ -8,7 +8,9 @@ int main(int argc, char **argv)
 
     auto eikonal = Eikonal();
 
-    std::vector<std::string> modelNames {"refractiveModel_12x221x221_100m.bin", "refractiveModel_23x441x441_50m.bin", "refractiveModel_45x881x881_25m.bin"};
+    std::vector<std::string> modelNames {"refractiveModel_12x221x221_100m.bin", 
+                                         "refractiveModel_23x441x441_50m.bin", 
+                                         "refractiveModel_45x881x881_25m.bin"};
 
     std::vector<int> nx_all {221, 441, 881};
     std::vector<int> ny_all {221, 441, 881};
@@ -52,7 +54,9 @@ int main(int argc, char **argv)
 
         eikonal.initialize();
 
-        eikonal.vp = eikonal.expandModel(eikonal.readBinaryFloat(modelNames[n], eikonal.nPoints));
+        eikonal.model = eikonal.readBinaryFloat(modelNames[n],eikonal.nPoints);
+       
+        eikonal.Vp = eikonal.expandModel();
 
         // Setting extern shot points  
 

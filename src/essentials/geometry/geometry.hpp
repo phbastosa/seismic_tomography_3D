@@ -12,10 +12,10 @@ private:
         float * x;                   // Position x of geometry element
         float * y;                   // Position y of geometry element
         float * z;                   // Position z of geometry element
-    
-        int idx;                     // X index position of geometry element
-        int idy;                     // Y index position of geometry element
-        int idz;                     // Z index position of geometry element
+
+        int idx;                     // Position x in samples with boundary compansation
+        int idy;                     // Position y in samples with boundary compansation  
+        int idz;                     // Position z in samples with boundary compansation 
 
         int all;                     // Total elements in simulation
         int n_xline;                 // Total geometry unit in xline
@@ -59,13 +59,16 @@ public:
     std::vector<float> linspace(float xi, float xf, int n);        
 
     /* */
-    void set_SW(float x, float y) {SW.x = x; SW.y = y;}
+    void set_SW(float x, float y);
 
     /* */
-    void set_NW(float x, float y) {NW.x = x; NW.y = y;}
+    void set_NW(float x, float y);
     
     /* */
-    void set_SE(float x, float y) {SE.x = x; SE.y = y;}
+    void set_SE(float x, float y);
+
+    /* */
+    int * setGridPoints(float * p, int n, float dh, int nb);
 
     /* Method to set shots positions giving three points in grid */
     void setGridShots();

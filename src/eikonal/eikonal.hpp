@@ -26,14 +26,10 @@ private:
         
     } FSM;
     
-    float * S;                           // Slowness volume
-    float * K;                           // Wavefront expansion volume
-    float * nT;                          // Auxiliar travel times volume
-    float * nK;                          // Auxiliar wavefromt expansion volume
-
     FSM fsm;                             // Compressing fast sweeping method variables
 
-
+    /* */
+    float min(float v1, float v2);
 
     /* */
     void writeTravelTimes();
@@ -70,14 +66,15 @@ public:
     int shotId;                          // Current source index available
 
     float * T;                           // Travel times volume
+    float * S;                           // Slowness volume 
+    float * Vp;                          // Velocity
 
     bool exportTimesVolume;              // To set if you want to write the times volume 
     bool exportFirstArrivals;            // To set if you want to write the first arrivals
 
+    std::string vpModelPath;             // Vp model location
     std::string eikonalFolder;           // Folder to write travel times volume 
     std::string arrivalFolder;           // Folder to write first arrivals
-
-    float min(float v1, float v2);
 
     /* */
     void eikonalComputing();

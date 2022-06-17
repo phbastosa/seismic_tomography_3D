@@ -57,43 +57,6 @@ void Utils::writeBinaryFloat(std::string path, float *array, int n)
     file.close();
 }
 
-float * Utils::rickerGeneration(int ns, float dt, float fmax)
-{
-    float * ricker = new float[ns];
-    
-    float pi = 4.0f * atanf(1.0f);
-    float fc = fmax / (3.0f * sqrtf(pi));
-
-    int s = (int)(ns / 2);
-
-    for (int i = -s; i < s; i++) 
-    {
-        float aux1 = 1.0f - 2.0f*pi*powf(i*dt, 2.0f)*powf(fc, 2.0f)*powf(pi, 2.0f);
-        float aux2 = exp(-pi*powf(i*dt, 2.0f)*powf(fc, 2.0f)*powf(pi, 2.0f));
-
-        ricker[i + s] = aux1 * aux2;
-    }
-
-    return ricker;
-}
-
-float * Utils::intRickerGeneration(int ns, float dt, float fmax)
-{
-    float * ricker = rickerGeneration(ns, dt, fmax); 
-
-    float * intRicker = new float[ns]();
-
-    for (int i = 0; i < ns; i++)
-    {
-        for (int j = 0; j < i+1; j++)
-        {
-            intRicker[i] += ricker[j];
-        }
-    }
-
-    return intRicker;
-}
-
 std::string Utils::catchParameter(std::string target, std::string file)
 {
     char spaces = ' ';
