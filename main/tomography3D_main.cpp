@@ -19,11 +19,9 @@ int main(int argc, char **argv)
         
         tomography.importDcal();
 
-        tomography.makeGradient();
-
         if (tomography.converged()) break;
 
-        tomography.cgls_Berriman();
+        tomography.optimization();
 
         tomography.modelUpdate();
 

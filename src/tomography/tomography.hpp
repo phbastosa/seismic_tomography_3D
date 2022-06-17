@@ -7,44 +7,72 @@ class Tomography : public Eikonal
 {
 private:
 
-    int iteration;
-    int maxIteration;
-
-    float xMask;
-    float yMask;
-    float lambda;
-    float zMaskUp;
-    float zMaskDown;
-    float tomoTolerance;
-
-    float * dobs;
-    float * dcal;
-    float * gradient;
-    float * slowness;
-
-    bool smoothing;
-    bool generate_dobs;        
-
-    typedef struct
-    {
-        int nx, ny, nz, nPoints;             
-        float dx, dy, dz;
-
-    } tomoModel;
+    int iteration;                 //
+    int maxIteration;              //  
     
-    tomoModel mTomo;
+    /* 0 - Least squares (Berriman regularization) 
+       1 - ...
+       2 - ...
+       3 - comming soon... 
+    */
+    int optimizationMethod;       
 
-    std::string resPath;
-    std::string dobsPath;
-    std::string dcalPath;
-    std::string gradPath;
-    std::string estModels;
+    float xMask;                   // 
+    float yMask;                   // 
+    float lambda;                  //
+    float zMaskUp;                 //
+    float zMaskDown;               //
+    float tomoTolerance;           //
 
-    std::vector < int > iM;
-    std::vector < int > jM;
-    std::vector <float> vM;
+    float * dobs;                  //
+    float * dcal;                  //
+    float * gradient;              //
+    float * slowness;              //
 
-    std::vector <float> residuo;
+    bool smoothing;                //
+    bool generate_dobs;            //
+
+    typedef struct                 //
+    {  
+        int nx, ny, nz, nPoints;   //             
+        float dx, dy, dz;          //    
+
+    } tomoModel;               
+    
+    tomoModel mTomo;               //    
+
+    std::string resPath;           //
+    std::string dobsPath;          //
+    std::string dcalPath;          //
+    std::string gradPath;          //
+    std::string estModels;         //
+
+    std::vector < int > iM;        // 
+    std::vector < int > jM;        //
+    std::vector <float> vM;        //
+
+    std::vector <float> residuo;   //
+
+    /* */
+    void generateDobs();
+
+    /* */
+    void gradientRayTracing();
+
+    /* */
+    void makeGradient();
+
+    /* */
+    void cgls_Berriman();
+
+    /* */
+    void cgls_zoTikhonov();
+    
+    /* */
+    void cgls_foTikhonov();
+
+    /* */
+    void cgls_soTikhonov();
 
 public:    
     
@@ -64,31 +92,13 @@ public:
     void importDcal();
     
     /* */
-    void generateDobs();
-
-    /* */
     void forwardModeling();
-
-    /* */
-    void gradientRayTracing();
-
-    /* */
-    void makeGradient();
 
     /* */
     bool converged();
 
     /* */
-    void cgls_Berriman();
-
-    /* */
-    void cgls_zoTikhonov();
-    
-    /* */
-    void cgls_foTikhonov();
-
-    /* */
-    void cgls_soTikhonov();
+    void optimization();
 
     /* */
     void modelUpdate();    

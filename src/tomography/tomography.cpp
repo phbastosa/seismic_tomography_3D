@@ -12,6 +12,7 @@ Tomography::Tomography(char **argv)
 {
     eikonalType = std::stoi(catchParameter("eikonalType", argv[1]));    
     exportTimesVolume = str2bool(catchParameter("exportTravelTimes", argv[1]));
+    optimizationMethod = std::stoi(catchParameter("optmizationMethod", argv[1]));
     exportFirstArrivals = str2bool(catchParameter("exportFirstArrivals", argv[1]));
 
     nx = std::stoi(catchParameter("nx", argv[1]));
@@ -557,6 +558,28 @@ void Tomography::cgls_soTikhonov()
     std::vector< float >().swap(vM);
 
     
+}
+
+void Tomography::optimization()
+{
+    switch (optimizationMethod)
+    {
+    case 0:
+        cgls_Berriman();    
+        break;
+    
+    case 1:
+        cgls_zoTikhonov();
+        break;
+    
+    case 2:
+        cgls_foTikhonov();
+        break;
+    
+    case 3:
+        cgls_soTikhonov();
+        break;
+    }
 }
 
 void Tomography::modelUpdate()
