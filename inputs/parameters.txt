@@ -33,8 +33,6 @@ nx = 101                              # x dimension of model <int>
 ny = 101                              # y dimension of model <int>
 nz = 31                               # z dimension of model <int>
  
-nb = 2                                # Boundary to expand model <int>
- 
 dx = 50                               # x sample spacing of model [m] <float>
 dy = 50                               # y sample spacing of model [m] <float> 
 dz = 50                               # z sample spacing of model [m] <float>  

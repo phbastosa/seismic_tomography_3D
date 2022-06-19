@@ -18,7 +18,7 @@ Tomography::Tomography(char **argv)
     nx = std::stoi(catchParameter("nx", argv[1]));
     ny = std::stoi(catchParameter("ny", argv[1]));
     nz = std::stoi(catchParameter("nz", argv[1]));
-    nb = std::stoi(catchParameter("nb", argv[1]));
+    nb = 2;
     
     dx = std::stof(catchParameter("dx", argv[1]));
     dy = std::stof(catchParameter("dy", argv[1]));
