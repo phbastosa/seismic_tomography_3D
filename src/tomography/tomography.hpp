@@ -10,10 +10,11 @@ private:
     int iteration;                 //
     int maxIteration;              //  
     
-    /* 0 - Least squares (Berriman regularization) 
-       1 - ...
-       2 - ...
-       3 - comming soon... 
+    /* 0 - L2 norm least squares (Berriman regularization)
+       1 - L2 norm least squares (zero order Tikonov regularization)  
+       2 - L2 norm least squares (first order Tikonov regularization)  
+       3 - L2 norm least squares (second order Tikonov regularization) 
+       4 - comming soon... 
     */
     int optimizationMethod;       
 
