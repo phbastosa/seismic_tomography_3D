@@ -92,12 +92,12 @@ SWr = [500,500]            # NW       # (x,y) in float WITHOUT SPACES
 NWr = [500,4500]           #  |       # (x,y) in float WITHOUT SPACES   
 SEr = [4500,500]           # SW -- SE # (x,y) in float WITHOUT SPACES   
  
-# Circular NODES geometry (option: 2)
+# Circular NODES geometry (option: 0)
 
 rxc = 2500                            # x receiver center position <float>
 ryc = 2500                            # y receiver center position <float>
 rds = 50                              # Receiver spacing <float>
-rOffsets = [2000]                     # Receiver offsets WITHOUT SPACES <float>
+rOffsets = [1000,1500,2000]           # Receiver offsets WITHOUT SPACES <float>
 
 # Some folders location -------------------------------------------------------------------------------------------------
 
