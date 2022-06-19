@@ -14,7 +14,7 @@ maxIteration = 1                      # Tomography max iteration <int>
 tomoTolerance = 0.001                 # Tomography tolerance to stop inversion progress <float>
  
 # Set optimization method <int>:
-#    0 - L2 norm least Squares (Berriman regularization)
+#    0 - L2 norm least squares (Berriman regularization)
 #    1 - L2 norm least squares (zero order Tikonov regularization)  
 #    2 - L2 norm least squares (first order Tikonov regularization)  
 #    3 - L2 norm least squares (second order Tikonov regularization) 
@@ -24,7 +24,6 @@ optmizationMethod = 0
 
 # Inputs Folders ----------------------------------------------------------------------------------
 
-dobsFolder = "inputs/dobs/"                                   # Folder to write observed data
 trueModelPath = "inputs/models/trueModel_31x101x101_50m.bin"  # Full true velocity model path
 initModelPath = "inputs/models/initModel_31x101x101_50m.bin"  # Full initial velocity model path
 
@@ -64,8 +63,8 @@ saveGeometry = True                   # To save shots and nodes position in a .t
 
 # Setting SHOTS geometry -------------------------------------------------------------------------
 
-shotsGeometryType = 1                 # 0 - circular shots style; 1 - grid shots style <int>
 sElev = 10                            # Sources elevation [m]- flat surface <float>             
+shotsGeometryType = 1                 # 0 - circular shots style; 1 - grid shots style <int>
 
 # Grid SHOTS geometry (option: 1)                        
 
@@ -84,8 +83,8 @@ sOffsets = [1000,1500,2000]           # Source offsets [m] WITHOUT SPACES <float
 
 # Setting NODES geometry -------------------------------------------------------------------------
 
-nodesGeometryType = 1                 # 0 - circular nodes style; 1 - grid nodes style <int>
 rElev = 200                           # Receivers elevation [m] - flat surface <float>
+nodesGeometryType = 1                 # 0 - circular nodes style; 1 - grid nodes style <int>
 
 # Grid NODES geometry (option: 1)                       
 
@@ -102,13 +101,14 @@ ryc = 2500                            # y receiver center position <float>
 rds = 50                              # Receiver spacing <float>
 rOffsets = [2000]                     # Receiver offsets WITHOUT SPACES <float>
 
-# Outputs folders -------------------------------------------------------------------------------------------------
+# Some folders location -------------------------------------------------------------------------------------------------
 
+dobsFolder = "inputs/dobs/"                                   # Folder to write observed data
 dcalFolder = "outputs/dcal/"                                  # Folder to write calculated data
 gradientFolder = "outputs/gradient/"                          # Folder to write gradients per iteration 
 convergencyFolder = "outputs/convergency/"                    # Folder to write convergency line to residuous norm
-shotsPositionPath = "outputs/geometry/shotsPosition.txt"      # Full path of receivers position     
-nodesPositionPath = "outputs/geometry/nodesPosition.txt"      # Full path of shots position   
 travelTimesFolder = "outputs/travelTimes/"                    # Folder to write travel time volume per shot
 firstArrivalsFolder = "outputs/firstArrivals/"                # Folder to write first arrivals per shot   
 estimatedModelsFolder = "outputs/models/"                     # Folder to write estimated models per iteration 
+shotsPositionPath = "outputs/geometry/shotsPosition.txt"      # Full path of receivers position     
+nodesPositionPath = "outputs/geometry/nodesPosition.txt"      # Full path of shots position   

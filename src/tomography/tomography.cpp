@@ -379,77 +379,15 @@ bool Tomography::converged()
     }
 }
 
-void Tomography::cgls_Berriman()
+void Tomography::tomographyUpdate()
 {
-    std::cout<<"Solving linear system...\n\n";
-
-    // G matrix construction
-
-    int nnz = vM.size();
-
-    int nM = mTomo.nPoints;                 // Model dimension
-    int nD = shots.all * nodes.all;     // Data dimension
-
-    int * iG = new int[nnz + nM]();
-    int * jG = new int[nnz + nM]();
-    float * vG = new float[nnz + nM]();
-
-    for (int index = 0; index < nnz; index++)
-    {
-        iG[index] = iM[index];
-        jG[index] = jM[index];
-        vG[index] = vM[index];
-    }
-
-    std::vector<  int  >().swap(iM);
-    std::vector<  int  >().swap(jM);
-    std::vector< float >().swap(vM);
-
-    // Berriman regularization 
-
-    float * L = new float[nD]();
-    float * C = new float[nM]();
-    float * B = new float[nD + nM]();
-
-    for (int index = 0; index < nnz; index++)
-    {
-        L[iG[index]] += vG[index];
-        C[jG[index]] += vG[index];
-    }    
-
-    for (int index = 0; index < nD; index++) 
-        L[index] = sqrtf(1.0f / L[index]);
-
-    for (int index = 0; index < nnz; index++) 
-        vG[index] *= L[iG[index]]; 
-
-    for (int index = 0; index < nD; index++) 
-        B[index] = L[index] * (dobs[index] - dcal[index]);
-
-    for (int index = 0; index < nM; index++) 
-    {
-        iG[nnz + index] = nD + index;
-        jG[nnz + index] = index;
-        vG[nnz + index] = lambda * C[index];
-    }
-
-    // Conjugate gradient least square
-
-    nD += nM;
-    nnz += nM;
-
-    int maxIt = 1000;
-    int cgTol = 1e-6;
-
-    float * x = sparse_cgls(iG, jG, vG, B, nD, nM, nnz, maxIt, cgTol);
-
     int xcut = (int) (xMask / mTomo.dx);
     int ycut = (int) (yMask / mTomo.dy);
     int zcutUp = (int) (zMaskUp / mTomo.dz);
     int zcutDown = (int) (zMaskDown / mTomo.dz);
 
-    // Tomography slowness parameters atualization    
-    for (int index = 0; index < nM; index++) 
+    // Tomography slowness update    
+    for (int index = 0; index < mTomo.nPoints; index++) 
     {
         int k = (int) (index / (mTomo.nx*mTomo.nz));               // y direction
         int j = (int) (index - k*mTomo.nx*mTomo.nz) / mTomo.nz;    // x direction
@@ -457,107 +395,353 @@ void Tomography::cgls_Berriman()
 
         if ((i >= zcutUp) && (i < mTomo.nz - zcutDown) && (j >= xcut) && (j < mTomo.nx - xcut - 1) && (k >= ycut) && (k < mTomo.ny - ycut - 1))
         {
-            slowness[index] += x[index];
+            slowness[index] += deltaSlowness[index];
+        }
+    }    
+}
+
+void Tomography::lscg_Berriman()
+{
+    std::cout<<"Solving linear system...\n\n";
+
+    // G matrix construction
+
+    sparseMatrix G;
+
+    G.nnz = vM.size();           // Non zero elements 
+    G.m = mTomo.nPoints;         // Model dimension
+    G.n = shots.all*nodes.all;   // Data dimension
+
+    G.i = new int[G.nnz];
+    G.j = new int[G.nnz];
+    G.v = new float[G.nnz];
+
+    for (int index = 0; index < vM.size(); index++)
+    {
+        G.i[index] = iM[index];
+        G.j[index] = jM[index];
+        G.v[index] = vM[index];
+    }
+
+    std::vector<  int  >().swap(iM);
+    std::vector<  int  >().swap(jM);
+    std::vector< float >().swap(vM);
+
+    float * L = new float[G.n]();
+    float * C = new float[G.m]();
+
+    // Berriman regularization 
+
+    for (int index = 0; index < G.nnz; index++)
+    {
+        L[G.i[index]] += G.v[index];
+        C[G.j[index]] += G.v[index];
+    }    
+
+    for (int index = 0; index < G.n; index++) 
+        L[index] = sqrtf(1.0f / L[index]);
+
+    for (int index = 0; index < G.nnz; index++) 
+        G.v[index] *= L[G.i[index]]; 
+
+    // Filling the data difference array with regularization
+
+    float * B = new float[G.n]();
+
+    for (int index = 0; index < G.n; index++) 
+        B[index] = L[index] * (dobs[index] - dcal[index]);
+
+    // Constructing a full matrix to solve problem with sparse least square conjugate gradient
+
+    sparseMatrix A;
+
+    A.nnz = G.nnz + mTomo.nPoints;
+    A.n = G.n + mTomo.nPoints;
+    A.m = G.m;  
+
+    A.i = new int[A.nnz];
+    A.j = new int[A.nnz];
+    A.v = new float[A.nnz];
+
+    for (int index = 0; index < A.nnz; index++) 
+    {
+        if (index < G.nnz)
+        {
+            A.i[index] = G.i[index];
+            A.j[index] = G.j[index];
+            A.v[index] = G.v[index];
+        }
+        else
+        {
+            A.i[index] = index;
+            A.j[index] = index - G.nnz;
+            A.v[index] = lambda * C[index - G.nnz];        
         }
     }
 
-    delete[] iG; delete[] jG; delete[] vG; delete[] B; delete[] x;
+    delete[] G.i; delete[] G.j; delete[] G.v; delete[] C; delete L;
+
+    // Sparse least squares conjugate gradient
+
+    int maxIt = 1000;
+    int cgTol = 1e-6;
+
+    deltaSlowness = sparse_lscg(A, B, maxIt, cgTol);
+
+    tomographyUpdate();
+
+    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B; delete[] deltaSlowness;
 }
 
-void Tomography::cgls_zoTikhonov()
+void Tomography::lscg_zoTikhonov()
 {
     std::cout<<"Solving linear system...\n\n";
 
     // G matrix construction
 
-    int nnz = vM.size();
+    sparseMatrix G;
 
-    int nM = mTomo.nPoints;             // Model dimension
-    int nD = shots.all * nodes.all;     // Data dimension
+    G.nnz = vM.size();           // Non zero elements 
+    G.m = mTomo.nPoints;         // Model dimension
+    G.n = shots.all*nodes.all;   // Data dimension
 
-    int * iG = new int[nnz + nM]();
-    int * jG = new int[nnz + nM]();
-    float * vG = new float[nnz + nM]();
+    G.i = new int[G.nnz];
+    G.j = new int[G.nnz];
+    G.v = new float[G.nnz];
 
-    for (int index = 0; index < nnz; index++)
+    for (int index = 0; index < vM.size(); index++)
     {
-        iG[index] = iM[index];
-        jG[index] = jM[index];
-        vG[index] = vM[index];
+        G.i[index] = iM[index];
+        G.j[index] = jM[index];
+        G.v[index] = vM[index];
     }
 
     std::vector<  int  >().swap(iM);
     std::vector<  int  >().swap(jM);
     std::vector< float >().swap(vM);
 
-    for (int index = 0; index < nM; index++) 
+    // First order tikhonov regularization 
+
+    float * L = new float[G.m]();
+
+    for (int index = 0; index < G.m; index++)
+        L[index] = lambda;
+
+    // Filling the data difference array
+
+    float * B = new float[G.n]();
+
+    for (int index = 0; index < G.n; index++) 
+        B[index] = dobs[index] - dcal[index];
+
+    // Constructing a full matrix to solve problem with sparse least square conjugate gradient
+
+    sparseMatrix A;
+
+    A.nnz = G.nnz + mTomo.nPoints;
+    A.n = G.n + mTomo.nPoints;
+    A.m = G.m;  
+
+    A.i = new int[A.nnz];
+    A.j = new int[A.nnz];
+    A.v = new float[A.nnz];
+
+    for (int index = 0; index < A.nnz; index++) 
     {
-        iG[nnz + index] = nD + index;
-        jG[nnz + index] = index;
-        vG[nnz + index] = lambda;
+        if (index < G.nnz)
+        {
+            A.i[index] = G.i[index];
+            A.j[index] = G.j[index];
+            A.v[index] = G.v[index];
+        }
+        else
+        {
+            A.i[index] = index;
+            A.j[index] = index - G.nnz;
+            A.v[index] = L[index - G.nnz];        
+        }
     }
 
+    delete[] G.i; delete[] G.j; delete[] G.v; delete L;
 
+    // Sparse least squares conjugate gradient
 
+    int maxIt = 1000;
+    int cgTol = 1e-6;
 
+    deltaSlowness = sparse_lscg(A, B, maxIt, cgTol);
+
+    tomographyUpdate();
+
+    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B; delete[] deltaSlowness;
 }
 
-void Tomography::cgls_foTikhonov()
+void Tomography::lscg_foTikhonov()
 {
     std::cout<<"Solving linear system...\n\n";
 
     // G matrix construction
 
-    int nnz = vM.size();
+    sparseMatrix G;
 
-    int nM = mTomo.nPoints;                 // Model dimension
-    int nD = shots.all * nodes.all;     // Data dimension
+    G.nnz = vM.size();           // Non zero elements 
+    G.m = mTomo.nPoints;         // Model dimension
+    G.n = shots.all*nodes.all;   // Data dimension
 
-    int * iG = new int[nnz + nM]();
-    int * jG = new int[nnz + nM]();
-    float * vG = new float[nnz + nM]();
+    G.i = new int[G.nnz];
+    G.j = new int[G.nnz];
+    G.v = new float[G.nnz];
 
-    for (int index = 0; index < nnz; index++)
+    for (int index = 0; index < vM.size(); index++)
     {
-        iG[index] = iM[index];
-        jG[index] = jM[index];
-        vG[index] = vM[index];
+        G.i[index] = iM[index];
+        G.j[index] = jM[index];
+        G.v[index] = vM[index];
     }
 
     std::vector<  int  >().swap(iM);
     std::vector<  int  >().swap(jM);
     std::vector< float >().swap(vM);
 
+    // First order tikhonov regularization 
 
+    auto LTL = firstOrderMatrixOperator(G.m);
+
+    for (int index = 0; index < LTL.nnz; index++)
+        LTL.v[index] *= lambda;
+
+    // Filling the data difference array
+
+    float * B = new float[G.n]();
+
+    for (int index = 0; index < G.n; index++) 
+        B[index] = dobs[index] - dcal[index];
+
+    // Constructing a full matrix to solve problem with sparse least square conjugate gradient
+
+    sparseMatrix A;
+
+    A.nnz = G.nnz + LTL.nnz;
+    A.n = G.n + LTL.n;
+    A.m = G.m + LTL.m;  
+
+    A.i = new int[A.nnz];
+    A.j = new int[A.nnz];
+    A.v = new float[A.nnz];
+
+    for (int index = 0; index < A.nnz; index++) 
+    {
+        if (index < G.nnz)
+        {
+            A.i[index] = G.i[index];
+            A.j[index] = G.j[index];
+            A.v[index] = G.v[index];
+        }
+        else
+        {
+            A.i[index] = LTL.i[index];
+            A.j[index] = LTL.j[index];
+            A.v[index] = LTL.v[index];        
+        }
+    }
+
+    delete[] G.i; delete[] G.j; delete[] G.v;
+    delete[] LTL.i; delete[] LTL.j; delete[] LTL.v;
+
+    // Sparse least squares conjugate gradient
+
+    int maxIt = 1000;
+    int cgTol = 1e-6;
+
+    deltaSlowness = sparse_lscg(A, B, maxIt, cgTol);
+
+    tomographyUpdate();
+
+    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B; delete[] deltaSlowness;
 }
 
-void Tomography::cgls_soTikhonov()
+void Tomography::lscg_soTikhonov()
 {
     std::cout<<"Solving linear system...\n\n";
 
     // G matrix construction
 
-    int nnz = vM.size();
+    sparseMatrix G;
 
-    int nM = mTomo.nPoints;                 // Model dimension
-    int nD = shots.all * nodes.all;     // Data dimension
+    G.nnz = vM.size();           // Non zero elements 
+    G.m = mTomo.nPoints;         // Model dimension
+    G.n = shots.all*nodes.all;   // Data dimension
 
-    int * iG = new int[nnz + nM]();
-    int * jG = new int[nnz + nM]();
-    float * vG = new float[nnz + nM]();
+    G.i = new int[G.nnz];
+    G.j = new int[G.nnz];
+    G.v = new float[G.nnz];
 
-    for (int index = 0; index < nnz; index++)
+    for (int index = 0; index < vM.size(); index++)
     {
-        iG[index] = iM[index];
-        jG[index] = jM[index];
-        vG[index] = vM[index];
+        G.i[index] = iM[index];
+        G.j[index] = jM[index];
+        G.v[index] = vM[index];
     }
 
     std::vector<  int  >().swap(iM);
     std::vector<  int  >().swap(jM);
     std::vector< float >().swap(vM);
 
-    
+    // Second order tikhonov regularization 
+
+    auto LTL = secondOrderMatrixOperator(G.m);
+
+    for (int index = 0; index < LTL.nnz; index++)
+        LTL.v[index] *= lambda;
+
+    // Filling the data difference array
+
+    float * B = new float[G.n]();
+
+    for (int index = 0; index < G.n; index++) 
+        B[index] = dobs[index] - dcal[index];
+
+    // Constructing a full matrix to solve problem with sparse least square conjugate gradient
+
+    sparseMatrix A;
+
+    A.nnz = G.nnz + LTL.nnz;
+    A.n = G.n + LTL.n;
+    A.m = G.m + LTL.m;  
+
+    A.i = new int[A.nnz];
+    A.j = new int[A.nnz];
+    A.v = new float[A.nnz];
+
+    for (int index = 0; index < A.nnz; index++) 
+    {
+        if (index < G.nnz)
+        {
+            A.i[index] = G.i[index];
+            A.j[index] = G.j[index];
+            A.v[index] = G.v[index];
+        }
+        else
+        {
+            A.i[index] = LTL.i[index];
+            A.j[index] = LTL.j[index];
+            A.v[index] = LTL.v[index];        
+        }
+    }
+
+    delete[] G.i; delete[] G.j; delete[] G.v;
+    delete[] LTL.i; delete[] LTL.j; delete[] LTL.v;
+
+    // Sparse least squares conjugate gradient
+
+    int maxIt = 1000;
+    int cgTol = 1e-6;
+
+    deltaSlowness = sparse_lscg(A, B, maxIt, cgTol);
+
+    tomographyUpdate();
+
+    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B; delete[] deltaSlowness;    
 }
 
 void Tomography::optimization()
@@ -565,19 +749,19 @@ void Tomography::optimization()
     switch (optimizationMethod)
     {
     case 0:
-        cgls_Berriman();    
+        lscg_Berriman();    
         break;
     
     case 1:
-        cgls_zoTikhonov();
+        lscg_zoTikhonov();
         break;
     
     case 2:
-        cgls_foTikhonov();
+        lscg_foTikhonov();
         break;
     
     case 3:
-        cgls_soTikhonov();
+        lscg_soTikhonov();
         break;
     }
 }

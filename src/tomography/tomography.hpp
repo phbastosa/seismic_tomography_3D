@@ -28,6 +28,7 @@ private:
     float * dcal;                  //
     float * gradient;              //
     float * slowness;              //
+    float * deltaSlowness;         //
 
     bool smoothing;                //
     bool generate_dobs;            //
@@ -63,16 +64,19 @@ private:
     void makeGradient();
 
     /* */
-    void cgls_Berriman();
-
-    /* */
-    void cgls_zoTikhonov();
+    void tomographyUpdate();
     
     /* */
-    void cgls_foTikhonov();
+    void lscg_Berriman();
 
     /* */
-    void cgls_soTikhonov();
+    void lscg_zoTikhonov();
+    
+    /* */
+    void lscg_foTikhonov();
+
+    /* */
+    void lscg_soTikhonov();
 
 public:    
     

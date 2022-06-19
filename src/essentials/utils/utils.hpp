@@ -7,6 +7,18 @@
 class Utils
 {
 public:
+    typedef struct 
+    {
+        int * i;       // Rows indexes
+        int * j;       // Cols indexes 
+        float * v;     // Value
+
+        int n;         // Rows number
+        int m;         // Cols number
+        int nnz;       // Non-zero elements
+    
+    } sparseMatrix;
+
     /* */
     float * readBinaryFloat(std::string path, int n);
 
@@ -54,17 +66,18 @@ public:
     Solution of A'A x = A'B without generate A'A 
 
     inputs:
-        iA - line of non zero elements
-        jA - columns of non zero elements
-        vA - value of non zero elements
+        A - sparse matrix 
         B - second member of linear system  
-        n - number of lines in A
-        m - number of columns in A
-        nnz - number of non zero elements
         maxIt - max iterations 
         cgTol - tolerance 
     */
-    float * sparse_cgls(int * iA, int * jA, float * vA, float * B, int n, int m, int nnz, int maxIt, float cgTol);
+    float * sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol);
+
+    /* Returns a sparse LTL first order finite difference matrix operator */
+    sparseMatrix firstOrderMatrixOperator(int order);
+    
+    /* Returns a sparse LTL second order finite difference matrix operator */
+    sparseMatrix secondOrderMatrixOperator(int order);
 
     /* Function to compute a trilinear interpolation */
     float triLinearInterpolation(float c000, float c001, float c100, float c101, float c010, float c011, float c110, float c111, 
