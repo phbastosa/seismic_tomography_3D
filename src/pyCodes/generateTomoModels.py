@@ -86,8 +86,8 @@ xzPlane = int(nx/2)
 yzPlane = int(ny/2)
 xyPlane = int(nz/2)
 
-vmin = np.min(trueModel)
-vmax = np.max(trueModel) 
+vmin = 1500
+vmax = 3500 
 
 xloc = np.linspace(0,nx-1,7,dtype=int)
 xlab = np.array(xloc * dh,dtype=int)

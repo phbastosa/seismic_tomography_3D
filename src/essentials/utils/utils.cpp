@@ -133,7 +133,7 @@ float * Utils::sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
 
     float * s = new float[A.n]();
     float * q = new float[A.n]();
-    float * r = new float[A.n]();
+    float * r = new float[A.m]();
     float * p = new float[A.m]();
     float * x = new float[A.m]();    // Linear system solution
 
@@ -157,40 +157,40 @@ float * Utils::sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
     {
         qTq = 0.0f;
         for (int row = 0; row < A.n; row++)          // q inner product
-            qTq += q[row] * q[row];                // qTq = q' * q
+            qTq += q[row] * q[row];                  // qTq = q' * q
 
         rTr = 0.0f;
         for (int col = 0; col < A.m; col++)          // r inner product
-            rTr += r[col] * r[col];                // rTr = r' * r 
+            rTr += r[col] * r[col];                  // rTr = r' * r 
 
-        a = rTr / qTq;                             // a = (r' * r) / (q' * q)                    
+        a = rTr / qTq;                               // a = (r' * r) / (q' * q)                    
 
         for (int col = 0; col < A.m; col++)          // model atualization
-            x[col] += a * p[col];                  // x = x + a * p
+            x[col] += a * p[col];                    // x = x + a * p
 
         for (int row = 0; row < A.n; row++)          // s atualization  
-            s[row] -= a * q[row];                  // s = s - a * q 
+            s[row] -= a * q[row];                    // s = s - a * q 
 
         rd = 0.0f;
         for (int col = 0; col < A.m; col++)          // r inner product for division 
-            rd += r[col] * r[col];                 // rd = r' * r
+            rd += r[col] * r[col];                   // rd = r' * r
 
         for (int col = 0; col < A.m; col++)          // Zeroing r 
-            r[col] = 0.0f;                         // r = 0, for multiplication
+            r[col] = 0.0f;                           // r = 0, for multiplication
         
         for (int ind = 0; ind < A.nnz; ind++)        // r atualization 
-            r[A.j[ind]] += A.v[ind] * s[A.i[ind]]; // r = G' * s    
+            r[A.j[ind]] += A.v[ind] * s[A.i[ind]];   // r = G' * s    
 
         rTr = 0.0f;                
         for (int col = 0; col < A.m; col++)          // r inner product
-            rTr += r[col] * r[col];                // rTr = r' * r
+            rTr += r[col] * r[col];                  // rTr = r' * r
 
-        if (sqrtf(rd) < cgTol) break;              // Convergence condition
+        if (sqrtf(rd) < cgTol) break;                // Convergence condition
         
-        b = rTr / rd;                              // b = (r' * r) / rd
+        b = rTr / rd;                                // b = (r' * r) / rd
 
         for (int col = 0; col < A.m; col++)          
-            p[col] = r[col] + b * p[col];          // p = r + b * p 
+            p[col] = r[col] + b * p[col];            // p = r + b * p 
 
         for (int row = 0; row < A.n; row++) 
             q[row] = 0.0f;                         // q = 0, for multiplication
@@ -207,6 +207,9 @@ float * Utils::sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
 Utils::sparseMatrix Utils::firstOrderMatrixOperator(int order)
 {
     sparseMatrix A;
+
+    A.n = order;
+    A.m = order;
 
     A.nnz = 3*(order-2) + 4;
 
@@ -258,6 +261,9 @@ Utils::sparseMatrix Utils::firstOrderMatrixOperator(int order)
 Utils::sparseMatrix Utils::secondOrderMatrixOperator(int order)
 {
 	sparseMatrix A;
+    
+    A.n = order;
+    A.m = order;
 
 	A.nnz = 5*(order-4) + 14;
 

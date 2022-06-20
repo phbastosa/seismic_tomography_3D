@@ -6,9 +6,6 @@
 class Tomography : public Eikonal
 {
 private:
-
-    int iteration;                 //
-    int maxIteration;              //  
     
     /* 0 - L2 norm least squares (Berriman regularization)
        1 - L2 norm least squares (zero order Tikonov regularization)  
@@ -17,6 +14,9 @@ private:
        4 - comming soon... 
     */
     int optimizationMethod;       
+
+    int iteration;                 //
+    int maxIteration;              //  
 
     float xMask;                   // 
     float yMask;                   // 

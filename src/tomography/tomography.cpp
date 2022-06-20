@@ -12,7 +12,7 @@ Tomography::Tomography(char **argv)
 {
     eikonalType = std::stoi(catchParameter("eikonalType", argv[1]));    
     exportTimesVolume = str2bool(catchParameter("exportTravelTimes", argv[1]));
-    optimizationMethod = std::stoi(catchParameter("optmizationMethod", argv[1]));
+    optimizationMethod = std::stoi(catchParameter("optimizationMethod", argv[1]));
     exportFirstArrivals = str2bool(catchParameter("exportFirstArrivals", argv[1]));
 
     nx = std::stoi(catchParameter("nx", argv[1]));
@@ -187,7 +187,10 @@ void Tomography::infoMessage()
         std::cout<<"Shots reciprocity = False\n\n";
 
     if (iteration == maxIteration)
+    { 
+    
         std::cout<<"------- Checking final residuo ------------\n\n";
+    }
     else
         std::cout<<"------- Computing iteration "<<iteration+1<<" ------------\n\n";
 
@@ -444,13 +447,6 @@ void Tomography::lscg_Berriman()
     for (int index = 0; index < G.nnz; index++) 
         G.v[index] *= L[G.i[index]]; 
 
-    // Filling the data difference array with regularization
-
-    float * B = new float[G.n]();
-
-    for (int index = 0; index < G.n; index++) 
-        B[index] = L[index] * (dobs[index] - dcal[index]);
-
     // Constructing a full matrix to solve problem with sparse least square conjugate gradient
 
     sparseMatrix A;
@@ -473,11 +469,18 @@ void Tomography::lscg_Berriman()
         }
         else
         {
-            A.i[index] = index;
+            A.i[index] = G.n + (index - G.nnz);
             A.j[index] = index - G.nnz;
             A.v[index] = lambda * C[index - G.nnz];        
         }
     }
+
+    // Filling the data difference array with regularization
+
+    float * B = new float[A.n]();
+
+    for (int index = 0; index < G.n; index++) 
+        B[index] = L[index] * (dobs[index] - dcal[index]);
 
     delete[] G.i; delete[] G.j; delete[] G.v; delete[] C; delete L;
 
@@ -520,20 +523,6 @@ void Tomography::lscg_zoTikhonov()
     std::vector<  int  >().swap(jM);
     std::vector< float >().swap(vM);
 
-    // First order tikhonov regularization 
-
-    float * L = new float[G.m]();
-
-    for (int index = 0; index < G.m; index++)
-        L[index] = lambda;
-
-    // Filling the data difference array
-
-    float * B = new float[G.n]();
-
-    for (int index = 0; index < G.n; index++) 
-        B[index] = dobs[index] - dcal[index];
-
     // Constructing a full matrix to solve problem with sparse least square conjugate gradient
 
     sparseMatrix A;
@@ -556,13 +545,20 @@ void Tomography::lscg_zoTikhonov()
         }
         else
         {
-            A.i[index] = index;
+            A.i[index] = G.n + (index - G.nnz);
             A.j[index] = index - G.nnz;
-            A.v[index] = L[index - G.nnz];        
+            A.v[index] = lambda;        
         }
     }
 
-    delete[] G.i; delete[] G.j; delete[] G.v; delete L;
+    // Filling the data difference array
+
+    float * B = new float[A.n]();
+
+    for (int index = 0; index < G.n; index++) 
+        B[index] = dobs[index] - dcal[index];
+
+    delete[] G.i; delete[] G.j; delete[] G.v;
 
     // Sparse least squares conjugate gradient
 
@@ -588,9 +584,9 @@ void Tomography::lscg_foTikhonov()
     G.m = mTomo.nPoints;         // Model dimension
     G.n = shots.all*nodes.all;   // Data dimension
 
-    G.i = new int[G.nnz];
-    G.j = new int[G.nnz];
-    G.v = new float[G.nnz];
+    G.i = new int[G.nnz]();
+    G.j = new int[G.nnz]();
+    G.v = new float[G.nnz]();
 
     for (int index = 0; index < vM.size(); index++)
     {
@@ -607,16 +603,6 @@ void Tomography::lscg_foTikhonov()
 
     auto LTL = firstOrderMatrixOperator(G.m);
 
-    for (int index = 0; index < LTL.nnz; index++)
-        LTL.v[index] *= lambda;
-
-    // Filling the data difference array
-
-    float * B = new float[G.n]();
-
-    for (int index = 0; index < G.n; index++) 
-        B[index] = dobs[index] - dcal[index];
-
     // Constructing a full matrix to solve problem with sparse least square conjugate gradient
 
     sparseMatrix A;
@@ -625,9 +611,9 @@ void Tomography::lscg_foTikhonov()
     A.n = G.n + LTL.n;
     A.m = G.m + LTL.m;  
 
-    A.i = new int[A.nnz];
-    A.j = new int[A.nnz];
-    A.v = new float[A.nnz];
+    A.i = new int[A.nnz]();
+    A.j = new int[A.nnz]();
+    A.v = new float[A.nnz]();
 
     for (int index = 0; index < A.nnz; index++) 
     {
@@ -639,11 +625,18 @@ void Tomography::lscg_foTikhonov()
         }
         else
         {
-            A.i[index] = LTL.i[index];
-            A.j[index] = LTL.j[index];
-            A.v[index] = LTL.v[index];        
+            A.i[index] = G.n + LTL.i[index - G.nnz];
+            A.j[index] = LTL.j[index - G.nnz];
+            A.v[index] = lambda * LTL.v[index - G.nnz];        
         }
     }
+
+    // Filling the data difference array
+
+    float * B = new float[A.n]();
+
+    for (int index = 0; index < G.n; index++) 
+        B[index] = dobs[index] - dcal[index];
 
     delete[] G.i; delete[] G.j; delete[] G.v;
     delete[] LTL.i; delete[] LTL.j; delete[] LTL.v;
@@ -691,16 +684,6 @@ void Tomography::lscg_soTikhonov()
 
     auto LTL = secondOrderMatrixOperator(G.m);
 
-    for (int index = 0; index < LTL.nnz; index++)
-        LTL.v[index] *= lambda;
-
-    // Filling the data difference array
-
-    float * B = new float[G.n]();
-
-    for (int index = 0; index < G.n; index++) 
-        B[index] = dobs[index] - dcal[index];
-
     // Constructing a full matrix to solve problem with sparse least square conjugate gradient
 
     sparseMatrix A;
@@ -723,11 +706,18 @@ void Tomography::lscg_soTikhonov()
         }
         else
         {
-            A.i[index] = LTL.i[index];
-            A.j[index] = LTL.j[index];
-            A.v[index] = LTL.v[index];        
+            A.i[index] = G.n + LTL.i[index - G.nnz];
+            A.j[index] = LTL.j[index - G.nnz];
+            A.v[index] = lambda * LTL.v[index - G.nnz];        
         }
     }
+
+    // Filling the data difference array
+
+    float * B = new float[A.n]();
+
+    for (int index = 0; index < G.n; index++) 
+        B[index] = dobs[index] - dcal[index];
 
     delete[] G.i; delete[] G.j; delete[] G.v;
     delete[] LTL.i; delete[] LTL.j; delete[] LTL.v;

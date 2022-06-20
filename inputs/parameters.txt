@@ -5,13 +5,9 @@
 # Keep it organized!!
 
 eikonalType = 1                       # 0 - Podvin & Lecomte (1991); 1 - Jeong & Whitaker (2008); 2 - Noble (2014) <int>  
-generateDobs = True                   # Flag to generate sinthetic observed data <bool>
+generateDobs = False                  # Flag to generate sinthetic observed data <bool>
 exportTravelTimes = False             # Flag to export travel times volume <bool> 
 exportFirstArrivals = True            # Flag to export first arrivals <bool> 
-
-regParam = 0.005                      # Regularization parameter <float>
-maxIteration = 1                      # Tomography max iteration <int>                   
-tomoTolerance = 0.001                 # Tomography tolerance to stop inversion progress <float>
  
 # Set optimization method <int>:
 #    0 - L2 norm least squares (Berriman regularization)
@@ -19,8 +15,11 @@ tomoTolerance = 0.001                 # Tomography tolerance to stop inversion p
 #    2 - L2 norm least squares (first order Tikonov regularization)  
 #    3 - L2 norm least squares (second order Tikonov regularization) 
 #    comming soon...
- 
-optmizationMethod = 0
+
+optimizationMethod = 3
+tomoTolerance = 0.001                 # Tomography tolerance to stop inversion progress <float>
+maxIteration = 1                      # Tomography max iteration <int>                   
+regParam = 0.05                       # Regularization parameter <float>
 
 # Inputs Folders ----------------------------------------------------------------------------------
 
