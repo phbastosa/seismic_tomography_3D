@@ -47,7 +47,7 @@ nz = 31
 
 dh = 50.0
 
-v = np.array([1500, 1700, 1900, 2100, 2300, 2500, 2700, 2900, 3500],dtype=float)
+v = np.array([1500, 1700, 1900, 2100, 2300, 2500, 2700, 2900, 4000],dtype=float)
 z = np.array([ 200,  400,  600,  800, 1000, 1200, 1400, 1450,nz*dh],dtype=float) // dh
 
 initModel = 1.0 / gaussian_filter(1.0 / buildModel3D(nx,ny,nz,v,z), 2.0)
