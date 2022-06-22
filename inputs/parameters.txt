@@ -16,10 +16,10 @@ exportFirstArrivals = True            # Flag to export first arrivals <bool>
 #    3 - L2 norm least squares (second order Tikonov regularization) 
 #    comming soon...
 
-optimizationMethod = 3
+optimizationMethod = 1
 tomoTolerance = 0.001                 # Tomography tolerance to stop inversion progress <float>
-maxIteration = 1                      # Tomography max iteration <int>                   
-regParam = 0.05                       # Regularization parameter <float>
+maxIteration = 5                      # Tomography max iteration <int>                   
+regParam = 100                        # Regularization parameter <float>
 
 # Inputs Folders ----------------------------------------------------------------------------------
 
@@ -40,18 +40,16 @@ dz = 50                               # z sample spacing of model [m] <float>
 
 nxTomo = 26                           # Resized x dimension of model <int>
 nyTomo = 26                           # Resized y dimension of model <int>
-nzTomo = 16                           # Resized z dimension of model <int>
+nzTomo = 8                            # Resized z dimension of model <int>
 
 dxTomo = 200                          # Resized model sample spacing [m] of x dimension <float> 
 dyTomo = 200                          # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 100                          # Resized model sample spacing [m] of z dimension <float>
+dzTomo = 200                          # Resized model sample spacing [m] of z dimension <float>
 
-xMask = 1200                          # Mask right and left sides of axis x [m] <float>
-yMask = 1200                          # Mask right and left sides of axis y [m] <float>
-zMaskUp = 200                         # Mask top of model [m] <float>    
-zMaskDown = 100                       # Mask bottom of model [m] <float> 
-
-smoothing = True                      # Activate moving average model smoothing per iteration <bool>
+xMask = 1000                          # Mask right and left sides of x axis [m] <float>
+yMask = 1000                          # Mask right and left sides of y axis [m] <float>
+zMaskUp = 200                         # Mask top of the model [m] <float>    
+zMaskDown = 100                       # Mask bottom of the model [m] <float> 
 
 # Geometry parameters ----------------------------------------------------------------------------
  

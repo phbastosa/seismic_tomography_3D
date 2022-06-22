@@ -11,14 +11,16 @@
 Tomography::Tomography(char **argv)
 {
     eikonalType = std::stoi(catchParameter("eikonalType", argv[1]));    
+    generate_dobs = str2bool(catchParameter("generateDobs", argv[1]));
     exportTimesVolume = str2bool(catchParameter("exportTravelTimes", argv[1]));
     optimizationMethod = std::stoi(catchParameter("optimizationMethod", argv[1]));
     exportFirstArrivals = str2bool(catchParameter("exportFirstArrivals", argv[1]));
 
+    nb = 2;
+
     nx = std::stoi(catchParameter("nx", argv[1]));
     ny = std::stoi(catchParameter("ny", argv[1]));
     nz = std::stoi(catchParameter("nz", argv[1]));
-    nb = 2;
     
     dx = std::stof(catchParameter("dx", argv[1]));
     dy = std::stof(catchParameter("dy", argv[1]));
@@ -131,10 +133,6 @@ Tomography::Tomography(char **argv)
     zMaskUp = std::stof(catchParameter("zMaskUp", argv[1]));
     zMaskDown = std::stof(catchParameter("zMaskDown", argv[1]));
 
-    smoothing = str2bool(catchParameter("smoothing", argv[1]));
-
-    generate_dobs = str2bool(catchParameter("generateDobs", argv[1]));
-
     initialize();
     
     if (generate_dobs)
@@ -142,6 +140,7 @@ Tomography::Tomography(char **argv)
         arrivalFolder = dobsPath;
 
         model = readBinaryFloat(catchParameter("trueModelPath", argv[1]), nPoints);
+        
         Vp = expandModel();
 
         std::cout<<"Computing observed data"<<std::endl;
@@ -157,6 +156,7 @@ Tomography::Tomography(char **argv)
     }
 
     model = readBinaryFloat(catchParameter("initModelPath", argv[1]), nPoints);
+    
     Vp = expandModel();
 
     iteration = 0;
@@ -188,7 +188,6 @@ void Tomography::infoMessage()
 
     if (iteration == maxIteration)
     { 
-    
         std::cout<<"------- Checking final residuo ------------\n\n";
     }
     else
@@ -196,7 +195,7 @@ void Tomography::infoMessage()
 
     std::cout<<"Shot "<<shotId+1<<" of "<<shots.all<<" at position: (x = "<<shots.x[shotId]<<" m, y = "<<shots.y[shotId]<<" m, z = "<<shots.z[shotId]<<" m)\n\n";
 
-    if (iteration > 1) std::cout<<"\nPrevious iteration residuous: "<<residuo.back()<<"\n";
+    if (iteration > 0) std::cout<<"Previous iteration residuous: "<<residuo.back()<<"\n\n";
 } 
 
 void Tomography::importDobs()
@@ -760,6 +759,11 @@ void Tomography::modelUpdate()
 {    
     // Trilinear interpolation - wikipedia
 
+    int xcut = (int) (xMask / dx);
+    int ycut = (int) (yMask / dy);
+    int zcutUp = (int) (zMaskUp / dz);
+    int zcutDown = (int) (zMaskDown / dz);
+
     for (int index = 0; index < nPoints; index++)
     {
         int k = (int) (index / (nx*nz));         // y direction
@@ -778,20 +782,27 @@ void Tomography::modelUpdate()
         float y1 = floor(y/mTomo.dy)*mTomo.dy + mTomo.dy;
         float z1 = floor(z/mTomo.dz)*mTomo.dz + mTomo.dz;
 
-        int indS = ((int)(z/mTomo.dz)) + ((int)(x/mTomo.dx))*mTomo.nz + ((int)(y/mTomo.dy))*mTomo.nx*mTomo.nz;
+        if ((i >= zcutUp) && (i < nz - zcutDown - 1) && (j >= xcut) && (j < nx - xcut - 1) && (k >= ycut) && (k < ny - ycut - 1))
+        {
+            int idz = ((int)(z/mTomo.dz));
+            int idx = ((int)(x/mTomo.dx));
+            int idy = ((int)(y/mTomo.dy));
 
-        float c000 = slowness[indS];                  
-        float c001 = slowness[indS + 1];
-        float c100 = slowness[indS + mTomo.nz];
-        float c101 = slowness[indS + 1 + mTomo.nz];
-        float c010 = slowness[indS + mTomo.nx*mTomo.nz];
-        float c011 = slowness[indS + 1 + mTomo.nx*mTomo.nz];
-        float c110 = slowness[indS + mTomo.nz + mTomo.nx*mTomo.nz];
-        float c111 = slowness[indS + 1 + mTomo.nz + mTomo.nx*mTomo.nz];  
+            int indS = idz + idx*mTomo.nz + idy*mTomo.nx*mTomo.nz;
 
-        float s = triLinearInterpolation(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);
+            float c000 = slowness[indS];                  
+            float c001 = slowness[indS + 1];
+            float c100 = slowness[indS + mTomo.nz];
+            float c101 = slowness[indS + 1 + mTomo.nz];
+            float c010 = slowness[indS + mTomo.nx*mTomo.nz];
+            float c011 = slowness[indS + 1 + mTomo.nx*mTomo.nz];
+            float c110 = slowness[indS + mTomo.nz + mTomo.nx*mTomo.nz];
+            float c111 = slowness[indS + 1 + mTomo.nz + mTomo.nx*mTomo.nz];  
 
-        if (s > 0.0f) Vp[(i + nb) + (j+nb)*nzz + (k+nb)*nxx*nzz] = 1.0f / s;
+            float s = triLinearInterpolation(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);
+    
+            Vp[(i + nb) + (j + nb)*nzz + (k + nb)*nxx*nzz] = 1.0f / s;
+        }
     }
 
     float * mm = new float[nPoints]();
