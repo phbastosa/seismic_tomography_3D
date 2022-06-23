@@ -204,164 +204,60 @@ float * Utils::sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
     return x;
 }
 
-Utils::sparseMatrix Utils::firstOrderMatrixOperator(int order)
+Utils::sparseMatrix Utils::getDerivativeMatrix(int n, int degree)
 {
-    sparseMatrix A;
-
-    A.n = order;
-    A.m = order;
-
-    A.nnz = 3*(order-2) + 4;
-
-    A.i = new int[A.nnz];
-    A.j = new int[A.nnz];
-    A.v = new float[A.nnz];
+	sparseMatrix L;
     
-    for (int index = 0; index < order; index++)
-    {
-        if (index == 0)
-        {
-            A.i[index] = index;
-            A.j[index] = index;
-            A.v[index] = 1.0f;
-            
-            A.i[index + 1] = index;
-            A.j[index + 1] = index + 1;
-            A.v[index + 1] = -1.0f;
-        }	
-        else if ((index > 0) && (index < order-1))
-        {
-            A.i[2 + 3*(index - 1)] = index;
-            A.j[2 + 3*(index - 1)] = index - 1;
-            A.v[2 + 3*(index - 1)] = -1.0f;		
+    int elements = degree + 1;
+		
+	L.m = n;
+    L.n = n - degree;
+    L.nnz = elements * L.n;
 
-            A.i[3 + 3*(index - 1)] = index;
-            A.j[3 + 3*(index - 1)] = index;
-            A.v[3 + 3*(index - 1)] = 2.0f;		
+	L.i = new int[L.nnz]();
+	L.j = new int[L.nnz]();
+	L.v = new float[L.nnz]();
 
-            A.i[4 + 3*(index - 1)] = index;
-            A.j[4 + 3*(index - 1)] = index + 1;
-            A.v[4 + 3*(index - 1)] = -1.0f;
-        }
-        else	
-        {
-            A.i[A.nnz - 2] = index;
-            A.j[A.nnz - 2] = index - 1;
-            A.v[A.nnz - 2] = -1.0f;
-            
-            A.i[A.nnz - 1] = index;
-            A.j[A.nnz - 1] = index;
-            A.v[A.nnz - 1] = 1.0f;		
-        }
-    }
-
-    return A;
-}
-
-Utils::sparseMatrix Utils::secondOrderMatrixOperator(int order)
-{
-	sparseMatrix A;
-    
-    A.n = order;
-    A.m = order;
-
-	A.nnz = 5*(order-4) + 14;
-
-	A.i = new int[A.nnz];
-	A.j = new int[A.nnz];
-	A.v = new float[A.nnz];
-	
-	for (int index = 0; index < order; index++)
+	if (degree == 0)
 	{
-		if (index == 0)
+		for (int index = 0; index < L.nnz; index++)
 		{
-			A.i[index] = index;
-			A.j[index] = index;
-			A.v[index] = 1.0f;
-			
-			A.i[index + 1] = index;
-			A.j[index + 1] = index + 1;
-			A.v[index + 1] = -2.0f;
-			
-			A.i[index + 2] = index;
-			A.j[index + 2] = index + 2;
-			A.v[index + 2] = 1.0f;			
+			L.i[index] = index;
+			L.j[index] = index;
+			L.v[index] = 1.0f;
 		}
-		else if (index == 1)
+		
+		return L;
+	} 
+
+	int * df = new int[elements]();	
+	int * df1 = new int[elements + 1]();
+	int * df2 = new int[elements + 1]();
+	
+	df[0] = -1; df[1] = 1;
+	
+	for (int index = 1; index < degree; index++)
+	{
+		for (int k = 0; k < elements; k++)
 		{
-			A.i[index + 2] = index;
-			A.j[index + 2] = index - 1;
-			A.v[index + 2] = -2.0f;
+			df2[k] = df[k];
+			df1[k + 1] = df[k];
 			
-			A.i[index + 3] = index;
-			A.j[index + 3] = index;
-			A.v[index + 3] = 5.0f;
-			
-			A.i[index + 4] = index;
-			A.j[index + 4] = index + 1;
-			A.v[index + 4] = -4.0f;					
-
-			A.i[index + 5] = index;
-			A.j[index + 5] = index + 2;
-			A.v[index + 5] = 1.0f;					
-		}	
-		else if ((index > 1) && (index < order-2))
-		{
-			A.i[2 + 5*(index - 1)] = index;
-			A.j[2 + 5*(index - 1)] = index - 2;
-			A.v[2 + 5*(index - 1)] = 1.0f;		
-
-			A.i[3 + 5*(index - 1)] = index;
-			A.j[3 + 5*(index - 1)] = index - 1;
-			A.v[3 + 5*(index - 1)] = -4.0f;		
-
-			A.i[4 + 5*(index - 1)] = index;
-			A.j[4 + 5*(index - 1)] = index;
-			A.v[4 + 5*(index - 1)] = 6.0f;		
-
-			A.i[5 + 5*(index - 1)] = index;
-			A.j[5 + 5*(index - 1)] = index + 1;
-			A.v[5 + 5*(index - 1)] = -4.0f;
-
-			A.i[6 + 5*(index - 1)] = index;
-			A.j[6 + 5*(index - 1)] = index + 2;
-			A.v[6 + 5*(index - 1)] = 1.0f;			
-		}
-		else if (index == order-2)	
-		{
-			A.i[A.nnz - 7] = index;
-			A.j[A.nnz - 7] = index - 2;
-			A.v[A.nnz - 7] = 1.0f;
-			
-			A.i[A.nnz - 6] = index;
-			A.j[A.nnz - 6] = index - 1;
-			A.v[A.nnz - 6] = -4.0f;
-			
-			A.i[A.nnz - 5] = index;
-			A.j[A.nnz - 5] = index;
-			A.v[A.nnz - 5] = 5.0f;					
-
-			A.i[A.nnz - 4] = index;
-			A.j[A.nnz - 4] = index + 1;
-			A.v[A.nnz - 4] = -2.0f;					
-		}
-		else
-		{
-			A.i[A.nnz - 3] = index;
-			A.j[A.nnz - 3] = index - 2;
-			A.v[A.nnz - 3] = 1.0f;
-			
-			A.i[A.nnz - 2] = index;
-			A.j[A.nnz - 2] = index - 1;
-			A.v[A.nnz - 2] = -2.0f;					
-
-			A.i[A.nnz - 1] = index;
-			A.j[A.nnz - 1] = index;
-			A.v[A.nnz - 1] = 1.0f;					
-		}
+			df[k] = df1[k] - df2[k]; 
+		}		 
 	}
-
-	return A;
+	
+	for (int index = 0; index < L.n; index++)
+	{
+		for (int k = 0; k < elements; k++)
+		{
+			L.i[elements*index + k] = index;	
+			L.j[elements*index + k] = index + k;
+			L.v[elements*index + k] = df[k];
+		}	
+	}
+	
+	return L;
 }
 
 float Utils::triLinearInterpolation(float c000, float c001, float c100, float c101, float c010, float c011, float c110, float c111, 

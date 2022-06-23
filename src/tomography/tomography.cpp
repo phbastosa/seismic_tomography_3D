@@ -600,15 +600,15 @@ void Tomography::lscg_foTikhonov()
 
     // First order tikhonov regularization 
 
-    auto LTL = firstOrderMatrixOperator(G.m);
+    auto L = getDerivativeMatrix(G.m, 1);
 
     // Constructing a full matrix to solve problem with sparse least square conjugate gradient
 
     sparseMatrix A;
 
-    A.nnz = G.nnz + LTL.nnz;
-    A.n = G.n + LTL.n;
-    A.m = G.m + LTL.m;  
+    A.nnz = G.nnz + L.nnz;
+    A.n = G.n + L.n;
+    A.m = G.m + L.m;  
 
     A.i = new int[A.nnz]();
     A.j = new int[A.nnz]();
@@ -624,9 +624,9 @@ void Tomography::lscg_foTikhonov()
         }
         else
         {
-            A.i[index] = G.n + LTL.i[index - G.nnz];
-            A.j[index] = LTL.j[index - G.nnz];
-            A.v[index] = lambda * LTL.v[index - G.nnz];        
+            A.i[index] = G.n + L.i[index - G.nnz];
+            A.j[index] = L.j[index - G.nnz];
+            A.v[index] = lambda * L.v[index - G.nnz];        
         }
     }
 
@@ -638,7 +638,7 @@ void Tomography::lscg_foTikhonov()
         B[index] = dobs[index] - dcal[index];
 
     delete[] G.i; delete[] G.j; delete[] G.v;
-    delete[] LTL.i; delete[] LTL.j; delete[] LTL.v;
+    delete[] L.i; delete[] L.j; delete[] L.v;
 
     // Sparse least squares conjugate gradient
 
@@ -681,15 +681,15 @@ void Tomography::lscg_soTikhonov()
 
     // Second order tikhonov regularization 
 
-    auto LTL = secondOrderMatrixOperator(G.m);
+    auto L = getDerivativeMatrix(G.m, 2);
 
     // Constructing a full matrix to solve problem with sparse least square conjugate gradient
 
     sparseMatrix A;
 
-    A.nnz = G.nnz + LTL.nnz;
-    A.n = G.n + LTL.n;
-    A.m = G.m + LTL.m;  
+    A.nnz = G.nnz + L.nnz;
+    A.n = G.n + L.n;
+    A.m = G.m + L.m;  
 
     A.i = new int[A.nnz];
     A.j = new int[A.nnz];
@@ -705,9 +705,9 @@ void Tomography::lscg_soTikhonov()
         }
         else
         {
-            A.i[index] = G.n + LTL.i[index - G.nnz];
-            A.j[index] = LTL.j[index - G.nnz];
-            A.v[index] = lambda * LTL.v[index - G.nnz];        
+            A.i[index] = G.n + L.i[index - G.nnz];
+            A.j[index] = L.j[index - G.nnz];
+            A.v[index] = lambda * L.v[index - G.nnz];        
         }
     }
 
@@ -719,7 +719,7 @@ void Tomography::lscg_soTikhonov()
         B[index] = dobs[index] - dcal[index];
 
     delete[] G.i; delete[] G.j; delete[] G.v;
-    delete[] LTL.i; delete[] LTL.j; delete[] LTL.v;
+    delete[] L.i; delete[] L.j; delete[] L.v;
 
     // Sparse least squares conjugate gradient
 
@@ -877,7 +877,4 @@ void Tomography::exportConvergency()
 
     resFile.close();
 }
-
-
-
 

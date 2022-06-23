@@ -73,11 +73,8 @@ public:
     */
     float * sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol);
 
-    /* Returns a sparse LTL first order finite difference matrix operator */
-    sparseMatrix firstOrderMatrixOperator(int order);
-    
-    /* Returns a sparse LTL second order finite difference matrix operator */
-    sparseMatrix secondOrderMatrixOperator(int order);
+    /* */
+    sparseMatrix getDerivativeMatrix(int n, int degree);
 
     /* Function to compute a trilinear interpolation */
     float triLinearInterpolation(float c000, float c001, float c100, float c101, float c010, float c011, float c110, float c111, 
