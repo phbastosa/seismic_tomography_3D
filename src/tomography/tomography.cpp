@@ -404,7 +404,7 @@ void Tomography::tomographyUpdate()
 
 void Tomography::lscg_Berriman()
 {
-    std::cout<<"Solving linear system...\n\n";
+    std::cout<<"Solving linear system with berriman regularization...\n\n";
 
     // G matrix construction
 
@@ -497,7 +497,7 @@ void Tomography::lscg_Berriman()
 
 void Tomography::lscg_zoTikhonov()
 {
-    std::cout<<"Solving linear system...\n\n";
+    std::cout<<"Solving linear system with zero order Tikhonov regularization...\n\n";
 
     // G matrix construction
 
@@ -573,7 +573,7 @@ void Tomography::lscg_zoTikhonov()
 
 void Tomography::lscg_foTikhonov()
 {
-    std::cout<<"Solving linear system...\n\n";
+    std::cout<<"Solving linear system with first order Tikhonov regularization...\n\n";
 
     // G matrix construction
 
@@ -654,7 +654,7 @@ void Tomography::lscg_foTikhonov()
 
 void Tomography::lscg_soTikhonov()
 {
-    std::cout<<"Solving linear system...\n\n";
+    std::cout<<"Solving linear system with second order Tikhonov regularization...\n\n";
 
     // G matrix construction
 

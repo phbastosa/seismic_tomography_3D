@@ -104,7 +104,7 @@ dh = 50.0
 
 trueModel = readBinaryVolume(nz,nx,ny,f"inputs/models/trueModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
 initModel = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
-predModel = readBinaryVolume(nz,nx,ny,f"outputs/models/estimatedModel_iteration_1.bin")
+predModel = readBinaryVolume(nz,nx,ny,f"outputs/models/estimatedModel_iteration_5.bin")
 
 trueModel = trueModel[:,int(nx/2),int(ny/2)]
 initModel = initModel[:,int(nx/2),int(ny/2)]
