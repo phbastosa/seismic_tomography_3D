@@ -608,7 +608,7 @@ void Tomography::lscg_foTikhonov()
 
     A.nnz = G.nnz + L.nnz;
     A.n = G.n + L.n;
-    A.m = G.m + L.m;  
+    A.m = G.m;  
 
     A.i = new int[A.nnz]();
     A.j = new int[A.nnz]();
@@ -689,7 +689,7 @@ void Tomography::lscg_soTikhonov()
 
     A.nnz = G.nnz + L.nnz;
     A.n = G.n + L.n;
-    A.m = G.m + L.m;  
+    A.m = G.m;  
 
     A.i = new int[A.nnz];
     A.j = new int[A.nnz];

@@ -16,7 +16,7 @@ exportFirstArrivals = True            # Flag to export first arrivals <bool>
 #    3 - L2 norm least squares (second order Tikonov regularization) 
 #    comming soon...
 
-optimizationMethod = 1
+optimizationMethod = 2
 tomoTolerance = 0.001                 # Tomography tolerance to stop inversion progress <float>
 maxIteration = 5                      # Tomography max iteration <int>                   
 regParam = 0.1                        # Regularization parameter <float>
