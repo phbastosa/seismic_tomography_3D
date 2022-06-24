@@ -1,3 +1,4 @@
+# include <omp.h>
 # include <cmath>
 # include <vector>
 # include <string>
@@ -181,7 +182,7 @@ float * Utils::sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
         for (int ind = 0; ind < A.nnz; ind++)        // r atualization 
             r[A.j[ind]] += A.v[ind] * s[A.i[ind]];   // r = G' * s    
 
-        rTr = 0.0f;                
+        rTr = 0.0f;            
         for (int col = 0; col < A.m; col++)          // r inner product
             rTr += r[col] * r[col];                  // rTr = r' * r
 
@@ -193,10 +194,10 @@ float * Utils::sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
             p[col] = r[col] + b * p[col];            // p = r + b * p 
 
         for (int row = 0; row < A.n; row++) 
-            q[row] = 0.0f;                         // q = 0, for multiplication
+            q[row] = 0.0f;                           // q = 0, for multiplication
 
         for (int ind = 0; ind < A.nnz; ind++) 
-            q[A.i[ind]] += A.v[ind] * p[A.j[ind]]; // q = G * p   
+            q[A.i[ind]] += A.v[ind] * p[A.j[ind]];   // q = G * p   
     }
     
     delete[] s; delete[] q; delete[] r; delete[] p;
