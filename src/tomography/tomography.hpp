@@ -79,6 +79,9 @@ private:
     /* */
     void lscg_soTikhonov();
 
+    /* */
+    void gradientDescent();
+
 public:    
     
     /* */

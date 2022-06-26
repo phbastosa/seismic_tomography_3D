@@ -733,6 +733,18 @@ void Tomography::lscg_soTikhonov()
     delete[] A.i; delete[] A.j; delete[] A.v; delete[] B; delete[] deltaSlowness;    
 }
 
+void Tomography::gradientDescent()
+{
+    gradient = new float[mTomo.nPoints];
+
+    for (int index = 0; index < vM.size(); index++)
+    {
+        gradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);
+    }
+
+    writeBinaryFloat("gradient.bin",gradient,mTomo.nPoints);
+}
+
 void Tomography::optimization()
 {
     switch (optimizationMethod)
@@ -752,6 +764,9 @@ void Tomography::optimization()
     case 3:
         lscg_soTikhonov();
         break;
+
+    case 4:
+        gradientDescent();    
     }
 }
 

@@ -102,99 +102,126 @@ dh = 50.0
 
 # plt.show()
 
-trueModel = readBinaryVolume(nz,nx,ny,f"inputs/models/trueModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
-initModel = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
-brrnModel = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_Berriman.bin")
-tkv0Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk0.bin")
-tkv1Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk1.bin")
-tkv2Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk2.bin")
+# trueModel = readBinaryVolume(nz,nx,ny,f"inputs/models/trueModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
+# initModel = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
+# brrnModel = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_Berriman.bin")
+# tkv0Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk0.bin")
+# tkv1Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk1.bin")
+# tkv2Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk2.bin")
 
-trueModel = trueModel[:,int(nx/2),int(ny/2)]
-initModel = initModel[:,int(nx/2),int(ny/2)]
-brrnModel = brrnModel[:,int(nx/2),int(ny/2)]
-tkv0Model = tkv0Model[:,int(nx/2),int(ny/2)]
-tkv1Model = tkv1Model[:,int(nx/2),int(ny/2)]
-tkv2Model = tkv2Model[:,int(nx/2),int(ny/2)]
+# trueModel = trueModel[:,int(nx/2),int(ny/2)]
+# initModel = initModel[:,int(nx/2),int(ny/2)]
+# brrnModel = brrnModel[:,int(nx/2),int(ny/2)]
+# tkv0Model = tkv0Model[:,int(nx/2),int(ny/2)]
+# tkv1Model = tkv1Model[:,int(nx/2),int(ny/2)]
+# tkv2Model = tkv2Model[:,int(nx/2),int(ny/2)]
 
-n = 3
+# n = 3
 
-brrnModel = 1.0 / gaussian_filter(1.0 / brrnModel, n)
-tkv0Model = 1.0 / gaussian_filter(1.0 / tkv0Model, n)
-tkv1Model = 1.0 / gaussian_filter(1.0 / tkv1Model, n)
-tkv2Model = 1.0 / gaussian_filter(1.0 / tkv2Model, n)
+# brrnModel = 1.0 / gaussian_filter(1.0 / brrnModel, n)
+# tkv0Model = 1.0 / gaussian_filter(1.0 / tkv0Model, n)
+# tkv1Model = 1.0 / gaussian_filter(1.0 / tkv1Model, n)
+# tkv2Model = 1.0 / gaussian_filter(1.0 / tkv2Model, n)
 
-depth = np.arange(nz) * dh
+# depth = np.arange(nz) * dh
 
-ylab = np.linspace(0,depth[-1],11, dtype = int)
+# ylab = np.linspace(0,depth[-1],11, dtype = int)
 
-plt.figure(1,figsize=(15, 7))
+# plt.figure(1,figsize=(15, 7))
 
-G = gridspec.GridSpec(1, 4)
+# G = gridspec.GridSpec(1, 4)
 
-ax1 = plt.subplot(G[:,:1])
+# ax1 = plt.subplot(G[:,:1])
 
-plt.plot(trueModel, depth, label = "True model")
-plt.plot(initModel, depth, label = "Initial model")
-plt.plot(brrnModel, depth, label = "Recovered model")
+# plt.plot(trueModel, depth, label = "True model")
+# plt.plot(initModel, depth, label = "Initial model")
+# plt.plot(brrnModel, depth, label = "Recovered model")
 
-plt.ylim([0,(nz-1)*dh])
+# plt.ylim([0,(nz-1)*dh])
 
-plt.title("Berriman", fontsize = 18)
-plt.ylabel("Depth [m]", fontsize = 18)
-plt.xlabel("P wave velocity [m/s]", fontsize = 15)
+# plt.title("Berriman", fontsize = 18)
+# plt.ylabel("Depth [m]", fontsize = 18)
+# plt.xlabel("P wave velocity [m/s]", fontsize = 15)
 
-plt.legend(loc = "upper right")
+# plt.legend(loc = "upper right")
 
-plt.yticks(ylab,ylab)
+# plt.yticks(ylab,ylab)
 
-plt.gca().invert_yaxis()
+# plt.gca().invert_yaxis()
 
-ax2 = plt.subplot(G[:,1:2])
+# ax2 = plt.subplot(G[:,1:2])
 
-plt.plot(trueModel, depth, label = "True model")
-plt.plot(initModel, depth, label = "Initial model")
-plt.plot(tkv0Model, depth, label = "Recovered model")
+# plt.plot(trueModel, depth, label = "True model")
+# plt.plot(initModel, depth, label = "Initial model")
+# plt.plot(tkv0Model, depth, label = "Recovered model")
 
-plt.title("Zero order Tikhonov", fontsize = 18)
-plt.ylabel("Depth [m]", fontsize=18)
-plt.xlabel("P wave velocity [m/s]", fontsize = 15)
+# plt.title("Zero order Tikhonov", fontsize = 18)
+# plt.ylabel("Depth [m]", fontsize=18)
+# plt.xlabel("P wave velocity [m/s]", fontsize = 15)
 
-plt.ylim([0,(nz-1)*dh])
+# plt.ylim([0,(nz-1)*dh])
 
-plt.legend(loc = "upper right")
+# plt.legend(loc = "upper right")
 
-plt.gca().invert_yaxis()
+# plt.gca().invert_yaxis()
 
-ax3 = plt.subplot(G[:,2:3])
-plt.plot(trueModel, depth, label = "True model")
-plt.plot(initModel, depth, label = "Initial model")
-plt.plot(tkv1Model, depth, label = "Recovered model")
+# ax3 = plt.subplot(G[:,2:3])
+# plt.plot(trueModel, depth, label = "True model")
+# plt.plot(initModel, depth, label = "Initial model")
+# plt.plot(tkv1Model, depth, label = "Recovered model")
 
-plt.ylim([0,(nz-1)*dh])
+# plt.ylim([0,(nz-1)*dh])
 
-plt.title("First order Tikhonov", fontsize = 18)
-plt.ylabel("Depth [m]", fontsize=18)
-plt.xlabel("P wave velocity [m/s]", fontsize = 15)
+# plt.title("First order Tikhonov", fontsize = 18)
+# plt.ylabel("Depth [m]", fontsize=18)
+# plt.xlabel("P wave velocity [m/s]", fontsize = 15)
 
-plt.legend(loc = "upper right")
+# plt.legend(loc = "upper right")
 
-plt.gca().invert_yaxis()
+# plt.gca().invert_yaxis()
 
-ax4 = plt.subplot(G[:,3:])
+# ax4 = plt.subplot(G[:,3:])
 
-plt.plot(trueModel, depth, label = "True model")
-plt.plot(initModel, depth, label = "Initial model")
-plt.plot(tkv2Model, depth, label = "Recovered model")
+# plt.plot(trueModel, depth, label = "True model")
+# plt.plot(initModel, depth, label = "Initial model")
+# plt.plot(tkv2Model, depth, label = "Recovered model")
 
-plt.ylim([0,(nz-1)*dh])
+# plt.ylim([0,(nz-1)*dh])
 
-plt.title("Second order Tikhonov", fontsize = 18)
-plt.ylabel("Depth [m]", fontsize=18)
-plt.xlabel("P wave velocity [m/s]", fontsize = 15)
+# plt.title("Second order Tikhonov", fontsize = 18)
+# plt.ylabel("Depth [m]", fontsize=18)
+# plt.xlabel("P wave velocity [m/s]", fontsize = 15)
 
-plt.legend(loc = "upper right")
+# plt.legend(loc = "upper right")
 
-plt.gca().invert_yaxis()
+# plt.gca().invert_yaxis()
+
+# plt.tight_layout()
+# plt.show()
+
+resBer = np.loadtxt("outputs/convergency/residuo_berriman.txt")
+resTk0 = np.loadtxt("outputs/convergency/residuo_tk0.txt")
+resTk1 = np.loadtxt("outputs/convergency/residuo_tk1.txt")
+resTk2 = np.loadtxt("outputs/convergency/residuo_tk2.txt")
+
+iteration = np.arange(6)
+
+plt.figure(1, figsize=(5,8))
+
+plt.plot(resBer, iteration, label = "Berriman")
+plt.plot(resTk0, iteration, label = "0th order Tikhonov")
+plt.plot(resTk1, iteration, label = "1st order Tikhonov")
+plt.plot(resTk2, iteration, label = "2nd order Tikhonov")
+
+plt.xlim([0, 5])
+plt.xlim([60,140])
+
+plt.title("Convergence curve", fontsize = 20)
+plt.ylabel("Iteration number", fontsize=18)
+plt.xlabel(r"Residuous norm $||d_{obs} - d_{cal}||_2^2$", fontsize = 18)
+
+plt.legend(loc = "lower right", fontsize = 15)
 
 plt.tight_layout()
+plt.gca().invert_yaxis()
 plt.show()
