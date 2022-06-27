@@ -205,6 +205,48 @@ float * Utils::sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
     return x;
 }
 
+float * Utils::movingAverageSmoothing(float * volume, int nx, int ny, int nz, int samples)
+{
+    int nPoints = nx*ny*nz;
+
+    int init = (int) (samples / 2);
+    
+    float * smoothed = new float[nPoints]();
+
+    for (int index = 0; index < nPoints; index++) 
+        smoothed[index] = volume[index];
+
+    for (int i = init; i < nz - init; i++)
+    {
+        for (int j = init; j < nx - init; j++)
+        {
+            for (int k = init; k < ny - init; k++)
+            {
+                float xs = 0.0f; 
+                float ys = 0.0f;
+                float zs = 0.0f;
+                
+                for (int s = 0; s < samples; s++)
+                {
+                    int p = s - init;
+
+                    xs += volume[i + (j + p)*nz + k*nx*nz];
+                    ys += volume[(i + p) + j*nz + k*nx*nz];
+                    zs += volume[i + j*nz + (k + p)*nx*nz];
+                }        
+
+                xs *= 1.0f / samples;
+                ys *= 1.0f / samples;
+                zs *= 1.0f / samples;
+
+                smoothed[i + j*nz + k*nx*nz] = (xs + ys + zs) / 3.0f;
+            }
+        }   
+    }
+
+    return smoothed;
+}
+
 Utils::sparseMatrix Utils::getDerivativeMatrix(int n, int degree)
 {
 	sparseMatrix L;

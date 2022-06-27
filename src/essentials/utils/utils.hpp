@@ -74,6 +74,9 @@ public:
     float * sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol);
 
     /* */
+    float * movingAverageSmoothing(float * volume, int nx, int ny, int nz, int samples); 
+
+    /* */
     sparseMatrix getDerivativeMatrix(int n, int degree);
 
     /* Function to compute a trilinear interpolation */

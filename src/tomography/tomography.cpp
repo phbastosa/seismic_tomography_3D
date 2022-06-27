@@ -743,6 +743,12 @@ void Tomography::gradientDescent()
     }
 
     writeBinaryFloat("gradient.bin",gradient,mTomo.nPoints);
+
+    int samples = 11; 
+
+    gradient = movingAverageSmoothing(gradient,mTomo.nx,mTomo.ny,mTomo.nz,samples);
+
+    writeBinaryFloat("gradient_smoothed.bin", gradient, mTomo.nPoints);
 }
 
 void Tomography::optimization()
@@ -834,53 +840,6 @@ void Tomography::modelUpdate()
     writeBinaryFloat(estModels + "estimatedModel_iteration_" + std::to_string(iteration) + ".bin", mm, nPoints);    
 
     delete[] mm;
-}
-
-void Tomography::modelSmoothing()
-{
-    int init = nb;
-    int samples = 2*nb + 1;
-
-    // Slowness suavization - moving average filter
-
-    if (smoothing)
-    {
-        float * smoothSlowness = new float[nPointsB];
-
-        for (int i = 0; i < nPointsB; i++) smoothSlowness[i] = 1.0f / Vp[i];
-
-        for (int i = init; i < nzz - init; i++)
-        {
-            for (int j = init; j < nxx - init; j++)
-            {
-                for (int k = init; k < nyy - init; k++)
-                {
-                    float xs = 0.0f; 
-                    float ys = 0.0f;
-                    float zs = 0.0f;
-                    
-                    for (int s = 0; s < samples; s++)
-                    {
-                        int p = s - init;
-
-                        xs += smoothSlowness[i + (j + p)*nzz + k*nxx*nzz];
-                        ys += smoothSlowness[(i + p) + j*nzz + k*nxx*nzz];
-                        zs += smoothSlowness[i + j*nzz + (k + p)*nxx*nzz];
-                    }        
-
-                    xs *= 1.0f / samples;
-                    ys *= 1.0f / samples;
-                    zs *= 1.0f / samples;
-
-                    smoothSlowness[i + j*nzz + k*nxx*nzz] = (xs + ys + zs) / 3.0f;
-                }
-            }   
-        }
-
-        for (int i = 0; i < nPointsB; i++) Vp[i] = 1.0f / smoothSlowness[i];
-
-        delete[] smoothSlowness;
-    }
 }
 
 void Tomography::exportConvergency()

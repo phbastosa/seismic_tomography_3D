@@ -14,7 +14,7 @@ exportFirstArrivals = True            # Flag to export first arrivals <bool>
 #    1 - L2 norm least squares (zero order Tikonov regularization)  
 #    2 - L2 norm least squares (first order Tikonov regularization)  
 #    3 - L2 norm least squares (second order Tikonov regularization) 
-#    4 - Gradient descent    
+#    4 - Gradient descent method   
 #    comming soon...
 
 optimizationMethod = 4

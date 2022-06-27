@@ -30,8 +30,7 @@ private:
     float * gradient;              //
     float * slowness;              //
     float * deltaSlowness;         //
-
-    bool smoothing;                //
+    
     bool generate_dobs;            //
 
     typedef struct                 //
