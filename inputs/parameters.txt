@@ -39,13 +39,13 @@ dz = 50                               # z sample spacing of model [m] <float>
 
 # Tomography model parameters ------------------------------------------------------------------- 
 
-nxTomo = 101                          # Resized x dimension of model <int>
-nyTomo = 101                          # Resized y dimension of model <int>
-nzTomo = 31                           # Resized z dimension of model <int>
+nxTomo = 26                          # Resized x dimension of model <int>
+nyTomo = 26                          # Resized y dimension of model <int>
+nzTomo = 8                           # Resized z dimension of model <int>
 
-dxTomo = 50                           # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 50                           # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 50                           # Resized model sample spacing [m] of z dimension <float>
+dxTomo = 200                           # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 200                           # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 200                           # Resized model sample spacing [m] of z dimension <float>
 
 xMask = 1200                          # Mask right and left sides of x axis [m] <float>
 yMask = 1200                          # Mask right and left sides of y axis [m] <float>
@@ -101,7 +101,7 @@ rOffsets = [1000,1500,2000]           # Receiver offsets WITHOUT SPACES <float>
 
 dobsFolder = "inputs/dobs/"                                   # Folder to write observed data
 dcalFolder = "outputs/dcal/"                                  # Folder to write calculated data
-gradientFolder = "outputs/gradient/"                          # Folder to write gradients per iteration 
+gradientFolder = "outputs/gradients/"                         # Folder to write gradients per iteration 
 convergencyFolder = "outputs/convergency/"                    # Folder to write convergency line to residuous norm
 travelTimesFolder = "outputs/travelTimes/"                    # Folder to write travel time volume per shot
 firstArrivalsFolder = "outputs/firstArrivals/"                # Folder to write first arrivals per shot   

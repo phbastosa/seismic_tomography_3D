@@ -2,7 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
+from skimage import exposure 
 from scipy.ndimage import gaussian_filter
+
+def perc(matrix,value):
+    p = np.percentile(matrix,[.5, value])                     
+    image = exposure.rescale_intensity(matrix, in_range=(p[0],p[1]), out_range=(0,255))                    
+
+    return image       
 
 def readBinaryVolume(dim1,dim2,dim3,filename):
     data = np.fromfile(filename, dtype=np.float32, count=dim1*dim2*dim3)
@@ -11,96 +18,105 @@ def readBinaryVolume(dim1,dim2,dim3,filename):
 def readBinaryArray(dim, filename):
     return np.fromfile(filename, dtype=np.int32, count=dim)
 
-nx = 101
-ny = 101
-nz = 31
+nx = 26
+ny = 26
+nz = 8
 
-dh = 50.0
+dh = 200.0
 
 # model = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
+model = readBinaryVolume(nz,nx,ny,f"outputs/gradients/illumination_iteration_200m_1.bin")
 
-# sx,sy,sz = np.loadtxt(f"outputs/geometry/shotsPosition.txt", delimiter = ",",unpack=True)
-# rx,ry,rz = np.loadtxt(f"outputs/geometry/nodesPosition.txt", delimiter = ",",unpack=True)
+model[-1,:,:] = model[-2,:,:]
+model[:,-1,:] = model[:,-2,:]
+model[:,:,-1] = model[:,:,-2]
 
-# xzPlane = int(ny / 2)
-# yzPlane = int(nx / 2)
-# xyPlane = int(nz / 2)
+modelPerc = gaussian_filter(model, 0)
 
-# vmin = np.min(model)
-# vmax = np.max(model) 
+# modelPerc[:4,:,:] = 0
 
-# xloc = np.linspace(0,nx-1,7,dtype=int)
-# xlab = np.array(xloc * dh,dtype=int)
+sx,sy,sz = np.loadtxt(f"outputs/geometry/shotsPosition.txt", delimiter = ",",unpack=True)
+rx,ry,rz = np.loadtxt(f"outputs/geometry/nodesPosition.txt", delimiter = ",",unpack=True)
 
-# yloc = np.linspace(0,ny-1,7,dtype=int)
-# ylab = np.array(yloc * dh,dtype=int)
+xzPlane = int(ny / 2)
+yzPlane = int(nx / 2)
+xyPlane = int(nz / 2)
 
-# zloc = np.linspace(0,nz-1,7,dtype=int)
-# zlab = np.array(zloc * dh,dtype=int)
+vmin = -2000
+vmax =  2000 
 
-# plt.figure(1,figsize=(15, 5))
+xloc = np.linspace(0,nx-1,7,dtype=int)
+xlab = np.array(xloc * dh,dtype=int)
 
-# plt.suptitle("Initial model", fontsize = 20)
+yloc = np.linspace(0,ny-1,7,dtype=int)
+ylab = np.array(yloc * dh,dtype=int)
 
-# G = gridspec.GridSpec(2, 5)
+zloc = np.linspace(0,nz-1,7,dtype=int)
+zlab = np.array(zloc * dh,dtype=int)
 
-# axes_1 = plt.subplot(G[:1,:3])
-# plt.imshow(model[:,xzPlane,:],aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
-# plt.xticks(xloc,xlab)
-# plt.yticks(zloc,zlab)
-# plt.title(f"XZ plane", fontsize = 18)
-# plt.xlabel("X axis [m]", fontsize = 15)
-# plt.ylabel("Z axis [m]", fontsize = 15)
+plt.figure(1,figsize=(15, 5))
+
+plt.suptitle("Illumination model 200 m", fontsize = 20)
+
+G = gridspec.GridSpec(2, 5)
+
+axes_1 = plt.subplot(G[:1,:3])
+plt.imshow(modelPerc[:,xzPlane,:],aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
+plt.xticks(xloc,xlab)
+plt.yticks(zloc,zlab)
+plt.title(f"XZ plane", fontsize = 18)
+plt.xlabel("X axis [m]", fontsize = 15)
+plt.ylabel("Z axis [m]", fontsize = 15)
 
 # plt.scatter(sx/dh,sz/dh, label = "Shots")
 # plt.scatter(rx/dh,rz/dh, label = "Nodes") 
 
-# plt.plot(np.ones(nz)*yzPlane,np.arange(nz),'--r')
-# plt.plot(np.arange(nx),np.ones(nx)*xyPlane,'--r')
+plt.plot(np.ones(nz)*yzPlane,np.arange(nz),'--r')
+plt.plot(np.arange(nx),np.ones(nx)*xyPlane,'--r')
 
 # plt.legend(loc = "lower left", fontsize = 10)
 
-# axes_2 = plt.subplot(G[1:,:3])
-# plt.imshow(model[:,:,yzPlane],aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
-# plt.xticks(yloc,ylab)
-# plt.yticks(zloc,zlab)
-# plt.title(f"YZ plane", fontsize = 18)
-# plt.xlabel("Y axis [m]", fontsize = 15)
-# plt.ylabel("Z axis [m]", fontsize = 15)
+axes_2 = plt.subplot(G[1:,:3])
+plt.imshow(modelPerc[:,:,yzPlane],aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
+plt.xticks(yloc,ylab)
+plt.yticks(zloc,zlab)
+plt.title(f"YZ plane", fontsize = 18)
+plt.xlabel("Y axis [m]", fontsize = 15)
+plt.ylabel("Z axis [m]", fontsize = 15)
 
 # plt.scatter(sy/dh,sz/dh, label = "Shots")
 # plt.scatter(ry/dh,rz/dh, label = "Nodes")
 
-# plt.plot(np.ones(nz)*xzPlane,np.arange(nz),'--r')
-# plt.plot(np.arange(ny),np.ones(ny)*xyPlane,'--r')
+plt.plot(np.ones(nz)*xzPlane,np.arange(nz),'--r')
+plt.plot(np.arange(ny),np.ones(ny)*xyPlane,'--r')
 
 # plt.legend(loc = "lower left", fontsize = 10)
 
-# axes_3 = plt.subplot(G[:,3:])
-# plt.imshow(model[xyPlane,:,:],aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
+axes_3 = plt.subplot(G[:,3:])
+plt.imshow(modelPerc[xyPlane,:,:],aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
 
-# plt.xticks(xloc,xlab)
-# plt.yticks(yloc,ylab)
-# plt.title(f"XY plane", fontsize = 18)
-# plt.xlabel("X axis [m]", fontsize = 15)
-# plt.ylabel("Y axis [m]", fontsize = 15)
+plt.xticks(xloc,xlab)
+plt.yticks(yloc,ylab)
+plt.title(f"XY plane", fontsize = 18)
+plt.xlabel("X axis [m]", fontsize = 15)
+plt.ylabel("Y axis [m]", fontsize = 15)
 
-# cbar = plt.colorbar()
-# cbar.set_label("P wave velocity [m/s]",fontsize=15)
+cbar = plt.colorbar()
+cbar.set_label("P wave velocity [m/s]",fontsize=15)
 
 # plt.scatter(sx/dh,sy/dh, s = 5, label = "Shots")
 # plt.scatter(rx/dh,ry/dh, s = 10, label = "Nodes")
 
-# plt.plot(np.arange(nx),np.ones(nx)*xzPlane,'--r', markersize = 10)
-# plt.plot(np.ones(ny)*yzPlane,np.arange(ny),'--r', markersize = 10)
+plt.plot(np.arange(nx),np.ones(nx)*xzPlane,'--r', markersize = 10)
+plt.plot(np.ones(ny)*yzPlane,np.arange(ny),'--r', markersize = 10)
 
 # plt.legend(loc = "lower left", fontsize = 10)
 
-# plt.gca().invert_yaxis()
+plt.gca().invert_yaxis()
 
-# plt.tight_layout()
+plt.tight_layout()
 
-# plt.show()
+plt.show()
 
 # trueModel = readBinaryVolume(nz,nx,ny,f"inputs/models/trueModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
 # initModel = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
@@ -199,29 +215,31 @@ dh = 50.0
 # plt.tight_layout()
 # plt.show()
 
-resBer = np.loadtxt("outputs/convergency/residuo_berriman.txt")
-resTk0 = np.loadtxt("outputs/convergency/residuo_tk0.txt")
-resTk1 = np.loadtxt("outputs/convergency/residuo_tk1.txt")
-resTk2 = np.loadtxt("outputs/convergency/residuo_tk2.txt")
+# resBer = np.loadtxt("outputs/convergency/residuo_berriman.txt")
+# resTk0 = np.loadtxt("outputs/convergency/residuo_tk0.txt")
+# resTk1 = np.loadtxt("outputs/convergency/residuo_tk1.txt")
+# resTk2 = np.loadtxt("outputs/convergency/residuo_tk2.txt")
 
-iteration = np.arange(6)
+# iteration = np.arange(6)
 
-plt.figure(1, figsize=(5,8))
+# plt.figure(1, figsize=(5,8))
 
-plt.plot(resBer, iteration, label = "Berriman")
-plt.plot(resTk0, iteration, label = "0th order Tikhonov")
-plt.plot(resTk1, iteration, label = "1st order Tikhonov")
-plt.plot(resTk2, iteration, label = "2nd order Tikhonov")
+# plt.plot(resBer, iteration, label = "Berriman")
+# plt.plot(resTk0, iteration, label = "0th order Tikhonov")
+# plt.plot(resTk1, iteration, label = "1st order Tikhonov")
+# plt.plot(resTk2, iteration, label = "2nd order Tikhonov")
 
-plt.xlim([0, 5])
-plt.xlim([60,140])
+# plt.xlim([0, 5])
+# plt.xlim([60,140])
 
-plt.title("Convergence curve", fontsize = 20)
-plt.ylabel("Iteration number", fontsize=18)
-plt.xlabel(r"Residuous norm $||d_{obs} - d_{cal}||_2^2$", fontsize = 18)
+# plt.title("Convergence curve", fontsize = 20)
+# plt.ylabel("Iteration number", fontsize=18)
+# plt.xlabel(r"Residuous norm $||d_{obs} - d_{cal}||_2^2$", fontsize = 18)
 
-plt.legend(loc = "lower right", fontsize = 15)
+# plt.legend(loc = "lower right", fontsize = 15)
 
-plt.tight_layout()
-plt.gca().invert_yaxis()
-plt.show()
+# plt.tight_layout()
+# plt.gca().invert_yaxis()
+# plt.show()
+
+

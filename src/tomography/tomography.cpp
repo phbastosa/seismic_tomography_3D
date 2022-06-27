@@ -737,18 +737,17 @@ void Tomography::gradientDescent()
 {
     gradient = new float[mTomo.nPoints];
 
+    float * illumination = new float[mTomo.nPoints]();
+
     for (int index = 0; index < vM.size(); index++)
     {
-        gradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);
+        // gradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);
+    
+        illumination[jM[index]] += vM[index];
     }
 
-    writeBinaryFloat("gradient.bin",gradient,mTomo.nPoints);
-
-    int samples = 11; 
-
-    gradient = movingAverageSmoothing(gradient,mTomo.nx,mTomo.ny,mTomo.nz,samples);
-
-    writeBinaryFloat("gradient_smoothed.bin", gradient, mTomo.nPoints);
+    // writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin",gradient,mTomo.nPoints);
+    writeBinaryFloat(gradPath + "illumination_iteration_200m_" + std::to_string(iteration) + ".bin",illumination,mTomo.nPoints);
 }
 
 void Tomography::optimization()
