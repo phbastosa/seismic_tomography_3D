@@ -22,6 +22,12 @@ tomoTolerance = 0.001                 # Tomography tolerance to stop inversion p
 maxIteration = 1                      # Tomography max iteration <int>                   
 regParam = 0.001                      # Regularization parameter <float>
 
+# Smoothing model per iteration ------------------------------------------------------------------
+
+smoothingType = 0                    # 0 - gaussian filter; 1 - moving average filter <int>
+filterSamples = 11                   # Samples in filter, must to be an odd number! <int>
+standardDeviation = 1.5              # For gaussian filter case to control smoothing <float>
+
 # Inputs Folders ----------------------------------------------------------------------------------
 
 trueModelPath = "inputs/models/trueModel_31x101x101_50m.bin"  # Full true velocity model path
@@ -51,12 +57,6 @@ xMask = 500                           # Mask right and left sides of x axis [m] 
 yMask = 500                           # Mask right and left sides of y axis [m] <float>
 zMaskUp = 200                         # Mask top of the model [m] <float>    
 zMaskDown = 50                        # Mask bottom of the model [m] <float> 
-
-# Smoothing model per iteration ------------------------------------------------------------------
-
-smoothingType = 0                    # 0 - gaussian filter; 1 - moving average filter
-filterSamples = 11                   #
-standardDeviation = 2                # 
 
 # Geometry parameters ----------------------------------------------------------------------------
  
@@ -110,7 +110,7 @@ dcalFolder = "outputs/dcal/"                                  # Folder to write 
 gradientFolder = "outputs/gradients/"                         # Folder to write gradients per iteration 
 convergencyFolder = "outputs/convergency/"                    # Folder to write convergency line to residuous norm
 travelTimesFolder = "outputs/travelTimes/"                    # Folder to write travel time volume per shot
-firstArrivalsFolder = "outputs/firstArrivals/"                # Folder to write first arrivals per shot   
-estimatedModelsFolder = "outputs/models/"                     # Folder to write estimated models per iteration 
 shotsPositionPath = "outputs/geometry/shotsPosition.txt"      # Full path of receivers position     
 nodesPositionPath = "outputs/geometry/nodesPosition.txt"      # Full path of shots position   
+firstArrivalsFolder = "outputs/firstArrivals/"                # Folder to write first arrivals per shot   
+estimatedModelsFolder = "outputs/models/"                     # Folder to write estimated models per iteration 

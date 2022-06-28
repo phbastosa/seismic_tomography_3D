@@ -25,12 +25,17 @@ private:
     float zMaskDown;               //
     float tomoTolerance;           //
 
+    int smoothingType;             // 
+    int filterSamples;             // 
+    float standardDeviation;       //
+
     float * dobs;                  //
     float * dcal;                  //
-    float * model;
-    float * gradient;              //
+    float * model;                 //
     float * slowness;              //
     float * deltaSlowness;         //
+    float * olderGradient;         //
+    float * currentGradient;       //
     
     bool generate_dobs;            //
 

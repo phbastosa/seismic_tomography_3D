@@ -116,6 +116,10 @@ Tomography::Tomography(char **argv)
     tomoTolerance = std::stof(catchParameter("tomoTolerance", argv[1]));
     lambda = std::stof(catchParameter("regParam", argv[1]));
 
+    smoothingType = std::stoi(catchParameter("smoothingType", argv[1]));
+    filterSamples = std::stoi(catchParameter("filterSamples", argv[1]));
+    standardDeviation = std::stof(catchParameter("standardDeviation",argv[1]));
+
     mTomo.nx = std::stoi(catchParameter("nxTomo", argv[1]));
     mTomo.ny = std::stoi(catchParameter("nyTomo", argv[1]));
     mTomo.nz = std::stoi(catchParameter("nzTomo", argv[1]));
@@ -165,8 +169,9 @@ Tomography::Tomography(char **argv)
     dobs = new float[shots.all * nodes.all]();
     dcal = new float[shots.all * nodes.all]();
 
-    gradient = new float[mTomo.nPoints]();
     slowness = new float[mTomo.nPoints]();
+    olderGradient = new float[mTomo.nPoints]();
+    currentGradient = new float[mTomo.nPoints]();
 }
 
 void Tomography::infoMessage()
@@ -350,14 +355,6 @@ void Tomography::gradientRayTracing()
 
         std::vector < int >().swap(rayInd);
     }
-}
-
-void Tomography::makeGradient()
-{
-    for (int index = 0; index < vM.size(); index++)
-        gradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);
-
-    writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", gradient, mTomo.nPoints);    
 }
 
 bool Tomography::converged()
@@ -734,26 +731,21 @@ void Tomography::lscg_soTikhonov()
 
 void Tomography::gradientDescent()
 {
-    gradient = new float[mTomo.nPoints]();
+    float * auxGradient = new float[mTomo.nPoints]();
 
     for (int index = 0; index < vM.size(); index++)
     {
-        gradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);    
+        currentGradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);    
     }
 
-    int samples = 11;
-    float stdv = 2.0f;
-
-    int gnxb = mTomo.nx + 2*samples;
-    int gnyb = mTomo.ny + 2*samples;
-    int gnzb = mTomo.nz + 2*samples;
+    int gnxb = mTomo.nx + 2*filterSamples;
+    int gnyb = mTomo.ny + 2*filterSamples;
+    int gnzb = mTomo.nz + 2*filterSamples;
 
     int xcut = (int) (xMask / mTomo.dx);
     int ycut = (int) (yMask / mTomo.dy);
     int zcutUp = (int) (zMaskUp / mTomo.dz);
     int zcutDown = (int) (zMaskDown / mTomo.dz);
-
-    float * pGradient = new float[mTomo.nPoints]();
 
     for (int k = ycut; k < mTomo.ny - ycut; k++)    
     {
@@ -761,45 +753,53 @@ void Tomography::gradientDescent()
         {
             for (int i = zcutUp; i < mTomo.nz - zcutDown; i++)
             {
-                pGradient[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = gradient[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz];        
+                int index = i + j*mTomo.nz + k*mTomo.nx*mTomo.nz;
+
+                auxGradient[index] = currentGradient[index];        
             }
         }
     }    
 
-    float * expGradient = expandVolume(pGradient,mTomo.nx,mTomo.ny,mTomo.nz,samples); 
+    float * expGradient = expandVolume(auxGradient,mTomo.nx,mTomo.ny,mTomo.nz,filterSamples); 
      
-    expGradient = gaussianFilterSmoothing(expGradient,gnxb,gnyb,gnzb,stdv,samples);
+    expGradient = gaussianFilterSmoothing(expGradient,gnxb,gnyb,gnzb,standardDeviation,filterSamples);
 
-    gradient = reduceVolume(expGradient,mTomo.nx,mTomo.ny,mTomo.nz,samples);
+    currentGradient = reduceVolume(expGradient,mTomo.nx,mTomo.ny,mTomo.nz,filterSamples);
 
     float max = 0.0f;
 
     for (int index = 0; index < mTomo.nPoints; index++)
     {
-        if (gradient[index] > max) max = gradient[index];
+        if (currentGradient[index] > max) max = currentGradient[index];
     }
 
     for (int index = 0; index < mTomo.nPoints; index++)
     {
-        gradient[index] *= 1.0f / max;
+        currentGradient[index] *= 1.0f / max;
     }
 
-    for (int i = 0; i < zcutUp; i++)
+    if (iteration == 1)
     {
-        for (int j = 0; j < mTomo.nx; j++)
+        // choose the best alpha
+        float alpha = 4e-5f;
+        
+        // increment in slowness model                
+        for (int index = 0; index < mTomo.nPoints; index++)
         {
-            for (int k = 0; k < mTomo.ny; k++)
-            {
-                gradient[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = 0.0f;
-            }
+            slowness[index] += alpha * currentGradient[index];
+
+            olderGradient[index] = currentGradient[index];
         }
     }
+    // else
+    // {
 
-    // choose the best alpha
 
-    // increment in slowness model
+        
+    // }
 
-    writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", gradient, mTomo.nPoints);
+    // writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", gradient, mTomo.nPoints);
+    writeBinaryFloat("updatedModel.bin", slowness, mTomo.nPoints);
 }
 
 void Tomography::optimization()
