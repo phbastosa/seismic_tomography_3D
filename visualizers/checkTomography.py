@@ -18,14 +18,14 @@ def readBinaryVolume(dim1,dim2,dim3,filename):
 def readBinaryArray(dim, filename):
     return np.fromfile(filename, dtype=np.int32, count=dim)
 
-nx = 26
-ny = 26
-nz = 8
+nx = 101
+ny = 101
+nz = 31
 
-dh = 200.0
+dh = 50.0
 
 # model = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
-model = readBinaryVolume(nz,nx,ny,f"outputs/gradients/illumination_iteration_200m_1.bin")
+model = readBinaryVolume(nz,nx,ny,f"outputs/gradients/gradient_iteration_1.bin")
 
 model[-1,:,:] = model[-2,:,:]
 model[:,-1,:] = model[:,-2,:]

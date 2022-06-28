@@ -20,13 +20,14 @@ public:
     int nPoints;             // Total samples in model 
     int nPointsB;            // Total samples in expanded model 
 
-    float * model;           // Generic model to read files
-
     /* Fill model variables with other attributes dependance, invoke before declare model volumes */
-    void initialize();
+    void initialize(int nx, int ny, int nz, int nb);
 
-    /* Returns the expanded model based on input model properties */
-    float * expandModel();
+    /* Returns the expanded volume based on input model properties */
+    float * expandVolume(float * volume, int nx, int ny, int nz, int nb);
+
+    /* Returns the volume in original size without boundaries */
+    float * reduceVolume(float * volume, int nx, int ny, int nz, int nb); 
 };
 
 # endif

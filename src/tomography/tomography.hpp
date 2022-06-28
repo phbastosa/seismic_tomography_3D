@@ -27,6 +27,7 @@ private:
 
     float * dobs;                  //
     float * dcal;                  //
+    float * model;
     float * gradient;              //
     float * slowness;              //
     float * deltaSlowness;         //

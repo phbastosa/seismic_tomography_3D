@@ -16,12 +16,13 @@ Tomography::Tomography(char **argv)
     optimizationMethod = std::stoi(catchParameter("optimizationMethod", argv[1]));
     exportFirstArrivals = str2bool(catchParameter("exportFirstArrivals", argv[1]));
 
-    nb = 2;
-
     nx = std::stoi(catchParameter("nx", argv[1]));
     ny = std::stoi(catchParameter("ny", argv[1]));
     nz = std::stoi(catchParameter("nz", argv[1]));
+    nb = 2;
     
+    initialize(nx,ny,nz,nb);
+
     dx = std::stof(catchParameter("dx", argv[1]));
     dy = std::stof(catchParameter("dy", argv[1]));
     dz = std::stof(catchParameter("dz", argv[1]));
@@ -132,8 +133,6 @@ Tomography::Tomography(char **argv)
     yMask = std::stof(catchParameter("yMask", argv[1]));
     zMaskUp = std::stof(catchParameter("zMaskUp", argv[1]));
     zMaskDown = std::stof(catchParameter("zMaskDown", argv[1]));
-
-    initialize();
     
     if (generate_dobs)
     {
@@ -141,7 +140,7 @@ Tomography::Tomography(char **argv)
 
         model = readBinaryFloat(catchParameter("trueModelPath", argv[1]), nPoints);
         
-        Vp = expandModel();
+        Vp = expandVolume(model,nx,ny,nz,nb);
 
         std::cout<<"Computing observed data"<<std::endl;
 
@@ -157,7 +156,7 @@ Tomography::Tomography(char **argv)
 
     model = readBinaryFloat(catchParameter("initModelPath", argv[1]), nPoints);
     
-    Vp = expandModel();
+    Vp = expandVolume(model,nx,ny,nz,nb);
 
     iteration = 0;
 
@@ -735,19 +734,72 @@ void Tomography::lscg_soTikhonov()
 
 void Tomography::gradientDescent()
 {
-    gradient = new float[mTomo.nPoints];
-
-    float * illumination = new float[mTomo.nPoints]();
+    gradient = new float[mTomo.nPoints]();
 
     for (int index = 0; index < vM.size(); index++)
     {
-        // gradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);
-    
-        illumination[jM[index]] += vM[index];
+        gradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);    
     }
 
-    // writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin",gradient,mTomo.nPoints);
-    writeBinaryFloat(gradPath + "illumination_iteration_200m_" + std::to_string(iteration) + ".bin",illumination,mTomo.nPoints);
+    int samples = 11;
+    float stdv = 2.0f;
+
+    int gnxb = mTomo.nx + 2*samples;
+    int gnyb = mTomo.ny + 2*samples;
+    int gnzb = mTomo.nz + 2*samples;
+
+    int xcut = (int) (xMask / mTomo.dx);
+    int ycut = (int) (yMask / mTomo.dy);
+    int zcutUp = (int) (zMaskUp / mTomo.dz);
+    int zcutDown = (int) (zMaskDown / mTomo.dz);
+
+    float * pGradient = new float[mTomo.nPoints]();
+
+    for (int k = ycut; k < mTomo.ny - ycut; k++)    
+    {
+        for (int j = xcut; j < mTomo.nx - xcut; j++)
+        {
+            for (int i = zcutUp; i < mTomo.nz - zcutDown; i++)
+            {
+                pGradient[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = gradient[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz];        
+            }
+        }
+    }    
+
+    float * expGradient = expandVolume(pGradient,mTomo.nx,mTomo.ny,mTomo.nz,samples); 
+     
+    expGradient = gaussianFilterSmoothing(expGradient,gnxb,gnyb,gnzb,stdv,samples);
+
+    gradient = reduceVolume(expGradient,mTomo.nx,mTomo.ny,mTomo.nz,samples);
+
+    float max = 0.0f;
+
+    for (int index = 0; index < mTomo.nPoints; index++)
+    {
+        if (gradient[index] > max) max = gradient[index];
+    }
+
+    for (int index = 0; index < mTomo.nPoints; index++)
+    {
+        gradient[index] *= 1.0f / max;
+    }
+
+    for (int i = 0; i < zcutUp; i++)
+    {
+        for (int j = 0; j < mTomo.nx; j++)
+        {
+            for (int k = 0; k < mTomo.ny; k++)
+            {
+                gradient[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = 0.0f;
+            }
+        }
+    }
+
+    // choose the best alpha
+
+    // increment in slowness model
+
+    writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", gradient, mTomo.nPoints);
 }
 
 void Tomography::optimization()

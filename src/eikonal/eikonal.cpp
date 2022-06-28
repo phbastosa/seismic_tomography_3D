@@ -10,23 +10,11 @@ void Eikonal::writeTravelTimes()
 {
     if (exportTimesVolume)
     {    
-        float * TT = new float[nPointsB];
-
-        for (int indb = 0; indb < nPointsB; indb++)
-        {
-            int yb = (int) (indb / (nxx*nzz));               // y direction
-            int xb = (int) (indb - yb*nxx*nzz) / nzz;    // x direction
-            int zb = (int) (indb - xb*nzz - yb*nxx*nzz); // z direction
-
-            if ((zb >= nb) && (zb < nzz - nb) && (yb >= nb) && (yb < nyy - nb) && (xb >= nb) && (xb < nxx - nb))
-            {
-                TT[(zb - nb) + (xb - nb)*nz + (yb - nb)*nx*nz] = T[indb];
-            }
-        }
+        float * travelTimes = reduceVolume(T,nx,ny,nz,nb);
         
-        writeBinaryFloat(eikonalFolder + "eikonal_nz" + std::to_string(nz) + "_nx" + std::to_string(nx) + "_ny" + std::to_string(ny) + "_shot_" + std::to_string(shotId+1) + ".bin", TT, nPoints);
+        writeBinaryFloat(eikonalFolder + "eikonal_nz" + std::to_string(nz) + "_nx" + std::to_string(nx) + "_ny" + std::to_string(ny) + "_shot_" + std::to_string(shotId+1) + ".bin", travelTimes, nPoints);
 
-        delete[] TT;
+        delete[] travelTimes;
     }
 }
 

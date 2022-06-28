@@ -1,6 +1,6 @@
 # include "model.hpp"
 
-void Model::initialize()
+void Model::initialize(int nx, int ny, int nz, int nb)
 {
     nxx = nx + 2 * nb;
     nyy = ny + 2 * nb;
@@ -10,9 +10,13 @@ void Model::initialize()
     nPointsB = nxx * nyy * nzz;
 }
 
-float * Model::expandModel()
+float * Model::expandVolume(float * volume, int nx, int ny, int nz, int nb)
 {
-    float * expModel = new float[nPointsB];
+    int nxx = nx + 2*nb;
+    int nyy = ny + 2*nb;
+    int nzz = nz + 2*nb;
+
+    float * expVolume = new float[nxx * nyy * nzz]();
 
     // Centering
     for (int z = nb; z < nzz - nb; z++)
@@ -21,7 +25,7 @@ float * Model::expandModel()
         {
             for (int x = nb; x < nxx - nb; x++)
             {
-                expModel[z + x*nzz + y*nxx*nzz] = model[(z - nb) + (x - nb)*nz + (y - nb)*nx*nz];
+                expVolume[z + x*nzz + y*nxx*nzz] = volume[(z - nb) + (x - nb)*nz + (y - nb)*nx*nz];
             }
         }
     }
@@ -33,8 +37,8 @@ float * Model::expandModel()
         {
             for (int x = nb; x < nxx - nb; x++)
             {
-                expModel[z + x*nzz + y*nxx*nzz] = model[0 + (x - nb)*nz + (y - nb)*nx*nz];
-                expModel[(nzz - z - 1) + x*nzz + y*nxx*nzz] = model[(nz - 1) + (x - nb)*nz + (y - nb)*nx*nz];
+                expVolume[z + x*nzz + y*nxx*nzz] = volume[0 + (x - nb)*nz + (y - nb)*nx*nz];
+                expVolume[(nzz - z - 1) + x*nzz + y*nxx*nzz] = volume[(nz - 1) + (x - nb)*nz + (y - nb)*nx*nz];
             }
         }
     }
@@ -46,8 +50,8 @@ float * Model::expandModel()
         {
             for (int y = nb; y < nyy - nb; y++)
             {
-                expModel[z + x*nzz + y*nxx*nzz] = expModel[z + nb*nzz + y*nxx*nzz];
-                expModel[z + (nxx - x - 1)*nzz + y*nxx*nzz] = expModel[z + (nxx - nb - 1)*nzz + y*nxx*nzz];
+                expVolume[z + x*nzz + y*nxx*nzz] = expVolume[z + nb*nzz + y*nxx*nzz];
+                expVolume[z + (nxx - x - 1)*nzz + y*nxx*nzz] = expVolume[z + (nxx - nb - 1)*nzz + y*nxx*nzz];
             }
         }
     }
@@ -59,13 +63,34 @@ float * Model::expandModel()
         {
             for (int x = 0; x < nxx; x++)
             {
-                expModel[z + x*nzz + y*nxx*nzz] = expModel[z + x*nzz + nb*nxx*nzz];
-                expModel[z + x*nzz + (nyy - y - 1)*nxx*nzz] = expModel[z + x*nzz + (nyy - nb - 1)*nxx*nzz];
+                expVolume[z + x*nzz + y*nxx*nzz] = expVolume[z + x*nzz + nb*nxx*nzz];
+                expVolume[z + x*nzz + (nyy - y - 1)*nxx*nzz] = expVolume[z + x*nzz + (nyy - nb - 1)*nxx*nzz];
             }
         }
     }
 
-    delete[] model;
+    delete[] volume;
 
-    return expModel;
+    return expVolume;
+}
+
+float * Model::reduceVolume(float * expVolume, int nx, int ny, int nz, int nb)
+{
+    int nxb = nx + 2*nb;
+    int nzb = nz + 2*nb;
+
+    float * volume = new float[nx*ny*nz];
+
+    for (int index = 0; index < nx*ny*nz; index++)
+    {
+        int y = (int) (index / (nx*nz));         // y direction
+        int x = (int) (index - y*nx*nz) / nz;    // x direction
+        int z = (int) (index - x*nz - y*nx*nz);  // z direction
+
+        volume[z + x*nz + y*nx*nz] = expVolume[(z + nb) + (x + nb)*nzb + (y + nb)*nxb*nzb];
+    }
+
+    delete[] expVolume;
+
+    return volume;
 }

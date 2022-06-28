@@ -77,6 +77,9 @@ public:
     float * movingAverageSmoothing(float * volume, int nx, int ny, int nz, int samples); 
 
     /* */
+    float * gaussianFilterSmoothing(float * volume, int nx, int ny, int nz, float stdv, int samples);
+
+    /* */
     sparseMatrix getDerivativeMatrix(int n, int degree);
 
     /* Function to compute a trilinear interpolation */

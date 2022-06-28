@@ -39,18 +39,24 @@ dz = 50                               # z sample spacing of model [m] <float>
 
 # Tomography model parameters ------------------------------------------------------------------- 
 
-nxTomo = 26                          # Resized x dimension of model <int>
-nyTomo = 26                          # Resized y dimension of model <int>
-nzTomo = 8                           # Resized z dimension of model <int>
+nxTomo = 101                          # Resized x dimension of model <int>
+nyTomo = 101                          # Resized y dimension of model <int>
+nzTomo = 31                           # Resized z dimension of model <int>
 
-dxTomo = 200                           # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 200                           # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 200                           # Resized model sample spacing [m] of z dimension <float>
+dxTomo = 50                           # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 50                           # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 50                           # Resized model sample spacing [m] of z dimension <float>
 
-xMask = 1200                          # Mask right and left sides of x axis [m] <float>
-yMask = 1200                          # Mask right and left sides of y axis [m] <float>
+xMask = 500                           # Mask right and left sides of x axis [m] <float>
+yMask = 500                           # Mask right and left sides of y axis [m] <float>
 zMaskUp = 200                         # Mask top of the model [m] <float>    
-zMaskDown = 100                       # Mask bottom of the model [m] <float> 
+zMaskDown = 50                        # Mask bottom of the model [m] <float> 
+
+# Smoothing model per iteration ------------------------------------------------------------------
+
+smoothingType = 0                    # 0 - gaussian filter; 1 - moving average filter
+filterSamples = 11                   #
+standardDeviation = 2                # 
 
 # Geometry parameters ----------------------------------------------------------------------------
  
