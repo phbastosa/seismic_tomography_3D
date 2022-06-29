@@ -3,9 +3,9 @@
 
 # include <string>
 
-# include "../essentials/utils/utils.hpp"
-# include "../essentials/model/model.hpp"
-# include "../essentials/geometry/geometry.hpp"
+# include "../essentials/utils.hpp"
+# include "../essentials/model.hpp"
+# include "../essentials/geometry.hpp"
 
 class Eikonal : public Utils, public Model, public Geometry
 {   

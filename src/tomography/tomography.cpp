@@ -169,9 +169,17 @@ Tomography::Tomography(char **argv)
     dobs = new float[shots.all * nodes.all]();
     dcal = new float[shots.all * nodes.all]();
 
-    slowness = new float[mTomo.nPoints]();
-    olderGradient = new float[mTomo.nPoints]();
-    currentGradient = new float[mTomo.nPoints]();
+    if (optimizationMethod < 4)
+    {
+        currentSlowness = new float[mTomo.nPoints]();
+    }
+    else
+    {
+        olderSlowness = new float[mTomo.nPoints]();
+        olderGradient = new float[mTomo.nPoints]();
+        currentSlowness = new float[mTomo.nPoints]();
+        currentGradient = new float[mTomo.nPoints]();
+    }
 }
 
 void Tomography::infoMessage()
@@ -230,7 +238,7 @@ void Tomography::setInitialModel()
                 int jm = (int) ((float)(j)*mTomo.dx/dx) + nb;
                 int km = (int) ((float)(k)*mTomo.dy/dy) + nb;
                 
-                slowness[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = 1.0f / Vp[im + jm*nzz + km*nxx*nzz];    
+                currentSlowness[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = 1.0f / Vp[im + jm*nzz + km*nxx*nzz];    
             }
         }
     }
@@ -363,7 +371,7 @@ bool Tomography::converged()
     for (int i = 0; i < nodes.all * shots.all; i++)
         r += powf(dobs[i] - dcal[i], 2.0f);
 
-    residuo.emplace_back(sqrt(r));
+    residuo.emplace_back(sqrtf(r));
     
     if ((residuo.back() < tomoTolerance) || (iteration >= maxIteration))
     {
@@ -393,7 +401,7 @@ void Tomography::tomographyUpdate()
 
         if ((i >= zcutUp) && (i < mTomo.nz - zcutDown) && (j >= xcut) && (j < mTomo.nx - xcut - 1) && (k >= ycut) && (k < mTomo.ny - ycut - 1))
         {
-            slowness[index] += deltaSlowness[index];
+            currentSlowness[index] += deltaSlowness[index];
         }
     }    
 }
@@ -733,10 +741,15 @@ void Tomography::gradientDescent()
 {
     float * auxGradient = new float[mTomo.nPoints]();
 
+    for (int index = 0; index < mTomo.nPoints; index++) 
+        currentGradient[index] = 0.0f;
+
     for (int index = 0; index < vM.size(); index++)
-    {
         currentGradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);    
-    }
+    
+    std::vector<  int  >().swap(iM);
+    std::vector<  int  >().swap(jM);
+    std::vector< float >().swap(vM);
 
     int gnxb = mTomo.nx + 2*filterSamples;
     int gnyb = mTomo.ny + 2*filterSamples;
@@ -769,37 +782,20 @@ void Tomography::gradientDescent()
     float max = 0.0f;
 
     for (int index = 0; index < mTomo.nPoints; index++)
-    {
-        if (currentGradient[index] > max) max = currentGradient[index];
-    }
+        if (fabsf(currentGradient[index]) > max) max = fabsf(currentGradient[index]);
 
     for (int index = 0; index < mTomo.nPoints; index++)
-    {
         currentGradient[index] *= 1.0f / max;
-    }
 
-    if (iteration == 1)
-    {
-        // choose the best alpha
-        float alpha = 4e-5f;
-        
-        // increment in slowness model                
-        for (int index = 0; index < mTomo.nPoints; index++)
-        {
-            slowness[index] += alpha * currentGradient[index];
+    float alpha = 5e-5f;
+    
+    for (int index = 0; index < mTomo.nPoints; index++)
+        currentSlowness[index] += alpha * currentGradient[index];
 
-            olderGradient[index] = currentGradient[index];
-        }
-    }
-    // else
-    // {
-
-
-        
-    // }
-
-    // writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", gradient, mTomo.nPoints);
-    writeBinaryFloat("updatedModel.bin", slowness, mTomo.nPoints);
+    writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", currentGradient, mTomo.nPoints);
+    
+    delete[] expGradient;
+    delete[] auxGradient;
 }
 
 void Tomography::optimization()
@@ -862,14 +858,14 @@ void Tomography::modelUpdate()
 
             int indS = idz + idx*mTomo.nz + idy*mTomo.nx*mTomo.nz;
 
-            float c000 = slowness[indS];                  
-            float c001 = slowness[indS + 1];
-            float c100 = slowness[indS + mTomo.nz];
-            float c101 = slowness[indS + 1 + mTomo.nz];
-            float c010 = slowness[indS + mTomo.nx*mTomo.nz];
-            float c011 = slowness[indS + 1 + mTomo.nx*mTomo.nz];
-            float c110 = slowness[indS + mTomo.nz + mTomo.nx*mTomo.nz];
-            float c111 = slowness[indS + 1 + mTomo.nz + mTomo.nx*mTomo.nz];  
+            float c000 = currentSlowness[indS];                  
+            float c001 = currentSlowness[indS + 1];
+            float c100 = currentSlowness[indS + mTomo.nz];
+            float c101 = currentSlowness[indS + 1 + mTomo.nz];
+            float c010 = currentSlowness[indS + mTomo.nx*mTomo.nz];
+            float c011 = currentSlowness[indS + 1 + mTomo.nx*mTomo.nz];
+            float c110 = currentSlowness[indS + mTomo.nz + mTomo.nx*mTomo.nz];
+            float c111 = currentSlowness[indS + 1 + mTomo.nz + mTomo.nx*mTomo.nz];  
 
             float s = triLinearInterpolation(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);
     
@@ -895,7 +891,7 @@ void Tomography::modelUpdate()
 
 void Tomography::exportConvergency()
 {
-    std::ofstream resFile(resPath + "residuo.txt");
+    std::ofstream resFile(resPath + "residuo.txt", std::ios::out);
     
     for (int r = 0; r < residuo.size(); r++)
         resFile<<residuo[r]<<"\n";

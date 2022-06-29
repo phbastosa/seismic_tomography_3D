@@ -1,7 +1,7 @@
 # include <omp.h>
 # include <iostream>
 
-# include "../src/tomography/tomography.hpp"
+# include "tomography.hpp"
 
 int main(int argc, char **argv)
 {

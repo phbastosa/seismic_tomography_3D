@@ -1,12 +1,12 @@
 #!/bin/bash
 
-model="src/essentials/model/model.cpp"
-utils="src/essentials/utils/utils.cpp"
-geom="src/essentials/geometry/geometry.cpp"
+model="src/essentials/model.cpp"
+utils="src/essentials/utils.cpp"
+geom="src/essentials/geometry.cpp"
 eikonal="src/eikonal/eikonal.cpp"
 tomography="src/tomography/tomography.cpp"
 
-main="main/tomography3D_main.cpp"
+main="src/tomography/tomography3D_main.cpp"
 
 essentials="$model $utils $geom"
 paramFile="inputs/parameters.txt"

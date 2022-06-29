@@ -32,11 +32,14 @@ private:
     float * dobs;                  //
     float * dcal;                  //
     float * model;                 //
-    float * slowness;              //
     float * deltaSlowness;         //
+
+    float * olderSlowness;         //
     float * olderGradient;         //
+
+    float * currentSlowness;       //
     float * currentGradient;       //
-    
+
     bool generate_dobs;            //
 
     typedef struct                 //

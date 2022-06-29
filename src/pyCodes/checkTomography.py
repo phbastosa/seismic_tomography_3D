@@ -25,7 +25,7 @@ nz = 31
 dh = 50.0
 
 # model = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
-model = readBinaryVolume(nz,nx,ny,f"outputs/gradients/gradient_iteration_1.bin")
+model = readBinaryVolume(nz,nx,ny,f"outputs/models/estimatedModel_iteration_10.bin")
 
 model[-1,:,:] = model[-2,:,:]
 model[:,-1,:] = model[:,-2,:]
@@ -42,8 +42,8 @@ xzPlane = int(ny / 2)
 yzPlane = int(nx / 2)
 xyPlane = int(nz / 2)
 
-vmin = -2000
-vmax =  2000 
+vmin = 1500
+vmax = 3500 
 
 xloc = np.linspace(0,nx-1,7,dtype=int)
 xlab = np.array(xloc * dh,dtype=int)
@@ -118,52 +118,52 @@ plt.tight_layout()
 
 plt.show()
 
-# trueModel = readBinaryVolume(nz,nx,ny,f"inputs/models/trueModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
-# initModel = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
-# brrnModel = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_Berriman.bin")
+trueModel = readBinaryVolume(nz,nx,ny,f"inputs/models/trueModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
+initModel = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
+brrnModel = readBinaryVolume(nz,nx,ny,f"outputs/models/estimatedModel_iteration_10.bin")
 # tkv0Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk0.bin")
 # tkv1Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk1.bin")
 # tkv2Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk2.bin")
 
-# trueModel = trueModel[:,int(nx/2),int(ny/2)]
-# initModel = initModel[:,int(nx/2),int(ny/2)]
-# brrnModel = brrnModel[:,int(nx/2),int(ny/2)]
+trueModel = trueModel[:,int(nx/2),int(ny/2)]
+initModel = initModel[:,int(nx/2),int(ny/2)]
+brrnModel = brrnModel[:,int(nx/2),int(ny/2)]
 # tkv0Model = tkv0Model[:,int(nx/2),int(ny/2)]
 # tkv1Model = tkv1Model[:,int(nx/2),int(ny/2)]
 # tkv2Model = tkv2Model[:,int(nx/2),int(ny/2)]
 
-# n = 3
+n = 2
 
-# brrnModel = 1.0 / gaussian_filter(1.0 / brrnModel, n)
+brrnModel = 1.0 / gaussian_filter(1.0 / brrnModel, n)
 # tkv0Model = 1.0 / gaussian_filter(1.0 / tkv0Model, n)
 # tkv1Model = 1.0 / gaussian_filter(1.0 / tkv1Model, n)
 # tkv2Model = 1.0 / gaussian_filter(1.0 / tkv2Model, n)
 
-# depth = np.arange(nz) * dh
+depth = np.arange(nz) * dh
 
-# ylab = np.linspace(0,depth[-1],11, dtype = int)
+ylab = np.linspace(0,depth[-1],11, dtype = int)
 
-# plt.figure(1,figsize=(15, 7))
+plt.figure(2, figsize=(15, 7))
 
-# G = gridspec.GridSpec(1, 4)
+G = gridspec.GridSpec(1, 4)
 
-# ax1 = plt.subplot(G[:,:1])
+ax1 = plt.subplot(G[:,:1])
 
-# plt.plot(trueModel, depth, label = "True model")
-# plt.plot(initModel, depth, label = "Initial model")
-# plt.plot(brrnModel, depth, label = "Recovered model")
+plt.plot(trueModel, depth, label = "True model")
+plt.plot(initModel, depth, label = "Initial model")
+plt.plot(brrnModel, depth, label = "Recovered model")
 
-# plt.ylim([0,(nz-1)*dh])
+plt.ylim([0,(nz-1)*dh])
 
-# plt.title("Berriman", fontsize = 18)
-# plt.ylabel("Depth [m]", fontsize = 18)
-# plt.xlabel("P wave velocity [m/s]", fontsize = 15)
+plt.title("Berriman", fontsize = 18)
+plt.ylabel("Depth [m]", fontsize = 18)
+plt.xlabel("P wave velocity [m/s]", fontsize = 15)
 
-# plt.legend(loc = "upper right")
+plt.legend(loc = "upper right")
 
-# plt.yticks(ylab,ylab)
+plt.yticks(ylab,ylab)
 
-# plt.gca().invert_yaxis()
+plt.gca().invert_yaxis()
 
 # ax2 = plt.subplot(G[:,1:2])
 
@@ -212,8 +212,8 @@ plt.show()
 
 # plt.gca().invert_yaxis()
 
-# plt.tight_layout()
-# plt.show()
+plt.tight_layout()
+plt.show()
 
 # resBer = np.loadtxt("outputs/convergency/residuo_berriman.txt")
 # resTk0 = np.loadtxt("outputs/convergency/residuo_tk0.txt")

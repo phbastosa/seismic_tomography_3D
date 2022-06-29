@@ -61,6 +61,7 @@ void::Eikonal::writeFirstArrivals()
 void Eikonal::podvin()
 {
     S = new float[nPointsB]();    
+    
     float * K = new float[nPointsB]();    
     float * nT = new float[nPointsB]();    
     float * nK = new float[nPointsB]();  
@@ -1711,7 +1712,8 @@ void Eikonal::podvin()
 
 void Eikonal::jeongFIM()
 {
-    S = new float[nPointsB]();    
+    S = new float[nPointsB]();
+
     float * K = new float[nPointsB]();    
     float * nT = new float[nPointsB]();    
     float * nK = new float[nPointsB]();  
