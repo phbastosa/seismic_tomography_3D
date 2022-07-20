@@ -113,7 +113,6 @@ Tomography::Tomography(char **argv)
     gradPath = catchParameter("gradientFolder", argv[1]);
 
     maxIteration = std::stoi(catchParameter("maxIteration", argv[1]));
-    tomoTolerance = std::stof(catchParameter("tomoTolerance", argv[1]));
     lambda = std::stof(catchParameter("regParam", argv[1]));
 
     smoothingType = std::stoi(catchParameter("smoothingType", argv[1]));
@@ -313,9 +312,9 @@ void Tomography::gradientRayTracing()
             xi -= rayStep*dTx / norm; // x ray position atualization   
             yi -= rayStep*dTy / norm; // y ray position atualization   
 
+            int im = (int)(zi / mTomo.dz); 
             int jm = (int)(xi / mTomo.dx); 
             int km = (int)(yi / mTomo.dy); 
-            int im = (int)(zi / mTomo.dz); 
 
             rayInd.push_back(im + jm*mTomo.nz + km*mTomo.nx*mTomo.nz);
 
@@ -373,7 +372,7 @@ bool Tomography::converged()
 
     residuo.emplace_back(sqrtf(r));
     
-    if ((residuo.back() < tomoTolerance) || (iteration >= maxIteration))
+    if (iteration >= maxIteration)
     {
         std::cout<<"\nFinal residuo: "<<sqrtf(r)<<std::endl;
         return true;
@@ -739,6 +738,15 @@ void Tomography::lscg_soTikhonov()
 
 void Tomography::gradientDescent()
 {
+    int gnxb = mTomo.nx + 2*filterSamples;
+    int gnyb = mTomo.ny + 2*filterSamples;
+    int gnzb = mTomo.nz + 2*filterSamples;
+
+    int xcut = (int) (xMask / mTomo.dx);
+    int ycut = (int) (yMask / mTomo.dy);
+    int zcutUp = (int) (zMaskUp / mTomo.dz);
+    int zcutDown = (int) (zMaskDown / mTomo.dz);
+
     float * auxGradient = new float[mTomo.nPoints]();
 
     for (int index = 0; index < mTomo.nPoints; index++) 
@@ -750,15 +758,6 @@ void Tomography::gradientDescent()
     std::vector<  int  >().swap(iM);
     std::vector<  int  >().swap(jM);
     std::vector< float >().swap(vM);
-
-    int gnxb = mTomo.nx + 2*filterSamples;
-    int gnyb = mTomo.ny + 2*filterSamples;
-    int gnzb = mTomo.nz + 2*filterSamples;
-
-    int xcut = (int) (xMask / mTomo.dx);
-    int ycut = (int) (yMask / mTomo.dy);
-    int zcutUp = (int) (zMaskUp / mTomo.dz);
-    int zcutDown = (int) (zMaskDown / mTomo.dz);
 
     for (int k = ycut; k < mTomo.ny - ycut; k++)    
     {
@@ -794,7 +793,6 @@ void Tomography::gradientDescent()
 
     writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", currentGradient, mTomo.nPoints);
     
-    delete[] expGradient;
     delete[] auxGradient;
 }
 

@@ -23,7 +23,6 @@ private:
     float lambda;                  //
     float zMaskUp;                 //
     float zMaskDown;               //
-    float tomoTolerance;           //
 
     int smoothingType;             // 
     int filterSamples;             // 

@@ -6,7 +6,7 @@ geom="src/essentials/geometry.cpp"
 eikonal="src/eikonal/eikonal.cpp"
 tomography="src/tomography/tomography.cpp"
 
-main="src/tomography/tomography3D_main.cpp"
+main="src/tomography/tomography_main.cpp"
 
 essentials="$model $utils $geom"
 paramFile="inputs/parameters.txt"

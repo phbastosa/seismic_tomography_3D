@@ -18,8 +18,8 @@ exportFirstArrivals = True            # Flag to export first arrivals <bool>
 #    comming soon...
 
 optimizationMethod = 4                # Set optimization method <int> 
-tomoTolerance = 0.001                 # Tomography tolerance to stop inversion progress <float>
-maxIteration = 10                     # Tomography max iteration <int>                   
+
+maxIteration = 5                      # Tomography max iteration <int>                   
 regParam = 0.001                      # Regularization parameter <float>
 
 # Smoothing model per iteration ------------------------------------------------------------------
@@ -53,9 +53,9 @@ dxTomo = 50                           # Resized model sample spacing [m] of x di
 dyTomo = 50                           # Resized model sample spacing [m] of y dimension <float>
 dzTomo = 50                           # Resized model sample spacing [m] of z dimension <float>
 
-xMask = 500                            # Mask right and left sides of x axis [m] <float>
-yMask = 500                            # Mask right and left sides of y axis [m] <float>
-zMaskUp = 100                          # Mask top of the model [m] <float>    
+xMask = 500                           # Mask right and left sides of x axis [m] <float>
+yMask = 500                           # Mask right and left sides of y axis [m] <float>
+zMaskUp = 200                         # Mask top of the model [m] <float>    
 zMaskDown = 50                        # Mask bottom of the model [m] <float> 
 
 # Geometry parameters ----------------------------------------------------------------------------
