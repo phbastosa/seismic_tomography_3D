@@ -749,51 +749,59 @@ void Tomography::gradientDescent()
 
     float * auxGradient = new float[mTomo.nPoints]();
 
+    float * data = new float[nodes.all * shots.all]();
+
     for (int index = 0; index < mTomo.nPoints; index++) 
         currentGradient[index] = 0.0f;
 
     for (int index = 0; index < vM.size(); index++)
         currentGradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);    
     
+    for (int index = 0; index < vM.size(); index++)
+        data[iM[index]] += vM[index] * currentSlowness[jM[index]];
+
+    writeBinaryFloat("dataG.bin", data, nodes.all * shots.all);
+    writeBinaryFloat("dcal.bin", dcal, nodes.all * shots.all);
+
     std::vector<  int  >().swap(iM);
     std::vector<  int  >().swap(jM);
     std::vector< float >().swap(vM);
 
-    for (int k = ycut; k < mTomo.ny - ycut; k++)    
-    {
-        for (int j = xcut; j < mTomo.nx - xcut; j++)
-        {
-            for (int i = zcutUp; i < mTomo.nz - zcutDown; i++)
-            {
-                int index = i + j*mTomo.nz + k*mTomo.nx*mTomo.nz;
+    // for (int k = ycut; k < mTomo.ny - ycut; k++)    
+    // {
+    //     for (int j = xcut; j < mTomo.nx - xcut; j++)
+    //     {
+    //         for (int i = zcutUp; i < mTomo.nz - zcutDown; i++)
+    //         {
+    //             int index = i + j*mTomo.nz + k*mTomo.nx*mTomo.nz;
 
-                auxGradient[index] = currentGradient[index];        
-            }
-        }
-    }    
+    //             auxGradient[index] = currentGradient[index];        
+    //         }
+    //     }
+    // }    
 
-    float * expGradient = expandVolume(auxGradient,mTomo.nx,mTomo.ny,mTomo.nz,filterSamples); 
+    // float * expGradient = expandVolume(auxGradient,mTomo.nx,mTomo.ny,mTomo.nz,filterSamples); 
      
-    expGradient = gaussianFilterSmoothing(expGradient,gnxb,gnyb,gnzb,standardDeviation,filterSamples);
+    // expGradient = gaussianFilterSmoothing(expGradient,gnxb,gnyb,gnzb,standardDeviation,filterSamples);
 
-    currentGradient = reduceVolume(expGradient,mTomo.nx,mTomo.ny,mTomo.nz,filterSamples);
+    // currentGradient = reduceVolume(expGradient,mTomo.nx,mTomo.ny,mTomo.nz,filterSamples);
 
-    float max = 0.0f;
+    // float max = 0.0f;
 
-    for (int index = 0; index < mTomo.nPoints; index++)
-        if (fabsf(currentGradient[index]) > max) max = fabsf(currentGradient[index]);
+    // for (int index = 0; index < mTomo.nPoints; index++)
+    //     if (fabsf(currentGradient[index]) > max) max = fabsf(currentGradient[index]);
 
-    for (int index = 0; index < mTomo.nPoints; index++)
-        currentGradient[index] *= 1.0f / max;
+    // for (int index = 0; index < mTomo.nPoints; index++)
+    //     currentGradient[index] *= 1.0f / max;
 
-    float alpha = 5e-5f;
+    // float alpha = 5e-5f;
     
-    for (int index = 0; index < mTomo.nPoints; index++)
-        currentSlowness[index] += alpha * currentGradient[index];
+    // for (int index = 0; index < mTomo.nPoints; index++)
+    //     currentSlowness[index] += alpha * currentGradient[index];
 
-    writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", currentGradient, mTomo.nPoints);
+    // writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", currentGradient, mTomo.nPoints);
     
-    delete[] auxGradient;
+    // delete[] auxGradient;
 }
 
 void Tomography::optimization()
