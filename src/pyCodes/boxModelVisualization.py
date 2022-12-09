@@ -16,7 +16,7 @@ dx = 25.0
 dy = 25.0
 dz = 25.0
 
-model = readBinaryVolume(nz,nx,ny,"overthrust_z187_x801_y801_h25.bin")
+model = readBinaryVolume(nz,nx,ny,"../../inputs/models/overthrust_z187_x801_y801_h25.bin")
 
 model = model[:nz,:nx:,:ny]
 
