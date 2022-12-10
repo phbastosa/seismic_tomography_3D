@@ -1,6 +1,6 @@
 # include "model.hpp"
 
-void Model::initialize(int nx, int ny, int nz, int nb)
+void Model::initialize()
 {
     nxx = nx + 2 * nb;
     nyy = ny + 2 * nb;
@@ -10,13 +10,9 @@ void Model::initialize(int nx, int ny, int nz, int nb)
     nPointsB = nxx * nyy * nzz;
 }
 
-float * Model::expandVolume(float * volume, int nx, int ny, int nz, int nb)
+float * Model::expand(float * volume)
 {
-    int nxx = nx + 2*nb;
-    int nyy = ny + 2*nb;
-    int nzz = nz + 2*nb;
-
-    float * expVolume = new float[nxx * nyy * nzz]();
+    float * expVolume = new float[nPointsB]();
 
     // Centering
     for (int z = nb; z < nzz - nb; z++)
@@ -74,20 +70,17 @@ float * Model::expandVolume(float * volume, int nx, int ny, int nz, int nb)
     return expVolume;
 }
 
-float * Model::reduceVolume(float * expVolume, int nx, int ny, int nz, int nb)
+float * Model::reduce(float * expVolume)
 {
-    int nxb = nx + 2*nb;
-    int nzb = nz + 2*nb;
+    float * volume = new float[nPoints];
 
-    float * volume = new float[nx*ny*nz];
-
-    for (int index = 0; index < nx*ny*nz; index++)
+    for (int index = 0; index < nPoints; index++)
     {
         int y = (int) (index / (nx*nz));         // y direction
         int x = (int) (index - y*nx*nz) / nz;    // x direction
         int z = (int) (index - x*nz - y*nx*nz);  // z direction
 
-        volume[z + x*nz + y*nx*nz] = expVolume[(z + nb) + (x + nb)*nzb + (y + nb)*nxb*nzb];
+        volume[z + x*nz + y*nx*nz] = expVolume[(z + nb) + (x + nb)*nzz + (y + nb)*nxx*nzz];
     }
 
     delete[] expVolume;

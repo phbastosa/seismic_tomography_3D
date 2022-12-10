@@ -19,19 +19,13 @@ public:
     
     } sparseMatrix;
 
-    /* */
+    /* Reads and returns a binary float */
     float * readBinaryFloat(std::string path, int n);
 
-    /* */
-    float * rickerGeneration(int ns, float dt, float fmax);
-
-    /* */
-    float * intRickerGeneration(int ns, float dt, float fmax);
-
-    /* */
+    /* Writes a binary float */
     void writeBinaryFloat(std::string path, float *array, int n);
 
-    /* */
+    /* Finds each parameter in text file */
     std::string catchParameter(std::string target, std::string file);
 
     /* Function to calculate minimum value between two float inputs */
