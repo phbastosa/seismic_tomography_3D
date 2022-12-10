@@ -163,52 +163,10 @@ void Geometry::setCircularNodes()
 
 void Geometry::setReciprocity()
 {
-    float * x = new float[shots.all];
-    float * y = new float[shots.all];
-    float * z = new float[shots.all];
-
-    for (int p = 0; p < shots.all; p++)
-    {
-        x[p] = shots.x[p];
-        y[p] = shots.y[p];
-        z[p] = shots.z[p];
-    }    
-
-    delete[] shots.x;
-    delete[] shots.y;
-    delete[] shots.z;
-
-    shots.x = new float[nodes.all];
-    shots.y = new float[nodes.all];
-    shots.z = new float[nodes.all];
-
-    for (int p = 0; p < nodes.all; p++)
-    {
-        shots.x[p] = nodes.x[p];
-        shots.y[p] = nodes.y[p];
-        shots.z[p] = nodes.z[p];
-    }    
-
-    delete[] nodes.x;
-    delete[] nodes.y;
-    delete[] nodes.z;
-
-    nodes.x = new float[shots.all];
-    nodes.y = new float[shots.all];
-    nodes.z = new float[shots.all];
-
-    for (int p = 0; p < shots.all; p++)
-    {
-        nodes.x[p] = x[p];
-        nodes.y[p] = y[p];
-        nodes.z[p] = z[p];
-    }    
-
-    int aux = shots.all; shots.all = nodes.all; nodes.all = aux;   
-
-    delete[] x;
-    delete[] y;
-    delete[] z;
+    std::swap(shots.x, nodes.x);
+    std::swap(shots.y, nodes.y);
+    std::swap(shots.z, nodes.z);
+    std::swap(shots.all, nodes.all);
 }
 
 void Geometry::exportPositions()

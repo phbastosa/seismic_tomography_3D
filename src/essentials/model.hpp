@@ -1,6 +1,8 @@
 # ifndef MODEL_HPP
 # define MODEL_HPP
 
+# include <string>
+
 class Model
 {
 public:    
@@ -19,6 +21,8 @@ public:
 
     int nPoints;             // Total samples in model 
     int nPointsB;            // Total samples in expanded model 
+
+    std::string vpModelPath; // Vp model location
 
     /* Fill model variables with other attributes dependance, invoke before declare model volumes */
     void initialize(int nx, int ny, int nz, int nb);

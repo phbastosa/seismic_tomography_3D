@@ -1,6 +1,7 @@
 # ifndef GEOMETRY_HPP
 # define GEOMETRY_HPP
 
+# include <string>
 # include <vector>
 
 class Geometry

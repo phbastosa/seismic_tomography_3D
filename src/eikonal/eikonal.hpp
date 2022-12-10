@@ -72,7 +72,6 @@ public:
     bool exportTimesVolume;              // To set if you want to write the times volume 
     bool exportFirstArrivals;            // To set if you want to write the first arrivals
 
-    std::string vpModelPath;             // Vp model location
     std::string eikonalFolder;           // Folder to write travel times volume 
     std::string arrivalFolder;           // Folder to write first arrivals
 
