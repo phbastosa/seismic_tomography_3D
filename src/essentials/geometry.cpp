@@ -34,15 +34,6 @@ void Geometry::set_NW(float x, float y) {NW.x = x; NW.y = y;}
 
 void Geometry::set_SE(float x, float y) {SE.x = x; SE.y = y;}
 
-int * Geometry::setGridPoints(float * p, int n, float dh, int nb)
-{
-    int * np = new int[n]();
-
-    for (int i = 0; i < n; i++) np[i] = (int)(p[i] / dh) + nb;
-
-    return np;
-}
-
 void Geometry::setGridShots()
 {
     shots.all = shots.n_xline * shots.n_yline;

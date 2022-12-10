@@ -8,3 +8,5 @@ pgc++ $geometry geometryTest.cpp $flags -o geometryTest.exe
 ./geometryTest.exe
 
 rm *.o *.exe
+
+python3 verifyGeometryTest.py 

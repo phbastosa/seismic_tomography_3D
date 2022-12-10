@@ -68,9 +68,6 @@ public:
     /* */
     void set_SE(float x, float y);
 
-    /* */
-    int * setGridPoints(float * p, int n, float dh, int nb);
-
     /* Method to set shots positions giving three points in grid */
     void setGridShots();
     

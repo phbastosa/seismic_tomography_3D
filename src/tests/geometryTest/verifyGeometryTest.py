@@ -8,6 +8,9 @@ files = [["pointShot", "pointNode"], ["xLineShots", "xLineNodes"],
 
 fig, axs = plt.subplots(2,3, figsize = (13, 8))
 
+titles = ["Point geometry", "xline geometry", "yline geometry", 
+          "carpet geometry", "carpet reciprocity geometry", "circular geometry"]
+
 ind = 0
 for i in range(len(axs)):
     for j in range(len(axs[0])):
@@ -19,6 +22,10 @@ for i in range(len(axs)):
     
         axs[i,j].set_xlim([0,10000])
         axs[i,j].set_ylim([0,10000])
+
+        axs[i,j].set_xlabel("x coordinate [m]", fontsize = 12)
+        axs[i,j].set_ylabel("y coordinate [m]", fontsize = 12)
+        axs[i,j].set_title(titles[ind], fontsize = 15)
 
         ind += 1
 
