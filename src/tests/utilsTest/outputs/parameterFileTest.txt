@@ -1,0 +1,11 @@
+# This is a comment line
+
+parameter1 = "fileNameTest"     # string test
+
+parameter2 = 1512               # integer test
+
+parameter3 = 10.457             # float test
+
+parameter4 = [30.4, 50.2, 23.8] # vector test
+
+parameter5 = true               # boolean test

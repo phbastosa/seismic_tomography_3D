@@ -205,6 +205,62 @@ float * Utils::sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
     return x;
 }
 
+Utils::sparseMatrix Utils::getDerivativeMatrix(int n, int degree)
+{
+	sparseMatrix L;
+    
+    int elements = degree + 1;
+		
+	L.m = n;
+    L.n = n - degree;
+    L.nnz = elements * L.n;
+
+	L.i = new int[L.nnz]();
+	L.j = new int[L.nnz]();
+	L.v = new float[L.nnz]();
+
+	if (degree == 0)
+	{
+		for (int index = 0; index < L.nnz; index++)
+		{
+			L.i[index] = index;
+			L.j[index] = index;
+			L.v[index] = 1.0f;
+		}
+		
+		return L;
+	} 
+
+	int * df = new int[elements]();	
+	int * df1 = new int[elements + 1]();
+	int * df2 = new int[elements + 1]();
+	
+	df[0] = -1; df[1] = 1;
+	
+	for (int index = 1; index < degree; index++)
+	{
+		for (int k = 0; k < elements; k++)
+		{
+			df2[k] = df[k];
+			df1[k + 1] = df[k];
+
+			df[k] = df1[k] - df2[k]; 
+		}		 
+	}
+	
+	for (int index = 0; index < L.n; index++)
+	{
+		for (int k = 0; k < elements; k++)
+		{
+			L.i[elements*index + k] = index;	
+			L.j[elements*index + k] = index + k;
+			L.v[elements*index + k] = df[k];
+		}	
+	}
+	
+	return L;
+}
+
 float * Utils::movingAverageSmoothing(float * volume, int nx, int ny, int nz, int samples)
 {
     int nPoints = nx*ny*nz;
@@ -318,62 +374,6 @@ float * Utils::gaussianFilterSmoothing(float * volume, int nx, int ny, int nz, f
     }
 
     return smoothed;
-}
-
-Utils::sparseMatrix Utils::getDerivativeMatrix(int n, int degree)
-{
-	sparseMatrix L;
-    
-    int elements = degree + 1;
-		
-	L.m = n;
-    L.n = n - degree;
-    L.nnz = elements * L.n;
-
-	L.i = new int[L.nnz]();
-	L.j = new int[L.nnz]();
-	L.v = new float[L.nnz]();
-
-	if (degree == 0)
-	{
-		for (int index = 0; index < L.nnz; index++)
-		{
-			L.i[index] = index;
-			L.j[index] = index;
-			L.v[index] = 1.0f;
-		}
-		
-		return L;
-	} 
-
-	int * df = new int[elements]();	
-	int * df1 = new int[elements + 1]();
-	int * df2 = new int[elements + 1]();
-	
-	df[0] = -1; df[1] = 1;
-	
-	for (int index = 1; index < degree; index++)
-	{
-		for (int k = 0; k < elements; k++)
-		{
-			df2[k] = df[k];
-			df1[k + 1] = df[k];
-			
-			df[k] = df1[k] - df2[k]; 
-		}		 
-	}
-	
-	for (int index = 0; index < L.n; index++)
-	{
-		for (int k = 0; k < elements; k++)
-		{
-			L.i[elements*index + k] = index;	
-			L.j[elements*index + k] = index + k;
-			L.v[elements*index + k] = df[k];
-		}	
-	}
-	
-	return L;
 }
 
 float Utils::triLinearInterpolation(float c000, float c001, float c100, float c101, float c010, float c011, float c110, float c111, 

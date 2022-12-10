@@ -7,3 +7,5 @@ pgc++ $utils $model modelTest.cpp $flags -o modelTest.exe
 ./modelTest.exe
 
 rm *.o *.exe
+
+python3 verifyModelTest.py
