@@ -14,8 +14,6 @@ exportFirstArrivals = True            # Flag to export first arrivals <bool>
 #    1 - L2 norm least squares (zero order Tikonov regularization)  
 #    2 - L2 norm least squares (first order Tikonov regularization)  
 #    3 - L2 norm least squares (second order Tikonov regularization) 
-#    4 - Gradient descent method   
-#    comming soon...
 
 optimizationMethod = 4                # Set optimization method <int> 
 
@@ -24,6 +22,7 @@ regParam = 0.001                      # Regularization parameter <float>
 
 # Smoothing model per iteration ------------------------------------------------------------------
 
+smooth = True                        # Flag to smooth or not the model <bool>
 smoothingType = 0                    # 0 - gaussian filter; 1 - moving average filter <int>
 filterSamples = 11                   # Samples in filter, must to be an odd number! <int>
 standardDeviation = 2.0              # For gaussian filter case to control smoothing <float>
