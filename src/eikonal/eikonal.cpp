@@ -10,7 +10,7 @@ void Eikonal::writeTravelTimes()
 {
     if (exportTimesVolume)
     {    
-        float * travelTimes = reduceVolume(T,nx,ny,nz,nb);
+        float * travelTimes = reduce(T);
         
         writeBinaryFloat(eikonalFolder + "eikonal_nz" + std::to_string(nz) + "_nx" + std::to_string(nx) + "_ny" + std::to_string(ny) + "_shot_" + std::to_string(shotId+1) + ".bin", travelTimes, nPoints);
 
@@ -60,7 +60,7 @@ void::Eikonal::writeFirstArrivals()
 
 void Eikonal::podvin()
 {
-    S = new float[nPointsB]();    
+    S = new float[nPointsB]();
     
     float * K = new float[nPointsB]();    
     float * nT = new float[nPointsB]();    
@@ -74,7 +74,7 @@ void Eikonal::podvin()
 
     for (int index = 0; index < nPointsB; index++)
     {
-        S[index] = 1.0f / Vp[index];
+        S[index] = 1.0f / V[index];
 
         if (index == sId)
         {
@@ -1726,7 +1726,7 @@ void Eikonal::jeongFIM()
 
     for (int index = 0; index < nPointsB; index++)
     {
-        S[index] = 1.0f / Vp[index];
+        S[index] = 1.0f / V[index];
 
         if (index == sId)
         {
@@ -2262,17 +2262,46 @@ void Eikonal::nobleFSM()
     for (int index = 0; index < nPointsB; index++)
     {
         T[index] = 1e6f;
-        S[index] = 1.0f / Vp[index];
+        S[index] = 1.0f / V[index];
     }
 
+    // Neighboring source points initialization with analitical traveltime
+
     T[sId] = S[sId] * sqrtf(powf(shots.idx*dx - shots.x[shotId], 2.0f) + powf(shots.idy*dy - shots.y[shotId], 2.0f) + powf(shots.idz*dz - shots.z[shotId], 2.0f));
+    
     T[sId + 1] = S[sId] * sqrtf(powf(shots.idx*dx - shots.x[shotId], 2.0f) + powf(shots.idy*dy - shots.y[shotId], 2.0f) + powf((shots.idz+1)*dz - shots.z[shotId], 2.0f));
+    T[sId - 1] = S[sId] * sqrtf(powf(shots.idx*dx - shots.x[shotId], 2.0f) + powf(shots.idy*dy - shots.y[shotId], 2.0f) + powf((shots.idz-1)*dz - shots.z[shotId], 2.0f));
+
     T[sId + nzz] = S[sId] * sqrtf(powf((shots.idx+1)*dx - shots.x[shotId], 2.0f) + powf(shots.idy*dy - shots.y[shotId], 2.0f) + powf(shots.idz*dz - shots.z[shotId], 2.0f));
+    T[sId - nzz] = S[sId] * sqrtf(powf((shots.idx-1)*dx - shots.x[shotId], 2.0f) + powf(shots.idy*dy - shots.y[shotId], 2.0f) + powf(shots.idz*dz - shots.z[shotId], 2.0f));
+    
     T[sId + nxx*nzz] = S[sId] * sqrtf(powf(shots.idx*dx - shots.x[shotId], 2.0f) + powf((shots.idy+1)*dy - shots.y[shotId], 2.0f) + powf(shots.idz*dz - shots.z[shotId], 2.0f));
+    T[sId - nxx*nzz] = S[sId] * sqrtf(powf(shots.idx*dx - shots.x[shotId], 2.0f) + powf((shots.idy-1)*dy - shots.y[shotId], 2.0f) + powf(shots.idz*dz - shots.z[shotId], 2.0f));
+    
     T[sId + 1 + nzz] = S[sId] * sqrtf(powf((shots.idx+1)*dx - shots.x[shotId], 2.0f) + powf(shots.idy*dy - shots.y[shotId], 2.0f) + powf((shots.idz+1)*dz - shots.z[shotId], 2.0f));
+    T[sId + 1 - nzz] = S[sId] * sqrtf(powf((shots.idx+1)*dx - shots.x[shotId], 2.0f) + powf(shots.idy*dy - shots.y[shotId], 2.0f) + powf((shots.idz-1)*dz - shots.z[shotId], 2.0f));
+    T[sId - 1 + nzz] = S[sId] * sqrtf(powf((shots.idx-1)*dx - shots.x[shotId], 2.0f) + powf(shots.idy*dy - shots.y[shotId], 2.0f) + powf((shots.idz+1)*dz - shots.z[shotId], 2.0f));
+    T[sId - 1 - nzz] = S[sId] * sqrtf(powf((shots.idx-1)*dx - shots.x[shotId], 2.0f) + powf(shots.idy*dy - shots.y[shotId], 2.0f) + powf((shots.idz-1)*dz - shots.z[shotId], 2.0f));
+    
     T[sId + 1 + nxx*nzz] = S[sId] * sqrtf(powf(shots.idx*dx - shots.x[shotId], 2.0f) + powf((shots.idy+1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz+1)*dz - shots.z[shotId], 2.0f));
+    T[sId + 1 - nxx*nzz] = S[sId] * sqrtf(powf(shots.idx*dx - shots.x[shotId], 2.0f) + powf((shots.idy-1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz+1)*dz - shots.z[shotId], 2.0f));
+    T[sId - 1 + nxx*nzz] = S[sId] * sqrtf(powf(shots.idx*dx - shots.x[shotId], 2.0f) + powf((shots.idy+1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz-1)*dz - shots.z[shotId], 2.0f));
+    T[sId - 1 - nxx*nzz] = S[sId] * sqrtf(powf(shots.idx*dx - shots.x[shotId], 2.0f) + powf((shots.idy-1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz-1)*dz - shots.z[shotId], 2.0f));
+    
     T[sId + nzz + nxx*nzz] = S[sId] * sqrtf(powf((shots.idx+1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy+1)*dy - shots.y[shotId], 2.0f) + powf(shots.idz*dz - shots.z[shotId], 2.0f));
+    T[sId + nzz - nxx*nzz] = S[sId] * sqrtf(powf((shots.idx+1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy-1)*dy - shots.y[shotId], 2.0f) + powf(shots.idz*dz - shots.z[shotId], 2.0f));
+    T[sId - nzz + nxx*nzz] = S[sId] * sqrtf(powf((shots.idx-1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy+1)*dy - shots.y[shotId], 2.0f) + powf(shots.idz*dz - shots.z[shotId], 2.0f));
+    T[sId - nzz - nxx*nzz] = S[sId] * sqrtf(powf((shots.idx-1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy-1)*dy - shots.y[shotId], 2.0f) + powf(shots.idz*dz - shots.z[shotId], 2.0f));
+    
     T[sId + 1 + nzz + nxx*nzz] = S[sId] * sqrtf(powf((shots.idx+1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy+1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz+1)*dz - shots.z[shotId], 2.0f));
+    T[sId + 1 - nzz + nxx*nzz] = S[sId] * sqrtf(powf((shots.idx-1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy+1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz+1)*dz - shots.z[shotId], 2.0f));
+    T[sId + 1 + nzz - nxx*nzz] = S[sId] * sqrtf(powf((shots.idx+1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy-1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz+1)*dz - shots.z[shotId], 2.0f));
+    T[sId + 1 - nzz - nxx*nzz] = S[sId] * sqrtf(powf((shots.idx-1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy-1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz+1)*dz - shots.z[shotId], 2.0f));
+
+    T[sId - 1 + nzz + nxx*nzz] = S[sId] * sqrtf(powf((shots.idx+1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy+1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz-1)*dz - shots.z[shotId], 2.0f));
+    T[sId - 1 - nzz + nxx*nzz] = S[sId] * sqrtf(powf((shots.idx-1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy+1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz-1)*dz - shots.z[shotId], 2.0f));
+    T[sId - 1 + nzz - nxx*nzz] = S[sId] * sqrtf(powf((shots.idx+1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy-1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz-1)*dz - shots.z[shotId], 2.0f));
+    T[sId - 1 - nzz - nxx*nzz] = S[sId] * sqrtf(powf((shots.idx-1)*dx - shots.x[shotId], 2.0f) + powf((shots.idy-1)*dy - shots.y[shotId], 2.0f) + powf((shots.idz-1)*dz - shots.z[shotId], 2.0f));
 
     fsm.dzi = 1.0f / dz;
     fsm.dxi = 1.0f / dx;
@@ -2311,6 +2340,10 @@ void Eikonal::eikonalComputing()
         break;
 
     case 2:
+        nobleFSM();
+        break;
+    
+    default:
         nobleFSM();
         break;
     }

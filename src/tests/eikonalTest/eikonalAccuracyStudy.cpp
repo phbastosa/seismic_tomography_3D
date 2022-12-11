@@ -1,6 +1,6 @@
 # include <iostream>
 
-# include "eikonal.hpp"
+# include "../../eikonal/eikonal.hpp"
 
 int main(int argc, char **argv)
 {
@@ -8,9 +8,9 @@ int main(int argc, char **argv)
 
     auto eikonal = Eikonal();
 
-    std::vector<std::string> modelNames {"refractiveModel_12x221x221_100m.bin", 
-                                         "refractiveModel_23x441x441_50m.bin", 
-                                         "refractiveModel_45x881x881_25m.bin"};
+    std::vector<std::string> modelNames {"outputs/refractiveModel_12x221x221_100m.bin", 
+                                         "outputs/refractiveModel_23x441x441_50m.bin", 
+                                         "outputs/refractiveModel_45x881x881_25m.bin"};
 
     std::vector<int> nx_all {221, 441, 881};
     std::vector<int> ny_all {221, 441, 881};
@@ -22,15 +22,16 @@ int main(int argc, char **argv)
 
     // Set fixed circular geometry
 
+    eikonal.nodes.elevation = 0.0f;
+
     eikonal.nodes.xcenter = 11000.0f;
     eikonal.nodes.ycenter = 11000.0f;
-    eikonal.nodes.offsets = {10000.0f}; // 10 km
-    eikonal.nodes.elevation = 0.0f;
+    eikonal.nodes.offsets = {10000.0f};   // 10 km
     eikonal.nodes.circle_spacing = 12.5f;
 
     eikonal.setCircularNodes();
 
-    eikonal.nodesPath = "nodesPosition.txt";
+    eikonal.nodesPath = "outputs/nodesPosition.txt";
 
     eikonal.exportPositions();
 
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
     std::cout<<"\n\n";
     for (int n = 0; n < dh_all.size(); n++)
     {
-        std::cout<<"Generating data with dh = "<<dh_all[n]<<"\n";
+        std::cout<<"Generating data with dh = "<<dh_all[n]<<" m\n";
 
         eikonal.nx = nx_all[n];
         eikonal.ny = ny_all[n];    
@@ -53,12 +54,12 @@ int main(int argc, char **argv)
         eikonal.dz = dh_all[n];
 
         eikonal.initialize();
-
-        eikonal.model = eikonal.readBinaryFloat(modelNames[n],eikonal.nPoints);
-       
-        eikonal.Vp = eikonal.expandModel();
+        
+        eikonal.V = eikonal.expand(eikonal.readBinaryFloat(modelNames[n], eikonal.nPoints));
 
         // Setting extern shot points  
+
+        eikonal.shots.elevation = 0.0f;
 
         eikonal.set_SW( 1000.0f,  1000.0f);    
         eikonal.set_NW( 1000.0f, 21000.0f);    
@@ -66,7 +67,6 @@ int main(int argc, char **argv)
 
         eikonal.shots.n_xline = 2; 
         eikonal.shots.n_yline = 2; 
-        eikonal.shots.elevation = 0.0f;
 
         eikonal.setGridShots();
 
@@ -76,22 +76,24 @@ int main(int argc, char **argv)
 
         for (eikonal.shotId = 0; eikonal.shotId < eikonal.shots.all; eikonal.shotId++) 
         {   
-            eikonal.arrivalFolder = "pod_extern_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.arrivalFolder = "outputs/pod_extern_"+std::to_string((int) dh_all[n])+"m_";
             eikonal.eikonalType = 0;
             eikonal.eikonalComputing();
 
-            eikonal.arrivalFolder = "fim_extern_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.arrivalFolder = "outputs/fim_extern_"+std::to_string((int) dh_all[n])+"m_";
             eikonal.eikonalType = 1;
             eikonal.eikonalComputing();
 
-            eikonal.arrivalFolder = "fsm_extern_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.arrivalFolder = "outputs/fsm_extern_"+std::to_string((int) dh_all[n])+"m_";
             eikonal.eikonalType = 2;
             eikonal.eikonalComputing();
         }
         
         delete[] eikonal.T;
 
-        // Generate central shot
+        // Generating central shot
+
+        eikonal.shots.elevation = 0.0f;
 
         eikonal.set_SW(11000.0f, 11000.0f);    
         eikonal.set_NW(11000.0f, 11000.0f);    
@@ -106,21 +108,21 @@ int main(int argc, char **argv)
 
         for (eikonal.shotId = 0; eikonal.shotId < eikonal.shots.all; eikonal.shotId++) 
         {   
-            eikonal.arrivalFolder = "pod_central_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.arrivalFolder = "outputs/pod_central_"+std::to_string((int) dh_all[n])+"m_";
             eikonal.eikonalType = 0;
             eikonal.eikonalComputing();
 
-            eikonal.arrivalFolder = "fim_central_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.arrivalFolder = "outputs/fim_central_"+std::to_string((int) dh_all[n])+"m_";
             eikonal.eikonalType = 1;
             eikonal.eikonalComputing();
 
-            if (n == 0)
+            if (n == 2)
             {
                 eikonal.exportTimesVolume = true;
-                eikonal.eikonalFolder = "central_";
+                eikonal.eikonalFolder = "outputs/central_";
             }
 
-            eikonal.arrivalFolder = "fsm_central_"+std::to_string((int) dh_all[n])+"m_";
+            eikonal.arrivalFolder = "outputs/fsm_central_"+std::to_string((int) dh_all[n])+"m_";
             eikonal.eikonalType = 2;
             eikonal.eikonalComputing();
         }

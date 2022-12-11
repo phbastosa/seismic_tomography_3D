@@ -65,9 +65,9 @@ public:
 
     int shotId;                          // Current source index available
 
+    float * V;                           // Velocity volume 
     float * T;                           // Travel times volume
     float * S;                           // Slowness volume 
-    float * Vp;                          // Velocity
 
     bool exportTimesVolume;              // To set if you want to write the times volume 
     bool exportFirstArrivals;            // To set if you want to write the first arrivals

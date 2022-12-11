@@ -1,9 +1,9 @@
 #!/bin/bash
 
-model="../essentials/model/model.cpp"
-utils="../essentials/utils/utils.cpp"
-geom="../essentials/geometry/geometry.cpp"
-eikonal="eikonal.cpp"
+model="../../essentials/model.cpp"
+utils="../../essentials/utils.cpp"
+geom="../../essentials/geometry.cpp"
+eikonal="../../eikonal/eikonal.cpp"
 
 flags="-fopenmp -fast -acc -ta=tesla,cc60 -std=c++11 -g -O3 -lm"
 

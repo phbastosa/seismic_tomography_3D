@@ -37,7 +37,7 @@ if sys.argv[1] == "1":
         model = np.zeros((nz[i],nx[i],ny[i]))
         model[:interface,:,:] = 1500
         model[interface:,:,:] = 2000
-        model.flatten("F").astype("float32",order="F").tofile(f"refractiveModel_{nz[i]}x{nx[i]}x{ny[i]}_{dh[i]:.0f}m.bin")
+        model.flatten("F").astype("float32",order="F").tofile(f"outputs/refractiveModel_{nz[i]}x{nx[i]}x{ny[i]}_{dh[i]:.0f}m.bin")
 
 else:
     print("Images generation")
@@ -47,10 +47,10 @@ else:
     yzPlane = int(nx[n] / 2)
     xyPlane = int(nz[n] / 2)
 
-    model = readBinaryVolume(nz[n],nx[n],ny[n],"refractiveModel_45x881x881_25m.bin")
-    times = readBinaryVolume(nz[n],nx[n],ny[n],"central_eikonal_nz45_nx881_ny881_shot_1.bin")
+    model = readBinaryVolume(nz[n],nx[n],ny[n],"outputs/refractiveModel_45x881x881_25m.bin")
+    times = readBinaryVolume(nz[n],nx[n],ny[n],"outputs/central_eikonal_nz45_nx881_ny881_shot_1.bin")
 
-    rx, ry, rz = np.loadtxt("nodesPosition.txt", delimiter = ",", unpack = True)
+    rx, ry, rz = np.loadtxt("outputs/nodesPosition.txt", delimiter = ",", unpack = True)
 
     sx = np.array([1000, 21000, 1000, 21000, 11000])
     sy = np.array([1000, 1000, 21000, 21000, 11000])

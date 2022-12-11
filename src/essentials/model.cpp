@@ -65,8 +65,6 @@ float * Model::expand(float * volume)
         }
     }
 
-    delete[] volume;
-
     return expVolume;
 }
 
@@ -82,8 +80,6 @@ float * Model::reduce(float * expVolume)
 
         volume[z + x*nz + y*nx*nz] = expVolume[(z + nb) + (x + nb)*nzz + (y + nb)*nxx*nzz];
     }
-
-    delete[] expVolume;
 
     return volume;
 }
