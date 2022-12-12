@@ -8,7 +8,7 @@ def readBinaryVolume(dim1,dim2,dim3,filename):
     data = np.fromfile(filename, dtype=np.float32, count=dim1*dim2*dim3)
     return np.reshape(data, [dim1,dim2,dim3], order='F')
 
-def boxModelPlor(model, xySlice, zySlice, zxSlice):
+def boxPlot(model, xySlice, zySlice, zxSlice):
     
     xyPlane = model[xySlice,:,:].T
     zxPlane = model[:,:,zxSlice]
@@ -123,8 +123,8 @@ zySlice = int(nx/2)
 zxSlice = int(ny/2)
 
 
-boxModelPlor(expandedModel, xySlice, zySlice, zxSlice)
+boxPlot(expandedModel, xySlice, zySlice, zxSlice)
 plt.show()
 
-boxModelPlor(reducedModel, xySlice, zySlice, zxSlice)
+boxPlot(reducedModel, xySlice, zySlice, zxSlice)
 plt.show()

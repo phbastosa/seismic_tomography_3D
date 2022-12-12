@@ -11,65 +11,49 @@ private:
        1 - L2 norm least squares (zero order Tikonov regularization)  
        2 - L2 norm least squares (first order Tikonov regularization)  
        3 - L2 norm least squares (second order Tikonov regularization) 
-       4 - comming soon... 
     */
-    int optimizationMethod;       
+    int inversionMethod;       
 
-    int iteration;                 //
-    int maxIteration;              //  
+    int iteration;                  //
+    int maxIteration;               //  
 
-    float xMask;                   // 
-    float yMask;                   // 
-    float lambda;                  //
-    float zMaskUp;                 //
-    float zMaskDown;               //
+    float lambda;                   //
+    std::vector<std::string> xMask; // 
+    std::vector<std::string> yMask; // 
+    std::vector<std::string> zMask; //
 
-    int smoothingType;             // 
-    int filterSamples;             // 
-    float standardDeviation;       //
+    bool smooth;                    //
+    int smoothingType;              // 
+    int filterSamples;              // 
+    float standardDeviation;        //
 
-    float * dobs;                  //
-    float * dcal;                  //
-    float * model;                 //
-    float * deltaSlowness;         //
+    float * dm;                     //
+    float * dobs;                   //
+    float * dcal;                   //
+    float * model;                  //
 
-    float * olderSlowness;         //
-    float * olderGradient;         //
-
-    float * currentSlowness;       //
-    float * currentGradient;       //
-
-    bool generate_dobs;            //
-
-    typedef struct                 //
+    typedef struct                  //
     {  
-        int nx, ny, nz, nPoints;   //             
-        float dx, dy, dz;          //    
+        int nx, ny, nz, nPoints;    //             
+        float dx, dy, dz;           //    
 
     } tomoModel;               
     
-    tomoModel mTomo;               //    
+    tomoModel mTomo;                //    
 
-    std::string resPath;           //
-    std::string dobsPath;          //
-    std::string dcalPath;          //
-    std::string gradPath;          //
-    std::string estModels;         //
+    std::string dobsPath;           //
+    std::string dcalPath;           //
+    std::string residuoPath;        //
+    std::string estimatedPath;      //
 
-    std::vector < int > iM;        // 
-    std::vector < int > jM;        //
-    std::vector <float> vM;        //
+    std::vector< int > iM;          // 
+    std::vector< int > jM;          //
+    std::vector<float> vM;          //
 
-    std::vector <float> residuo;   //
-
-    /* */
-    void generateDobs();
+    std::vector<float> residuo;     //
 
     /* */
     void gradientRayTracing();
-
-    /* */
-    void makeGradient();
 
     /* */
     void tomographyUpdate();
@@ -92,7 +76,9 @@ private:
 public:    
     
     /* */
-    Tomography(char **argv);
+    Tomography();
+
+    void setParameters(char * parametersFile);
 
     /* */
     void infoMessage();
@@ -101,11 +87,11 @@ public:
     void importDobs();
 
     /* */
-    void setInitialModel();
-
-    /* */
     void importDcal();
     
+    /* */
+    void setInitialModel();
+
     /* */
     void forwardModeling();
 

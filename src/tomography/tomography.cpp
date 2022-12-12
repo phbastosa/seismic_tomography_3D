@@ -8,59 +8,60 @@
 
 # include "tomography.hpp"
 
-Tomography::Tomography(char **argv)
+Tomography::Tomography() { } 
+
+void Tomography::setParameters(char * parameters)
 {
-    eikonalType = std::stoi(catchParameter("eikonalType", argv[1]));    
-    generate_dobs = str2bool(catchParameter("generateDobs", argv[1]));
-    exportTimesVolume = str2bool(catchParameter("exportTravelTimes", argv[1]));
-    optimizationMethod = std::stoi(catchParameter("optimizationMethod", argv[1]));
-    exportFirstArrivals = str2bool(catchParameter("exportFirstArrivals", argv[1]));
+    eikonalType = std::stoi(catchParameter("eikonalType", parameters));    
+    inversionMethod = std::stoi(catchParameter("inversionMethod", parameters));
+    exportTimesVolume = str2bool(catchParameter("exportTravelTimes", parameters));
+    exportFirstArrivals = str2bool(catchParameter("exportFirstArrivals", parameters));
 
-    nx = std::stoi(catchParameter("nx", argv[1]));
-    ny = std::stoi(catchParameter("ny", argv[1]));
-    nz = std::stoi(catchParameter("nz", argv[1]));
     nb = 2;
+    nx = std::stoi(catchParameter("nx", parameters));
+    ny = std::stoi(catchParameter("ny", parameters));
+    nz = std::stoi(catchParameter("nz", parameters));
     
-    initialize(nx,ny,nz,nb);
+    initialize();
 
-    dx = std::stof(catchParameter("dx", argv[1]));
-    dy = std::stof(catchParameter("dy", argv[1]));
-    dz = std::stof(catchParameter("dz", argv[1]));
+    dx = std::stof(catchParameter("dx", parameters));
+    dy = std::stof(catchParameter("dy", parameters));
+    dz = std::stof(catchParameter("dz", parameters));
     
-    shotsGeometryType = std::stoi(catchParameter("shotsGeometryType", argv[1]));
-    nodesGeometryType = std::stoi(catchParameter("nodesGeometryType", argv[1]));
+    shotsGeometryType = std::stoi(catchParameter("shotsGeometryType", parameters));
+    nodesGeometryType = std::stoi(catchParameter("nodesGeometryType", parameters));
 
-    reciprocity = str2bool(catchParameter("reciprocity", argv[1]));
-    saveGeometry = str2bool(catchParameter("saveGeometry", argv[1]));
+    reciprocity = str2bool(catchParameter("reciprocity", parameters));
+    saveGeometry = str2bool(catchParameter("saveGeometry", parameters));
 
     std::vector<std::string> splitted;
 
-    shots.elevation = std::stof(catchParameter("sElev", argv[1]));
-    nodes.elevation = std::stof(catchParameter("rElev", argv[1]));
+    shots.elevation = std::stof(catchParameter("shotsElevation", parameters));
+    nodes.elevation = std::stof(catchParameter("nodesElevation", parameters));
 
-    if (shotsGeometryType)              // Grid shots aqcuisition
+    if (shotsGeometryType) // Grid shots aqcuisition
     {
-        shots.n_xline = std::stoi(catchParameter("nsx", argv[1]));
-        shots.n_yline = std::stoi(catchParameter("nsy", argv[1]));
+        shots.n_xline = std::stoi(catchParameter("xShotNumber", parameters));
+        shots.n_yline = std::stoi(catchParameter("yShotNumber", parameters));
         
-        splitted = split(catchParameter("SWs", argv[1]),',');
+        splitted = split(catchParameter("shotSW", parameters),',');
         set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
 
-        splitted = split(catchParameter("NWs", argv[1]),',');
+        splitted = split(catchParameter("shotNW", parameters),',');
         set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
 
-        splitted = split(catchParameter("SEs", argv[1]),',');
+        splitted = split(catchParameter("shotSE", parameters),',');
         set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
 
         setGridShots();
     }
-    else                             // Circular shots aqcuisition
+    else                   // Circular shots aqcuisition
     {   
-        shots.xcenter = std::stoi(catchParameter("sxc", argv[1]));
-        shots.ycenter = std::stoi(catchParameter("syc", argv[1]));
-        shots.circle_spacing = std::stof(catchParameter("sds", argv[1]));
+        shots.xcenter = std::stoi(catchParameter("xShotCenter", parameters));
+        shots.ycenter = std::stoi(catchParameter("yShotCenter", parameters));
+        shots.circle_spacing = std::stof(catchParameter("shotSpacing", parameters));
         
-        splitted = split(catchParameter("sOffsets", argv[1]),',');
+        splitted = split(catchParameter("sOffsets", parameters),',');
 
         for (auto offset : splitted) 
             shots.offsets.push_back(std::stof(offset));
@@ -70,27 +71,27 @@ Tomography::Tomography(char **argv)
 
     if (nodesGeometryType)           // Grid nodes aqcuisition
     {
-        nodes.n_xline = std::stoi(catchParameter("nrx", argv[1]));
-        nodes.n_yline = std::stoi(catchParameter("nry", argv[1]));
+        nodes.n_xline = std::stoi(catchParameter("xNodeNumber", parameters));
+        nodes.n_yline = std::stoi(catchParameter("yNodeNumber", parameters));
         
-        splitted = split(catchParameter("SWr", argv[1]),',');
+        splitted = split(catchParameter("nodeSW", parameters),',');
         set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
 
-        splitted = split(catchParameter("NWr", argv[1]),',');
+        splitted = split(catchParameter("nodeNW", parameters),',');
         set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
 
-        splitted = split(catchParameter("SEr", argv[1]),',');
+        splitted = split(catchParameter("nodeSE", parameters),',');
         set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
 
         setGridNodes();
     }
     else                        // Circular nodes aqcuisition
     {
-        nodes.xcenter = std::stoi(catchParameter("rxc", argv[1]));
-        nodes.ycenter = std::stoi(catchParameter("ryc", argv[1]));
-        nodes.circle_spacing = std::stof(catchParameter("rds", argv[1]));
+        nodes.xcenter = std::stoi(catchParameter("xNodeCenter", parameters));
+        nodes.ycenter = std::stoi(catchParameter("yNodeCenter", parameters));
+        nodes.circle_spacing = std::stof(catchParameter("nodeSpacing", parameters));
 
-        splitted = split(catchParameter("rOffsets", argv[1]),',');
+        splitted = split(catchParameter("nodeOffsets", parameters),',');
 
         for (auto offset : splitted) 
             nodes.offsets.push_back(std::stof(offset));
@@ -98,87 +99,52 @@ Tomography::Tomography(char **argv)
         setCircularNodes();
     }
 
-    shotsPath = catchParameter("shotsPositionPath", argv[1]);
-    nodesPath = catchParameter("nodesPositionPath", argv[1]);
+    shotsPath = catchParameter("shotsPositionPath", parameters);
+    nodesPath = catchParameter("nodesPositionPath", parameters);
 
-    eikonalFolder = catchParameter("travelTimesFolder", argv[1]);
-    arrivalFolder = catchParameter("firstArrivalsFolder", argv[1]);
+    eikonalFolder = catchParameter("travelTimesFolder", parameters);
+    arrivalFolder = catchParameter("firstArrivalsFolder", parameters);
 
     if (saveGeometry) exportPositions();
 
     if (reciprocity) setReciprocity();
 
-    dobsPath = catchParameter("dobsFolder", argv[1]);
-    dcalPath = catchParameter("dcalFolder", argv[1]);
-    gradPath = catchParameter("gradientFolder", argv[1]);
+    dobsPath = catchParameter("dobsFolder", parameters);
+    dcalPath = catchParameter("dcalFolder", parameters);
 
-    maxIteration = std::stoi(catchParameter("maxIteration", argv[1]));
-    lambda = std::stof(catchParameter("regParam", argv[1]));
+    maxIteration = std::stoi(catchParameter("maxIteration", parameters));
+    lambda = std::stof(catchParameter("regParam", parameters));
 
-    smoothingType = std::stoi(catchParameter("smoothingType", argv[1]));
-    filterSamples = std::stoi(catchParameter("filterSamples", argv[1]));
-    standardDeviation = std::stof(catchParameter("standardDeviation",argv[1]));
+    smooth = str2bool(catchParameter("smooth", parameters)); 
+    smoothingType = std::stoi(catchParameter("smoothingType", parameters));
+    filterSamples = std::stoi(catchParameter("filterSamples", parameters));
+    standardDeviation = std::stof(catchParameter("standardDeviation",parameters));
 
-    mTomo.nx = std::stoi(catchParameter("nxTomo", argv[1]));
-    mTomo.ny = std::stoi(catchParameter("nyTomo", argv[1]));
-    mTomo.nz = std::stoi(catchParameter("nzTomo", argv[1]));
+    mTomo.nx = std::stoi(catchParameter("nxTomo", parameters));
+    mTomo.ny = std::stoi(catchParameter("nyTomo", parameters));
+    mTomo.nz = std::stoi(catchParameter("nzTomo", parameters));
 
-    mTomo.dx = std::stof(catchParameter("dxTomo", argv[1]));
-    mTomo.dy = std::stof(catchParameter("dyTomo", argv[1]));
-    mTomo.dz = std::stof(catchParameter("dzTomo", argv[1]));
+    mTomo.dx = std::stof(catchParameter("dxTomo", parameters));
+    mTomo.dy = std::stof(catchParameter("dyTomo", parameters));
+    mTomo.dz = std::stof(catchParameter("dzTomo", parameters));
 
     mTomo.nPoints = mTomo.nx * mTomo.ny * mTomo.nz;
 
-    resPath = catchParameter("convergencyFolder", argv[1]);
-    estModels = catchParameter("estimatedModelsFolder", argv[1]);
+    residuoPath = catchParameter("convergencyFolder", parameters);
+    estimatedPath = catchParameter("estimatedModelsFolder", parameters);
 
-    xMask = std::stof(catchParameter("xMask", argv[1]));
-    yMask = std::stof(catchParameter("yMask", argv[1]));
-    zMaskUp = std::stof(catchParameter("zMaskUp", argv[1]));
-    zMaskDown = std::stof(catchParameter("zMaskDown", argv[1]));
-    
-    if (generate_dobs)
-    {
-        arrivalFolder = dobsPath;
+    xMask = split(catchParameter("xMask", parameters),',');
+    yMask = split(catchParameter("yMask", parameters),',');
+    zMask = split(catchParameter("zMask", parameters),',');
 
-        model = readBinaryFloat(catchParameter("trueModelPath", argv[1]), nPoints);
-        
-        Vp = expandVolume(model,nx,ny,nz,nb);
-
-        std::cout<<"Computing observed data"<<std::endl;
-
-        T = new float[nPointsB];
-        
-        for (shotId = 0; shotId < shots.all; shotId++)
-        {
-            eikonalComputing();    
-        }
-
-        delete[] T;
-    }
-
-    model = readBinaryFloat(catchParameter("initModelPath", argv[1]), nPoints);
-    
-    Vp = expandVolume(model,nx,ny,nz,nb);
+    V = expand(readBinaryFloat(catchParameter("modelPath", parameters), nPoints));
 
     iteration = 0;
 
     residuo.reserve(maxIteration);
 
     dobs = new float[shots.all * nodes.all]();
-    dcal = new float[shots.all * nodes.all]();
-
-    if (optimizationMethod < 4)
-    {
-        currentSlowness = new float[mTomo.nPoints]();
-    }
-    else
-    {
-        olderSlowness = new float[mTomo.nPoints]();
-        olderGradient = new float[mTomo.nPoints]();
-        currentSlowness = new float[mTomo.nPoints]();
-        currentGradient = new float[mTomo.nPoints]();
-    }
+    dcal = new float[shots.all * nodes.all]();    
 }
 
 void Tomography::infoMessage()
@@ -186,7 +152,7 @@ void Tomography::infoMessage()
     std::cout << std::fixed << std::setprecision(1);
 
     system("clear");
-    std::cout<<"3D first arrival tomography for OBN geometry\n\n";
+    std::cout<<"3D first arrival tomography\n\n";
     
     std::cout<<"Total x model length = "<<(nx-1)*dx<<" m\n";
     std::cout<<"Total Y model length = "<<(ny-1)*dy<<" m\n";
@@ -215,12 +181,28 @@ void Tomography::importDobs()
     
     for (int shot = 0; shot < shots.all; shot++)
     {
-        float * data = readBinaryFloat(dobsPath + "times_nr" + std::to_string(nodes.all) + "_shot_" + std::to_string(shot+1) + ".bin", nodes.all);
+        float * data = readBinaryFloat(dobsPath + std::to_string(shot+1) + ".bin", nodes.all);
 
         for (int d = ptr; d < ptr + nodes.all; d++) dobs[d] = data[d - ptr];
 
         ptr += nodes.all;
         
+        delete[] data;
+    }
+}
+
+void Tomography::importDcal()
+{
+    int ptr = 0; 
+ 
+    for (int shot = 0; shot < shots.all; shot++)
+    {
+        float * data = readBinaryFloat(dcalPath + std::to_string(shot+1) + ".bin", nodes.all);
+
+        for (int d = ptr; d < ptr + nodes.all; d++) dcal[d] = data[d - ptr];
+
+        ptr += nodes.all;
+     
         delete[] data;
     }
 }
@@ -237,25 +219,9 @@ void Tomography::setInitialModel()
                 int jm = (int) ((float)(j)*mTomo.dx/dx) + nb;
                 int km = (int) ((float)(k)*mTomo.dy/dy) + nb;
                 
-                currentSlowness[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = 1.0f / Vp[im + jm*nzz + km*nxx*nzz];    
+                model[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = 1.0f / V[im + jm*nzz + km*nxx*nzz];    
             }
         }
-    }
-}
-
-void Tomography::importDcal()
-{
-    int ptr = 0; 
- 
-    for (int shot = 0; shot < shots.all; shot++)
-    {
-        float * data = readBinaryFloat(dcalPath + "times_nr" + std::to_string(nodes.all) + "_shot_" + std::to_string(shot+1) + ".bin", nodes.all);
-
-        for (int d = ptr; d < ptr + nodes.all; d++) dcal[d] = data[d - ptr];
-
-        ptr += nodes.all;
-     
-        delete[] data;
     }
 }
 
@@ -285,7 +251,6 @@ void Tomography::gradientRayTracing()
 
     int sId = sIdz + sIdx*mTomo.nz + sIdy*mTomo.nx*mTomo.nz;     
 
-    int maxRayLength = 100000;
     float rayStep = 0.2f * (dx + dy + dz) / 3.0f;
     
     for (int rayId = 0; rayId < nodes.all; rayId++)
@@ -296,7 +261,7 @@ void Tomography::gradientRayTracing()
 
         std::vector < int > rayInd;
 
-        for (int ds = 0; ds < maxRayLength; ds++)
+        while (true)
         {
             int i = (int)(zi / dz) + nb;
             int j = (int)(xi / dx) + nb;
@@ -320,13 +285,13 @@ void Tomography::gradientRayTracing()
 
             if (rayInd.back() == sId) break;
         }
-
-        float distance = rayStep;    
+    
         float finalDist = sqrtf(powf(zi - shots.z[shotId],2.0f) + powf(xi - shots.x[shotId],2.0f) + powf(yi - shots.y[shotId],2.0f));
 
         std::sort(rayInd.begin(), rayInd.end());
 
         int current = rayInd[0];
+        float distance = rayStep;
 
         for (int index = 0; index < rayInd.size(); index++)
         {
@@ -386,10 +351,12 @@ bool Tomography::converged()
 
 void Tomography::tomographyUpdate()
 {
-    int xcut = (int) (xMask / mTomo.dx);
-    int ycut = (int) (yMask / mTomo.dy);
-    int zcutUp = (int) (zMaskUp / mTomo.dz);
-    int zcutDown = (int) (zMaskDown / mTomo.dz);
+    int xlCut = (int)(std::stof(xMask[0]) / mTomo.dx); // x left cut 
+    int xrCut = (int)(std::stof(xMask[1]) / mTomo.dx); // x right cut
+    int ylCut = (int)(std::stof(yMask[0]) / mTomo.dx); // y left cut 
+    int yrCut = (int)(std::stof(yMask[1]) / mTomo.dx); // y right cut
+    int zuCut = (int)(std::stof(zMask[0]) / mTomo.dx); // z up cut  
+    int zdCut = (int)(std::stof(zMask[1]) / mTomo.dx); // z down cut
 
     // Tomography slowness update    
     for (int index = 0; index < mTomo.nPoints; index++) 
@@ -398,9 +365,9 @@ void Tomography::tomographyUpdate()
         int j = (int) (index - k*mTomo.nx*mTomo.nz) / mTomo.nz;    // x direction
         int i = (int) (index - j*mTomo.nz - k*mTomo.nx*mTomo.nz);  // z direction        
 
-        if ((i >= zcutUp) && (i < mTomo.nz - zcutDown) && (j >= xcut) && (j < mTomo.nx - xcut - 1) && (k >= ycut) && (k < mTomo.ny - ycut - 1))
+        if ((i >= zuCut) && (i < mTomo.nz - zdCut) && (j >= xlCut) && (j < mTomo.nx - xrCut - 1) && (k >= ylCut) && (k < mTomo.ny - yrCut - 1))
         {
-            currentSlowness[index] += deltaSlowness[index];
+            model[index] += dm[index];
         }
     }    
 }
@@ -491,11 +458,9 @@ void Tomography::lscg_Berriman()
     int maxIt = 1000;
     int cgTol = 1e-6;
 
-    deltaSlowness = sparse_lscg(A, B, maxIt, cgTol);
+    dm = sparse_lscg(A, B, maxIt, cgTol);
 
-    tomographyUpdate();
-
-    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B; delete[] deltaSlowness;
+    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B;
 }
 
 void Tomography::lscg_zoTikhonov()
@@ -567,11 +532,9 @@ void Tomography::lscg_zoTikhonov()
     int maxIt = 1000;
     int cgTol = 1e-6;
 
-    deltaSlowness = sparse_lscg(A, B, maxIt, cgTol);
+    dm = sparse_lscg(A, B, maxIt, cgTol);
 
-    tomographyUpdate();
-
-    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B; delete[] deltaSlowness;
+    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B; 
 }
 
 void Tomography::lscg_foTikhonov()
@@ -648,11 +611,9 @@ void Tomography::lscg_foTikhonov()
     int maxIt = 1000;
     int cgTol = 1e-6;
 
-    deltaSlowness = sparse_lscg(A, B, maxIt, cgTol);
+    dm = sparse_lscg(A, B, maxIt, cgTol);
 
-    tomographyUpdate();
-
-    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B; delete[] deltaSlowness;
+    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B;
 }
 
 void Tomography::lscg_soTikhonov()
@@ -729,84 +690,14 @@ void Tomography::lscg_soTikhonov()
     int maxIt = 1000;
     int cgTol = 1e-6;
 
-    deltaSlowness = sparse_lscg(A, B, maxIt, cgTol);
+    dm = sparse_lscg(A, B, maxIt, cgTol);
 
-    tomographyUpdate();
-
-    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B; delete[] deltaSlowness;    
-}
-
-void Tomography::gradientDescent()
-{
-    int gnxb = mTomo.nx + 2*filterSamples;
-    int gnyb = mTomo.ny + 2*filterSamples;
-    int gnzb = mTomo.nz + 2*filterSamples;
-
-    int xcut = (int) (xMask / mTomo.dx);
-    int ycut = (int) (yMask / mTomo.dy);
-    int zcutUp = (int) (zMaskUp / mTomo.dz);
-    int zcutDown = (int) (zMaskDown / mTomo.dz);
-
-    float * auxGradient = new float[mTomo.nPoints]();
-
-    float * data = new float[nodes.all * shots.all]();
-
-    for (int index = 0; index < mTomo.nPoints; index++) 
-        currentGradient[index] = 0.0f;
-
-    for (int index = 0; index < vM.size(); index++)
-        currentGradient[jM[index]] += vM[index] * (dobs[iM[index]] - dcal[iM[index]]);    
-    
-    for (int index = 0; index < vM.size(); index++)
-        data[iM[index]] += vM[index] * currentSlowness[jM[index]];
-
-    writeBinaryFloat("dataG.bin", data, nodes.all * shots.all);
-    writeBinaryFloat("dcal.bin", dcal, nodes.all * shots.all);
-
-    std::vector<  int  >().swap(iM);
-    std::vector<  int  >().swap(jM);
-    std::vector< float >().swap(vM);
-
-    // for (int k = ycut; k < mTomo.ny - ycut; k++)    
-    // {
-    //     for (int j = xcut; j < mTomo.nx - xcut; j++)
-    //     {
-    //         for (int i = zcutUp; i < mTomo.nz - zcutDown; i++)
-    //         {
-    //             int index = i + j*mTomo.nz + k*mTomo.nx*mTomo.nz;
-
-    //             auxGradient[index] = currentGradient[index];        
-    //         }
-    //     }
-    // }    
-
-    // float * expGradient = expandVolume(auxGradient,mTomo.nx,mTomo.ny,mTomo.nz,filterSamples); 
-     
-    // expGradient = gaussianFilterSmoothing(expGradient,gnxb,gnyb,gnzb,standardDeviation,filterSamples);
-
-    // currentGradient = reduceVolume(expGradient,mTomo.nx,mTomo.ny,mTomo.nz,filterSamples);
-
-    // float max = 0.0f;
-
-    // for (int index = 0; index < mTomo.nPoints; index++)
-    //     if (fabsf(currentGradient[index]) > max) max = fabsf(currentGradient[index]);
-
-    // for (int index = 0; index < mTomo.nPoints; index++)
-    //     currentGradient[index] *= 1.0f / max;
-
-    // float alpha = 5e-5f;
-    
-    // for (int index = 0; index < mTomo.nPoints; index++)
-    //     currentSlowness[index] += alpha * currentGradient[index];
-
-    // writeBinaryFloat(gradPath + "gradient_iteration_" + std::to_string(iteration) + ".bin", currentGradient, mTomo.nPoints);
-    
-    // delete[] auxGradient;
+    delete[] A.i; delete[] A.j; delete[] A.v; delete[] B;    
 }
 
 void Tomography::optimization()
 {
-    switch (optimizationMethod)
+    switch (inversionMethod)
     {
     case 0:
         lscg_Berriman();    
@@ -824,19 +715,24 @@ void Tomography::optimization()
         lscg_soTikhonov();
         break;
 
-    case 4:
-        gradientDescent();    
+    default:
+        lscg_Berriman();    
+        break;    
     }
+
+    tomographyUpdate();
 }
 
 void Tomography::modelUpdate()
 {    
-    // Trilinear interpolation - wikipedia
+    int xlCut = (int)(std::stof(xMask[0]) / mTomo.dx); // x left cut 
+    int xrCut = (int)(std::stof(xMask[1]) / mTomo.dx); // x right cut
+    int ylCut = (int)(std::stof(yMask[0]) / mTomo.dx); // y left cut 
+    int yrCut = (int)(std::stof(yMask[1]) / mTomo.dx); // y right cut
+    int zuCut = (int)(std::stof(zMask[0]) / mTomo.dx); // z up cut  
+    int zdCut = (int)(std::stof(zMask[1]) / mTomo.dx); // z down cut
 
-    int xcut = (int) (xMask / dx);
-    int ycut = (int) (yMask / dy);
-    int zcutUp = (int) (zMaskUp / dz);
-    int zcutDown = (int) (zMaskDown / dz);
+    // Trilinear interpolation - wikipedia
 
     for (int index = 0; index < nPoints; index++)
     {
@@ -856,7 +752,7 @@ void Tomography::modelUpdate()
         float y1 = floor(y/mTomo.dy)*mTomo.dy + mTomo.dy;
         float z1 = floor(z/mTomo.dz)*mTomo.dz + mTomo.dz;
 
-        if ((i >= zcutUp) && (i < nz - zcutDown - 1) && (j >= xcut) && (j < nx - xcut - 1) && (k >= ycut) && (k < ny - ycut - 1))
+        if ((i >= zuCut) && (i < mTomo.nz - zdCut) && (j >= xlCut) && (j < mTomo.nx - xrCut - 1) && (k >= ylCut) && (k < mTomo.ny - yrCut - 1))
         {
             int idz = ((int)(z/mTomo.dz));
             int idx = ((int)(x/mTomo.dx));
@@ -864,40 +760,53 @@ void Tomography::modelUpdate()
 
             int indS = idz + idx*mTomo.nz + idy*mTomo.nx*mTomo.nz;
 
-            float c000 = currentSlowness[indS];                  
-            float c001 = currentSlowness[indS + 1];
-            float c100 = currentSlowness[indS + mTomo.nz];
-            float c101 = currentSlowness[indS + 1 + mTomo.nz];
-            float c010 = currentSlowness[indS + mTomo.nx*mTomo.nz];
-            float c011 = currentSlowness[indS + 1 + mTomo.nx*mTomo.nz];
-            float c110 = currentSlowness[indS + mTomo.nz + mTomo.nx*mTomo.nz];
-            float c111 = currentSlowness[indS + 1 + mTomo.nz + mTomo.nx*mTomo.nz];  
+            float c000 = model[indS];                  
+            float c001 = model[indS + 1];
+            float c100 = model[indS + mTomo.nz];
+            float c101 = model[indS + 1 + mTomo.nz];
+            float c010 = model[indS + mTomo.nx*mTomo.nz];
+            float c011 = model[indS + 1 + mTomo.nx*mTomo.nz];
+            float c110 = model[indS + mTomo.nz + mTomo.nx*mTomo.nz];
+            float c111 = model[indS + 1 + mTomo.nz + mTomo.nx*mTomo.nz];  
 
             float s = triLinearInterpolation(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);
     
-            Vp[(i + nb) + (j + nb)*nzz + (k + nb)*nxx*nzz] = 1.0f / s;
+            V[(i + nb) + (j + nb)*nzz + (k + nb)*nxx*nzz] = 1.0f / s;
         }
     }
 
-    float * mm = new float[nPoints]();
-    
-    for (int index  = 0; index < nPoints; index++)
+    if (smooth) // Smoothing the inverse of velocity
     {
-        int k = (int) (index / (nx*nz));             // y direction
-        int j = (int) (index - k*nx*nz) / nz;    // x direction
-        int i = (int) (index - j*nz - k*nx*nz);  // z direction
+        float * auxS = new float[nPointsB];
 
-        mm[i + j*nz + k*nx*nz] = Vp[(i + nb) + (j + nb)*nzz + (k + nb)*nxx*nzz];
+        for (int i = 0; i < nPointsB; i++) 
+            auxS[i] = 1.0f / V[i];
+
+        if (smoothingType)
+        {
+            movingAverageSmoothing(auxS, nxx, nyy, nzz, filterSamples);
+        }
+        else
+        {
+            gaussianFilterSmoothing(auxS, nxx, nyy, nzz, standardDeviation, filterSamples);
+        }
+
+        for (int i = 0; i < nPointsB; i++)
+            V[i] = 1.0f / auxS[i];
+    
+        delete[] auxS;
     }
 
-    writeBinaryFloat(estModels + "estimatedModel_iteration_" + std::to_string(iteration) + ".bin", mm, nPoints);    
+    float * mm = reduce(V);
+    
+    writeBinaryFloat(estimatedPath + "estimatedModel_iteration_" + std::to_string(iteration) + ".bin", mm, nPoints);    
 
     delete[] mm;
 }
 
 void Tomography::exportConvergency()
 {
-    std::ofstream resFile(resPath + "residuo.txt", std::ios::out);
+    std::ofstream resFile(residuoPath + "convergency.txt", std::ios::out);
     
     for (int r = 0; r < residuo.size(); r++)
         resFile<<residuo[r]<<"\n";
