@@ -215,9 +215,7 @@ Utils::sparseMatrix Utils::getDerivativeMatrix(int n, int degree)
     L.n = n - degree;
     L.nnz = elements * L.n;
 
-	L.i = new int[L.nnz]();
-	L.j = new int[L.nnz]();
-	L.v = new float[L.nnz]();
+    L.init();
 
 	if (degree == 0)
 	{
