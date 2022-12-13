@@ -20,6 +20,8 @@ int main(int argc, char **argv)
 
     tomo.T = new float[tomo.nPointsB];
     
+    std::cout<<"\nObserved data generation"<<std::endl;
+    
     for (tomo.shotId = 0; tomo.shotId < tomo.shots.all; tomo.shotId++)
     {
         tomo.eikonalComputing();

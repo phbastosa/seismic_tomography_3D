@@ -108,8 +108,8 @@ void Tomography::setParameters(char * parameters)
 
     if (reciprocity) setReciprocity();
 
-    dobsPath = catchParameter("dobsFolder", parameters);
-    dcalPath = catchParameter("dcalFolder", parameters);
+    dobsPath = catchParameter("dobsPath", parameters);
+    dcalPath = catchParameter("dcalPath", parameters);
 
     maxIteration = std::stoi(catchParameter("maxIteration", parameters));
     lambda = std::stof(catchParameter("regParam", parameters));

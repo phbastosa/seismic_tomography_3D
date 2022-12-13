@@ -98,7 +98,7 @@ nodeSE = [4500, 500]      # SW -- SE # (x,y) in float WITHOUT SPACES
 
 # Some folders location -------------------------------------------------------------------------------------------------
 
-dcalFolder = "outputs/dcal_shot_"                # Folder to write calculated data
+dcalPath = "outputs/dcal_shot_"                # Folder to write calculated data
 eikonalFolder = "outputs/"                       # Folder to write travel time volume per shot
 shotsPositionPath = "outputs/shotsPosition.txt"  # Full path of receivers position     
 nodesPositionPath = "outputs/nodesPosition.txt"  # Full path of shots position   

@@ -78,10 +78,10 @@ private:
 
 public:    
     
-    std::string dobsPath;           //
-    std::string dcalPath;           //
+    std::string dobsPath;           // Observed data location with its preamble
+    std::string dcalPath;           // Calculated data location with its preamble
 
-    /* */
+    /* Tomograpy class constructor */
     Tomography();
 
     void setParameters(char * parametersFile);
