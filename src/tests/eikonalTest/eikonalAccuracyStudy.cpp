@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     eikonal.nodes.offsets = {10000.0f};   // 10 km
     eikonal.nodes.circle_spacing = 12.5f;
 
-    eikonal.setCircularNodes();
+    eikonal.setCircularGeometry(eikonal.nodes);
 
     eikonal.nodesPath = "outputs/nodesPosition.txt";
 
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
         eikonal.shots.n_xline = 2; 
         eikonal.shots.n_yline = 2; 
 
-        eikonal.setGridShots();
+        eikonal.setGridGeometry(eikonal.shots);
 
         // Shots loop
 
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
         eikonal.shots.n_xline = 1; 
         eikonal.shots.n_yline = 1; 
 
-        eikonal.setGridShots();
+        eikonal.setGridGeometry(eikonal.shots);
 
         eikonal.T = new float[eikonal.nPointsB]();
 

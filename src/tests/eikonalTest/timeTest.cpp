@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     eikonal.shots.n_yline = 1; 
     eikonal.shots.elevation = 0.0f;
     
-    eikonal.setGridShots();
+    eikonal.setGridGeometry(eikonal.shots);
 
     // Generate circular receiver survey
     
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     eikonal.nodes.elevation = 0.0f;
     eikonal.nodes.circle_spacing = 12.5f;
     
-    eikonal.setCircularNodes();
+    eikonal.setCircularGeometry(eikonal.nodes);
 
     // Compressed loop
 

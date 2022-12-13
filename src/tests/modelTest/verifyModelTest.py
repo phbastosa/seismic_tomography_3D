@@ -8,7 +8,7 @@ def readBinaryVolume(dim1,dim2,dim3,filename):
     data = np.fromfile(filename, dtype=np.float32, count=dim1*dim2*dim3)
     return np.reshape(data, [dim1,dim2,dim3], order='F')
 
-def boxPlot(model, xySlice, zySlice, zxSlice):
+def boxPlot(model, dx, dy, dz, xySlice, zySlice, zxSlice, colorbarFix = 1.5):
     
     xyPlane = model[xySlice,:,:].T
     zxPlane = model[:,:,zxSlice]
@@ -18,6 +18,7 @@ def boxPlot(model, xySlice, zySlice, zxSlice):
 
     #------------------------------------------------
     axis = np.array(np.shape(model))
+    [nz,nx,ny] = axis
     [z, x, y] = axis * 0.6 / np.max(axis)
 
     vmin = np.min(model)
@@ -91,7 +92,7 @@ def boxPlot(model, xySlice, zySlice, zxSlice):
     ax3.set_ylabel("Z [km]")
 
     #------------------------------------------------
-    ax4 = fig.add_axes([0.7 - x, 0.95 - y - 1.70*z, 0 + x, 0 + z])
+    ax4 = fig.add_axes([0.7 - x, 0.95 - y - colorbarFix*z, 0 + x, 0 + z])
 
     ax4.axis("off")
 
@@ -105,11 +106,11 @@ def boxPlot(model, xySlice, zySlice, zxSlice):
     
     return None
 
-nb = 50
+nb = 10
 
-nx = 801
-ny = 801
-nz = 187
+nx = 201
+ny = 201
+nz = 51
 
 dx = 25.0
 dy = 25.0
@@ -122,9 +123,8 @@ xySlice = int(nz/2)
 zySlice = int(nx/2)
 zxSlice = int(ny/2)
 
-
-boxPlot(expandedModel, xySlice, zySlice, zxSlice)
+boxPlot(expandedModel, dx, dy, dz, xySlice, zySlice, zxSlice)
 plt.show()
 
-boxPlot(reducedModel, xySlice, zySlice, zxSlice)
+boxPlot(reducedModel, dx, dy, dz, xySlice, zySlice, zxSlice)
 plt.show()

@@ -22,8 +22,6 @@ public:
     float dy;             // Sample spacing in y direction
     float dz;             // Sample spacing in z direction
 
-    std::string fileName; // Vp model location
-
     /* Fill model variables with other attributes dependance, invoke before declare model volumes */
     void initialize();
 

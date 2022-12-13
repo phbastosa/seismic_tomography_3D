@@ -1701,9 +1701,6 @@ void Eikonal::podvin()
     # pragma acc exit data delete(nK[0:nPointsB], this[0:1])
     # pragma acc exit data copyout(T[0:nPointsB], this[0:1])
 
-    writeTravelTimes();
-    writeFirstArrivals();
-
     delete[] S;
     delete[] K;
     delete[] nT;
@@ -1885,9 +1882,6 @@ void Eikonal::jeongFIM()
     # pragma acc exit data delete(nT[0:nPointsB], this[0:1])
     # pragma acc exit data delete(nK[0:nPointsB], this[0:1])
     # pragma acc exit data copyout(T[0:nPointsB], this[0:1])
-
-    writeTravelTimes();
-    writeFirstArrivals();
 
     delete[] S;
     delete[] K;
@@ -2321,9 +2315,6 @@ void Eikonal::nobleFSM()
     initSweep();
     fullSweep();
 
-    writeTravelTimes();
-    writeFirstArrivals();
-
     delete[] S;
 }
 
@@ -2347,5 +2338,8 @@ void Eikonal::eikonalComputing()
         nobleFSM();
         break;
     }
+
+    writeTravelTimes();
+    writeFirstArrivals();
 }
 

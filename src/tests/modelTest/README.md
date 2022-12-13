@@ -2,7 +2,7 @@
 
 ### modelTest.cpp 
     - Use of utils class to read and write binary floats
-    - Read SEG/EAGE Overthrust model
+    - Analytic model equation V(z,x,y) = 1500 + 0.6z + 0.2x + 0.1y  
     - Expand boundaries of model and writes on outputs folder
     - Reduce model and writes on outputs folder  
 
@@ -11,9 +11,8 @@
 
 <h3 align="center"> Expanded model </h3>
 
-![Screenshot from 2022-12-10 14-20-49](https://user-images.githubusercontent.com/44127778/206867769-2be8ec01-74c2-4326-a222-780764e314e0.png)
-
+![Screenshot from 2022-12-12 21-02-08](https://user-images.githubusercontent.com/44127778/207186921-8b01528c-0b00-43ed-bf63-28c1abe0f66c.png)
 
 <h3 align="center"> Reduced model </h3>
 
-![Screenshot from 2022-12-10 14-24-50](https://user-images.githubusercontent.com/44127778/206867747-6a925615-5bf8-4803-9b18-860d1a265d11.png)
+![Screenshot from 2022-12-12 21-02-22](https://user-images.githubusercontent.com/44127778/207186917-648abdc8-2435-4de8-87ab-37433c96c958.png)

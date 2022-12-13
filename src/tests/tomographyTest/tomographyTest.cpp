@@ -12,6 +12,20 @@ int main(int argc, char **argv)
 
     tomo.setParameters(argv[1]);
 
+    // Observed data generation
+
+    tomo.eikonalType = 1;
+
+    tomo.arrivalFolder = tomo.dobsPath;
+
+    tomo.T = new float[tomo.nPointsB];
+    
+    for (tomo.shotId = 0; tomo.shotId < tomo.shots.all; tomo.shotId++)
+    {
+        tomo.eikonalComputing();
+    }
+
+    delete[] tomo.T;
 
     return 0;
 }

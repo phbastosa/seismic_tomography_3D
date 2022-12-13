@@ -53,7 +53,7 @@ void Tomography::setParameters(char * parameters)
         splitted = split(catchParameter("shotSE", parameters),',');
         set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
 
-        setGridShots();
+        setGridGeometry(shots);
     }
     else                   // Circular shots aqcuisition
     {   
@@ -66,7 +66,7 @@ void Tomography::setParameters(char * parameters)
         for (auto offset : splitted) 
             shots.offsets.push_back(std::stof(offset));
 
-        setCircularShots();
+        setCircularGeometry(shots);
     }
 
     if (nodesGeometryType)           // Grid nodes aqcuisition
@@ -83,7 +83,7 @@ void Tomography::setParameters(char * parameters)
         splitted = split(catchParameter("nodeSE", parameters),',');
         set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
 
-        setGridNodes();
+        setGridGeometry(nodes);
     }
     else                        // Circular nodes aqcuisition
     {
@@ -96,14 +96,13 @@ void Tomography::setParameters(char * parameters)
         for (auto offset : splitted) 
             nodes.offsets.push_back(std::stof(offset));
 
-        setCircularNodes();
+        setCircularGeometry(nodes);
     }
 
     shotsPath = catchParameter("shotsPositionPath", parameters);
     nodesPath = catchParameter("nodesPositionPath", parameters);
 
-    eikonalFolder = catchParameter("travelTimesFolder", parameters);
-    arrivalFolder = catchParameter("firstArrivalsFolder", parameters);
+    eikonalFolder = catchParameter("eikonalVolumeFolder", parameters);
 
     if (saveGeometry) exportPositions();
 

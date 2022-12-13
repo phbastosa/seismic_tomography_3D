@@ -1,3 +1,4 @@
+# include <string>
 # include <iostream>
 
 # include "../../essentials/utils.hpp"
@@ -8,11 +9,11 @@ int main(int argc, char**argv)
     auto model = Model();
     auto utils = Utils();
 
-    model.nb = 50;
+    model.nb = 10;
 
-    model.nx = 801;
-    model.ny = 801;
-    model.nz = 187;
+    model.nx = 201;
+    model.ny = 201;
+    model.nz = 51;
 
     model.initialize();
 
@@ -20,11 +21,18 @@ int main(int argc, char**argv)
     model.dy = 25.0f;
     model.dz = 25.0f;
 
-    std::cout<<"Reading velocity model with (z = "<<model.nz<<", x = "<<model.nx<<", y = "<<model.ny<<") samples"<<std::endl;
+    float * Vp = new float[model.nPoints]();
 
-    model.fileName = "../../../inputs/models/overthrust_z187_x801_y801_h25.bin";
-
-    float * Vp = utils.readBinaryFloat(model.fileName, model.nPoints);
+    for (int i = 0; i < model.nz; i++)
+    {
+        for (int j = 0; j < model.nx; j++)
+        {
+            for (int k = 0; k < model.ny; k++)
+            {
+                Vp[i + j*model.nz + k*model.nx*model.nz] = 1500 + 0.6*i*model.dz + 0.2*j*model.dx + 0.1*k*model.dy; 
+            }
+        }
+    }
 
     std::cout<<"Expanding velocity model dimensions to (z = "<<model.nzz<<", x = "<<model.nxx<<", y = "<<model.nyy<<") samples"<<std::endl;
 
@@ -41,6 +49,10 @@ int main(int argc, char**argv)
     std::cout<<"Writing reduced velocity model"<<std::endl;
 
     utils.writeBinaryFloat("outputs/innerModel.bin", innerVp, model.nPoints);
+
+    delete[] Vp;
+    delete[] fullVp;
+    delete[] innerVp;
 
     return 0;
 }

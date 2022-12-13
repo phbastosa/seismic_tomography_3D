@@ -34,24 +34,24 @@ void Geometry::set_NW(float x, float y) {NW.x = x; NW.y = y;}
 
 void Geometry::set_SE(float x, float y) {SE.x = x; SE.y = y;}
 
-void Geometry::setGridShots()
+void Geometry::setGridGeometry(Position &obj)
 {
-    shots.all = shots.n_xline * shots.n_yline;
+    obj.all = obj.n_xline * obj.n_yline;
 
-    shots.x = new float[shots.all];
-    shots.y = new float[shots.all];
-    shots.z = new float[shots.all];
+    obj.x = new float[obj.all];
+    obj.y = new float[obj.all];
+    obj.z = new float[obj.all];
 
-    std::vector<float> x = linspace(SW.x, SE.x, shots.n_xline);
-    std::vector<float> y = linspace(SW.y, NW.y, shots.n_yline);
+    std::vector<float> x = linspace(SW.x, SE.x, obj.n_xline);
+    std::vector<float> y = linspace(SW.y, NW.y, obj.n_yline);
 
     for (int k = 0; k < y.size(); k++)
     {
         for (int j = 0; j < x.size(); j++)
         {
-            shots.x[j + k*x.size()] = x[j];
-            shots.y[j + k*x.size()] = y[k];
-            shots.z[j + k*x.size()] = shots.elevation;
+            obj.x[j + k*x.size()] = x[j];
+            obj.y[j + k*x.size()] = y[k];
+            obj.z[j + k*x.size()] = obj.elevation;
         }
     }    
 
@@ -59,93 +59,34 @@ void Geometry::setGridShots()
     std::vector< float >().swap(y);
 }
 
-void Geometry::setGridNodes()
-{
-    nodes.all = nodes.n_xline * nodes.n_yline;     
-
-    nodes.x = new float[nodes.all];
-    nodes.y = new float[nodes.all];
-    nodes.z = new float[nodes.all];
-
-    std::vector<float> x = linspace(SW.x, SE.x, nodes.n_xline);
-    std::vector<float> y = linspace(SW.y, NW.y, nodes.n_yline);
-
-    for (int k = 0; k < y.size(); k++)
-    {
-        for (int j = 0; j < x.size(); j++)
-        {
-            nodes.x[j + k*x.size()] = x[j];
-            nodes.y[j + k*x.size()] = y[k];
-            nodes.z[j + k*x.size()] = nodes.elevation;
-        }
-    }    
-
-    std::vector< float >().swap(x);
-    std::vector< float >().swap(y);
-}
-
-void Geometry::setCircularShots()
+void Geometry::setCircularGeometry(Position &obj)
 {
     std::vector<float> x, y;
 
-    for (float radius : shots.offsets)
+    for (float radius : obj.offsets)
     {
         float theta = 0.0f;
 
         while (theta < 2.0f * 4.0f*atan(1.0f))
         {            
-            x.push_back(radius*sin(theta) + shots.xcenter);        
-            y.push_back(radius*cos(theta) + shots.ycenter);        
+            x.push_back(radius*sin(theta) + obj.xcenter);        
+            y.push_back(radius*cos(theta) + obj.ycenter);        
 
-            theta += acos(1.0f - powf(shots.circle_spacing,2.0f)/(2.0f*powf(radius,2.0f)));    
+            theta += acos(1.0f - powf(obj.circle_spacing,2.0f)/(2.0f*powf(radius,2.0f)));    
         }
     }
 
-    shots.all = x.size();
+    obj.all = x.size();
 
-    shots.x = new float[shots.all]();
-    shots.y = new float[shots.all]();
-    shots.z = new float[shots.all]();
+    obj.x = new float[obj.all]();
+    obj.y = new float[obj.all]();
+    obj.z = new float[obj.all]();
 
-    for (int i = 0; i < shots.all; i++)
+    for (int i = 0; i < obj.all; i++)
     {
-        shots.x[i] = x[i]; 
-        shots.y[i] = y[i];
-        shots.z[i] = shots.elevation;
-    }
-
-    std::vector< float >().swap(x);
-    std::vector< float >().swap(y);
-}
-
-void Geometry::setCircularNodes()
-{
-    std::vector<float> x, y;
-
-    for (float radius : nodes.offsets)
-    {
-        float theta = 0.0f;
-
-        while (theta < 2.0f * 4.0f*atan(1.0f))
-        {
-            x.push_back(radius*sin(theta) + nodes.xcenter);        
-            y.push_back(radius*cos(theta) + nodes.ycenter);        
-
-            theta += acos(1.0f - powf(nodes.circle_spacing,2.0f)/(2.0f*powf(radius,2.0f)));    
-        }
-    }
-
-    nodes.all = x.size();
-
-    nodes.x = new float[nodes.all]();
-    nodes.y = new float[nodes.all]();
-    nodes.z = new float[nodes.all]();
-
-    for (int i = 0; i < nodes.all; i++)
-    {
-        nodes.x[i] = x[i]; 
-        nodes.y[i] = y[i];
-        nodes.z[i] = nodes.elevation;
+        obj.x[i] = x[i]; 
+        obj.y[i] = y[i];
+        obj.z[i] = obj.elevation;
     }
 
     std::vector< float >().swap(x);

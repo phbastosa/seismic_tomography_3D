@@ -20,7 +20,7 @@ int main(int argc, char**argv)
     G.shots.n_yline = 1;
     G.shots.elevation = 15.0f;
 
-    G.setGridShots();
+    G.setGridGeometry(G.shots);
 
     // Preparing shots position
 
@@ -32,7 +32,7 @@ int main(int argc, char**argv)
     G.nodes.n_yline = 1;
     G.nodes.elevation = 500.0f;
 
-    G.setGridNodes();    
+    G.setGridGeometry(G.nodes);    
 
     G.shotsPath = "outputs/pointShot.txt";
     G.nodesPath = "outputs/pointNode.txt";
@@ -53,7 +53,7 @@ int main(int argc, char**argv)
     G.shots.n_yline = 1;
     G.shots.elevation = 10.0f;
 
-    G.setGridShots();
+    G.setGridGeometry(G.shots);
 
     // Preparing receivers position
 
@@ -65,7 +65,7 @@ int main(int argc, char**argv)
     G.nodes.n_yline = 1;
     G.nodes.elevation = 500.0f;
 
-    G.setGridNodes();    
+    G.setGridGeometry(G.nodes);    
 
     G.shotsPath = "outputs/xLineShots.txt";
     G.nodesPath = "outputs/xLineNodes.txt";
@@ -86,7 +86,7 @@ int main(int argc, char**argv)
     G.shots.n_yline = 9;
     G.shots.elevation = 10.0f;
 
-    G.setGridShots();
+    G.setGridGeometry(G.shots);    
 
     // Preparing receivers position
 
@@ -98,7 +98,7 @@ int main(int argc, char**argv)
     G.nodes.n_yline = 9;
     G.nodes.elevation = 500.0f;
 
-    G.setGridNodes();    
+    G.setGridGeometry(G.nodes);    
 
     G.shotsPath = "outputs/yLineShots.txt";
     G.nodesPath = "outputs/yLineNodes.txt";
@@ -119,11 +119,11 @@ int main(int argc, char**argv)
     G.shots.n_yline = 7;
     G.shots.elevation = 10.0f;
 
-    G.setGridShots();
+    G.setGridGeometry(G.shots);    
 
     // Preparing receivers position
 
-    G.set_SW(2500.0f, 2500.0f);  // (x, y)   
+    G.set_SW(2500.0f, 2500.0f); // (x, y)   
     G.set_NW(2500.0f, 7500.0f); // (x, y)   
     G.set_SE(7500.0f, 2500.0f); // (x, y)   
 
@@ -131,7 +131,7 @@ int main(int argc, char**argv)
     G.nodes.n_yline = 6;
     G.nodes.elevation = 500.0f;
 
-    G.setGridNodes();    
+    G.setGridGeometry(G.nodes);    
 
     G.shotsPath = "outputs/carpetShots.txt";
     G.nodesPath = "outputs/carpetNodes.txt";
@@ -161,7 +161,7 @@ int main(int argc, char**argv)
     G.shots.circle_spacing = 25.0f;
     G.shots.offsets = {500.0f, 1000.0f, 1500.0f, 2000.0f};
 
-    G.setCircularShots();
+    G.setCircularGeometry(G.shots);
 
     // Preparing nodes
 
@@ -171,13 +171,12 @@ int main(int argc, char**argv)
     G.nodes.circle_spacing = 25.0f;
     G.nodes.offsets = {500.0f, 1000.0f, 1500.0f, 2000.0f};
 
-    G.setCircularNodes();
+    G.setCircularGeometry(G.nodes);
 
     G.shotsPath = "outputs/circularShots.txt";
     G.nodesPath = "outputs/circularNodes.txt";
 
     G.exportPositions();
-
 
     std::cout<<"- circular acquisition test written"<<std::endl;
 

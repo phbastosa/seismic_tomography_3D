@@ -195,9 +195,9 @@ else:
         plt.plot(tta, label = "Analytic travel times")
 	
         for n in range(len(dh)):
-            pod = readBinaryArray(nrec,f"pod_{s+1}_{dh[n]:.0f}m.bin")
-            fim = readBinaryArray(nrec,f"fim_{s+1}_{dh[n]:.0f}m.bin")
-            fsm = readBinaryArray(nrec,f"fsm_{s+1}_{dh[n]:.0f}m.bin")
+            pod = readBinaryArray(nrec,f"outputs/pod_{s+1}_{dh[n]:.0f}m.bin")
+            fim = readBinaryArray(nrec,f"outputs/fim_{s+1}_{dh[n]:.0f}m.bin")
+            fsm = readBinaryArray(nrec,f"outputs/fsm_{s+1}_{dh[n]:.0f}m.bin")
 
             plt.plot(pod, label = f"Podvin (1991) {dh[n]:.0f} m spacing")
             plt.plot(fim, label = f"Jeong (2008) {dh[n]:.0f} m spacing")
@@ -221,7 +221,7 @@ else:
  
         ax2 = plt.subplot(G[4:6,:])
         for n in range(len(dh)):
-            pod = readBinaryArray(nrec,f"pod_{s+1}_{dh[n]:.0f}m.bin")
+            pod = readBinaryArray(nrec,f"outputs/pod_{s+1}_{dh[n]:.0f}m.bin")
 
             plt.plot(np.abs(tta - pod) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
@@ -236,7 +236,7 @@ else:
 
         ax3 = plt.subplot(G[6:8,:])
         for n in range(len(dh)):
-            fim = readBinaryArray(nrec,f"fim_{s+1}_{dh[n]:.0f}m.bin")
+            fim = readBinaryArray(nrec,f"outputs/fim_{s+1}_{dh[n]:.0f}m.bin")
 
             plt.plot(np.abs(tta - fim) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
@@ -251,7 +251,7 @@ else:
 
         ax4 = plt.subplot(G[8:,:])
         for n in range(len(dh)):
-            fsm = readBinaryArray(nrec,f"fsm_{s+1}_{dh[n]:.0f}m.bin")
+            fsm = readBinaryArray(nrec,f"outputs/fsm_{s+1}_{dh[n]:.0f}m.bin")
 
             plt.plot(np.abs(tta - fsm) * 1e3, label = f"{dh[n]:.0f} m spacing")
 

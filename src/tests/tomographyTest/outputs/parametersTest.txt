@@ -99,9 +99,8 @@ nodeSE = [4500, 500]      # SW -- SE # (x,y) in float WITHOUT SPACES
 # Some folders location -------------------------------------------------------------------------------------------------
 
 dcalFolder = "outputs/dcal_shot_"                # Folder to write calculated data
+eikonalFolder = "outputs/"                       # Folder to write travel time volume per shot
 shotsPositionPath = "outputs/shotsPosition.txt"  # Full path of receivers position     
 nodesPositionPath = "outputs/nodesPosition.txt"  # Full path of shots position   
 convergencyFolder = "outputs/"                   # Folder to write convergency line to residuous norm
-travelTimesFolder = "outputs/"                   # Folder to write travel time volume per shot
-firstArrivalsFolder = "outputs/"                 # Folder to write first arrivals per shot   
 estimatedModelsFolder = "outputs/"               # Folder to write estimated models per iteration 

@@ -59,26 +59,20 @@ public:
     /* Function to calculate a linear spaced position */
     std::vector<float> linspace(float xi, float xf, int n);        
 
-    /* */
+    /* South-western element in geometry */
     void set_SW(float x, float y);
 
-    /* */
+    /* North-western element in geometry */
     void set_NW(float x, float y);
     
-    /* */
+    /* South-estern element in geometry */
     void set_SE(float x, float y);
 
     /* Method to set shots positions giving three points in grid */
-    void setGridShots();
+    void setGridGeometry(Position &obj);
     
     /* Method to set nodes positions giving three points in grid */
-    void setGridNodes();
-
-    /* Method to set circular shots positions */
-    void setCircularShots();
-
-    /* Method to set circular nodes positions */
-    void setCircularNodes();
+    void setCircularGeometry(Position &obj);
 
     /* Switch the nodes position to shots position */
     void setReciprocity();
