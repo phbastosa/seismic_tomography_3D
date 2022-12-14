@@ -453,9 +453,6 @@ void Tomography::modelUpdate()
         }
     }    
 
-    writeBinaryFloat("deltaS.bin", dm, mTomo.nPoints);
-    writeBinaryFloat("modelReduced.bin", model, mTomo.nPoints);
-
     // Trilinear interpolation - wikipedia
     for (int index = 0; index < nPoints; index++)
     {
