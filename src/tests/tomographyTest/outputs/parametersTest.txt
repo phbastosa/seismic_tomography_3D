@@ -1,30 +1,8 @@
-# Tomography Parameters file -----------------------------------------------------------------------
-
-eikonalType = 1                       # 0 - Podvin & Lecomte (1991); 1 - Jeong & Whitaker (2008); 2 - Noble (2014) <int>  
-exportTravelTimes = False             # Flag to export travel times volume <bool> 
-exportFirstArrivals = True            # Flag to export first arrivals <bool> 
- 
-# Set inversion method <int>:
-#    0 - L2 norm least squares (Berriman regularization)
-#    1 - L2 norm least squares (zero order Tikonov regularization)  
-#    2 - L2 norm least squares (first order Tikonov regularization)  
-#    3 - L2 norm least squares (second order Tikonov regularization) 
-
-inversionMethod = 1                   # Set inversion method <int> 
-
-maxIteration = 5                      # Tomography max iteration <int>                   
-regParam = 0.001                      # Regularization parameter <float>
-
-# Smoothing model per iteration ------------------------------------------------------------------
-
-smooth = False                       # Flag to smooth or not the model <bool>
-smoothingType = 0                    # 0 - gaussian filter; 1 - moving average filter <int>
-filterSamples = 11                   # Samples in filter, must to be an odd number! <int>
-standardDeviation = 2.0              # For gaussian filter case to control smoothing <float>
+# Tomography Parameters file ---------------------------------------------------------------------
 
 # Inputs Folders ----------------------------------------------------------------------------------
 
-dobsPath = "outputs/dobs_shot_"                     # Name style of observed data
+dobsPath = "outputs/dobs_"                     # Name style of observed data
 modelPath = "outputs/initModel_31x101x101_50m.bin"  # Full initial velocity model path
 
 # Model paramenters ------------------------------------------------------------------------------
@@ -36,20 +14,6 @@ nz = 31                              # z dimension of model <int>
 dx = 50                              # x sample spacing of model [m] <float>
 dy = 50                              # y sample spacing of model [m] <float> 
 dz = 50                              # z sample spacing of model [m] <float>  
-
-# Tomography model parameters ------------------------------------------------------------------- 
-
-nxTomo = 51                          # Resized x sample dimension of model <int>
-nyTomo = 51                          # Resized y sample dimension of model <int>
-nzTomo = 16                          # Resized z sample dimension of model <int>
-
-dxTomo = 100                         # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 100                         # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 100                         # Resized model sample spacing [m] of z dimension <float>
-
-xMask = [500, 500]                   # Mask of [left, right] x axis sides [m] <float>
-yMask = [500, 500]                   # Mask of [left, right] y axis sides [m] <float>
-zMask = [0, 100]                     # Mask of [up, bottom] z axis sides [m] <float>
 
 # Geometry parameters ----------------------------------------------------------------------------
  
@@ -96,9 +60,41 @@ nodeSW = [500, 500]       # NW       # (x,y) in float WITHOUT SPACES
 nodeNW = [500, 4500]      #  |       # (x,y) in float WITHOUT SPACES   
 nodeSE = [4500, 500]      # SW -- SE # (x,y) in float WITHOUT SPACES   
 
+# Tomography model parameters --------------------------------------------------------------------
+
+nxTomo = 26                          # Resized x sample dimension of model <int>
+nyTomo = 26                          # Resized y sample dimension of model <int>
+nzTomo = 16                          # Resized z sample dimension of model <int>
+
+dxTomo = 200                         # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 200                         # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 100                         # Resized model sample spacing [m] of z dimension <float>
+
+xMask = [1000, 1000]                 # Mask of [left, right] x axis sides [m] <float>
+yMask = [1000, 1000]                 # Mask of [left, right] y axis sides [m] <float>
+zMask = [0, 0]                       # Mask of [up, bottom] z axis sides [m] <float>
+
+# Inversion parameters ---------------------------------------------------------------------------
+
+eikonalType = 1                       # 0 - Podvin & Lecomte (1991); 1 - Jeong & Whitaker (2008); 2 - Noble (2014) <int>  
+exportTravelTimes = False             # Flag to export travel times volume <bool> 
+exportFirstArrivals = True            # Flag to export first arrivals <bool> 
+ 
+regOrder = 0                          # Tikhonov regularization order <int>
+regParam = 100                        # Regularization parameter <float>
+maxIteration = 1                      # Tomography max iteration <int>                   
+dmMaxVariation = 1e-4                 # Delta slowness max variation <float>
+
+# Smoothing model per iteration ------------------------------------------------------------------
+
+smooth = False                       # Flag to smooth or not the model <bool>
+smoothingType = 0                    # 0 - gaussian filter; 1 - moving average filter <int>
+filterSamples = 11                   # Samples in filter, must to be an odd number! <int>
+standardDeviation = 2.0              # For gaussian filter case to control smoothing <float>
+
 # Some folders location -------------------------------------------------------------------------------------------------
 
-dcalPath = "outputs/dcal_shot_"                  # Folder to write calculated data
+dcalPath = "outputs/dcal_"                  # Folder to write calculated data
 eikonalFolder = "outputs/"                       # Folder to write travel time volume per shot
 shotsPositionPath = "outputs/shotsPosition.txt"  # Full path of receivers position     
 nodesPositionPath = "outputs/nodesPosition.txt"  # Full path of shots position   

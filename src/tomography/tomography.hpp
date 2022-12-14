@@ -7,20 +7,12 @@ class Tomography : public Eikonal
 {
 private:
     
-    /* 0 - L2 norm least squares (Berriman regularization)
-       1 - L2 norm least squares (zero order Tikonov regularization)  
-       2 - L2 norm least squares (first order Tikonov regularization)  
-       3 - L2 norm least squares (second order Tikonov regularization) 
-    */
-    int inversionMethod;       
-
     int iteration;                  // It counts the current iteration of the inversion
     int maxIteration;               // It defines the amoung of iterations the inversion have in total 
 
+    int tkOrder;                    // Tikhonov regularization order parameter 
     float lambda;                   // Regularization parameter
-    std::vector<std::string> xMask; // Mask to avoid boundary outliers in x direction 
-    std::vector<std::string> yMask; // Mask to avoid boundary outliers in y direction
-    std::vector<std::string> zMask; // Mask to avoid boundary outliers in z direction
+    float dmMaxVariation;           // Delta slowness max variation
 
     bool smooth;                    // Parameter to select model smoothing per iteration
     int smoothingType;              // 0 - gaussian filter; 1 - moving average filter  
@@ -31,7 +23,7 @@ private:
     float * dobs;                   // Observed data 
     float * dcal;                   // Calculated data
     float * model;                  // Slowness model
-
+    
     typedef struct                  // To get together the reducecd tomography model dimensions
     {  
         int nx;                     // Reduced samples in x dimension
@@ -55,26 +47,18 @@ private:
 
     std::vector<float> residuo;     // To store the convergency at each iteration
 
+    std::vector<std::string> xMask; // Mask to avoid boundary outliers in x direction 
+    std::vector<std::string> yMask; // Mask to avoid boundary outliers in y direction
+    std::vector<std::string> zMask; // Mask to avoid boundary outliers in z direction
+
     /* */
     void gradientRayTracing();
 
     /* */
-    void tomographyUpdate();
-    
+    sparseMatrix buildForwardModelingMatrix();
+   
     /* */
-    void lscg_Berriman();
-
-    /* */
-    void lscg_zoTikhonov();
-    
-    /* */
-    void lscg_foTikhonov();
-
-    /* */
-    void lscg_soTikhonov();
-
-    /* */
-    void gradientDescent();
+    sparseMatrix applyTkRegularization(sparseMatrix G, sparseMatrix L);
 
 public:    
     
@@ -84,6 +68,7 @@ public:
     /* Tomograpy class constructor */
     Tomography();
 
+    /* */
     void setParameters(char * parametersFile);
 
     /* */
@@ -109,9 +94,6 @@ public:
 
     /* */
     void modelUpdate();    
-
-    /* */
-    void modelSmoothing();
     
     /* */
     void exportConvergency();
