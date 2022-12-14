@@ -16,20 +16,20 @@ int main(int argc, char **argv)
 
     // Observed data generation --------------------------------------------------------------------
 
-    // tomo.V = tomo.expand(tomo.readBinaryFloat("outputs/trueModel_" + std::to_string(tomo.nz) + "x" + std::to_string(tomo.nx) + "x" + std::to_string(tomo.ny) + "_" + std::to_string((int) tomo.dx) + "m.bin", tomo.nPoints));
+    tomo.V = tomo.expand(tomo.readBinaryFloat("outputs/trueModel_" + std::to_string(tomo.nz) + "x" + std::to_string(tomo.nx) + "x" + std::to_string(tomo.ny) + "_" + std::to_string((int) tomo.dx) + "m.bin", tomo.nPoints));
     
-    // std::cout<<"\nObserved data generation"<<std::endl;
+    std::cout<<"\nObserved data generation"<<std::endl;
 
-    // tomo.arrivalFolder = tomo.dobsPath;
+    tomo.arrivalFolder = tomo.dobsPath;
 
-    // tomo.T = new float [tomo.nPointsB];
+    tomo.T = new float [tomo.nPointsB];
 
-    // for (tomo.shotId = 0; tomo.shotId < tomo.shots.all; tomo.shotId++)
-    // {
-    //     tomo.eikonalComputing();
-    // }
+    for (tomo.shotId = 0; tomo.shotId < tomo.shots.all; tomo.shotId++)
+    {
+        tomo.eikonalComputing();
+    }
 
-    // delete[] tomo.T;
+    delete[] tomo.T;
 
     // Inversion part ----------------------------------------------------------------------
 

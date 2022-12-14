@@ -12,7 +12,6 @@ private:
 
     int tkOrder;                    // Tikhonov regularization order parameter 
     float lambda;                   // Regularization parameter
-    float dmMaxVariation;           // Delta slowness max variation
 
     bool smooth;                    // Parameter to select model smoothing per iteration
     int smoothingType;              // 0 - gaussian filter; 1 - moving average filter  
@@ -51,13 +50,22 @@ private:
     std::vector<std::string> yMask; // Mask to avoid boundary outliers in y direction
     std::vector<std::string> zMask; // Mask to avoid boundary outliers in z direction
 
-    /* */
+    /*  
+        Ray tracing using travel times as a function
+        Stepest descent gradient used to compute the steps of ray path
+        Indexes organized to store iM,jM, and vM to build inversion matrix
+    */
     void gradientRayTracing();
 
-    /* */
+    /* 
+        Construct the G matrix in form of sparse matrix deleting iM, jM and vM 
+    */
     sparseMatrix buildForwardModelingMatrix();
    
-    /* */
+    /*  
+        Construct the A matrix with the regularization matrix concatenation 
+        L is a derivative matrix to apply Tikhonov regularization
+    */
     sparseMatrix applyTkRegularization(sparseMatrix G, sparseMatrix L);
 
 public:    
@@ -68,19 +76,30 @@ public:
     /* Tomograpy class constructor */
     Tomography();
 
-    /* */
+    /* Importing from file and setting all tomography parameters */
     void setParameters(char * parametersFile);
 
-    /* */
+    /* 
+        It informs:
+        What is the current iteration 
+        The shot position 
+        The previous resuduo at each iteration 
+    */
     void infoMessage();
 
-    /* */
+    /* 
+        To import observed data 
+        Each shot in different binary file 
+    */
     void importDobs();
 
-    /* */
+    /* 
+        To import calculated data 
+        Each shot in different binary file 
+    */
     void importDcal();
     
-    /* */
+    /* To reduce velocity model to update inversion */
     void setInitialModel();
 
     /* */

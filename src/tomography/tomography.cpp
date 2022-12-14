@@ -112,7 +112,6 @@ void Tomography::setParameters(char * parameters)
     lambda = std::stof(catchParameter("regParam", parameters));
     tkOrder = std::stof(catchParameter("regOrder", parameters));
     maxIteration = std::stoi(catchParameter("maxIteration", parameters));
-    dmMaxVariation = std::stof(catchParameter("dmMaxVariation", parameters));
 
     smooth = str2bool(catchParameter("smooth", parameters)); 
     smoothingType = std::stoi(catchParameter("smoothingType", parameters));
@@ -436,10 +435,10 @@ void Tomography::modelUpdate()
 {    
     int xlCut = (int)(std::stof(xMask[0]) / mTomo.dx); // x left cut 
     int xrCut = (int)(std::stof(xMask[1]) / mTomo.dx); // x right cut
-    int ylCut = (int)(std::stof(yMask[0]) / mTomo.dx); // y left cut 
-    int yrCut = (int)(std::stof(yMask[1]) / mTomo.dx); // y right cut
-    int zuCut = (int)(std::stof(zMask[0]) / mTomo.dx); // z up cut  
-    int zdCut = (int)(std::stof(zMask[1]) / mTomo.dx); // z down cut
+    int ylCut = (int)(std::stof(yMask[0]) / mTomo.dy); // y left cut 
+    int yrCut = (int)(std::stof(yMask[1]) / mTomo.dy); // y right cut
+    int zuCut = (int)(std::stof(zMask[0]) / mTomo.dz); // z up cut  
+    int zdCut = (int)(std::stof(zMask[1]) / mTomo.dz); // z down cut
 
     // Tomography slowness update    
     for (int index = 0; index < mTomo.nPoints; index++) 
@@ -449,8 +448,8 @@ void Tomography::modelUpdate()
         int i = (int) (index - j*mTomo.nz - k*mTomo.nx*mTomo.nz);  // z direction        
 
         if ((i >= zuCut) && (i < mTomo.nz - zdCut) && (j >= xlCut) && (j < mTomo.nx - xrCut - 1) && (k >= ylCut) && (k < mTomo.ny - yrCut - 1))
-        {
-            if (fabs(dm[index]) < 5e-5) model[index] += dm[index];
+        { 
+            model[index] += dm[index];
         }
     }    
 
@@ -476,7 +475,7 @@ void Tomography::modelUpdate()
         float y1 = floorf(y/mTomo.dy)*mTomo.dy + mTomo.dy;
         float z1 = floorf(z/mTomo.dz)*mTomo.dz + mTomo.dz;
 
-        if ((i >= (int)(zuCut*mTomo.dz/dz)) && (i < nz - (int)(zdCut*mTomo.dz/dz) - 1) && (j >= (int)(xlCut*mTomo.dx/dx)) && (j < nx - (int)(xrCut*mTomo.dx/dx) - 1) && (k >= (int)(ylCut*mTomo.dy/dy)) && (k < ny - (int)(yrCut*mTomo.dy/dy) - 1))
+        if ((i >= 0) && (i < nz - 1) && (j >= 0) && (j < nx - 1) && (k >= 0) && (k < ny - 1))
         {
             int idz = ((int)(z/mTomo.dz));
             int idx = ((int)(x/mTomo.dx));

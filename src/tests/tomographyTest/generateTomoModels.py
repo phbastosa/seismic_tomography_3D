@@ -15,18 +15,18 @@ def buildModel3D(nx,ny,nz,property,z):
 
 nx = 101
 ny = 101
-nz = 31
+nz = 21
 
 dh = 50.0
 
-v = np.array([1500, 1700, 3000],dtype=float)
-z = np.array([ 500, 1250, nz*dh],dtype=float) // dh
+v = np.array([1500, 1700, 2000],dtype=float)
+z = np.array([ 200, 800, nz*dh],dtype=float) // dh
 
 initModel = buildModel3D(nx, ny, nz, v, z)
 
 trueModel = initModel.copy()
 
-trueModel[15:25,40:60,40:60] += 1000
+trueModel[10:16,40:60,40:60] += 300
 
 trueModel.flatten("F").astype("float32",order="F").tofile(f"outputs/trueModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
 initModel.flatten("F").astype("float32",order="F").tofile(f"outputs/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")

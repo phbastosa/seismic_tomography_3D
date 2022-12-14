@@ -3,13 +3,13 @@
 # Inputs Folders ----------------------------------------------------------------------------------
 
 dobsPath = "outputs/dobs_"                     # Name style of observed data
-modelPath = "outputs/initModel_31x101x101_50m.bin"  # Full initial velocity model path
+modelPath = "outputs/initModel_21x101x101_50m.bin"  # Full initial velocity model path
 
 # Model paramenters ------------------------------------------------------------------------------
  
 nx = 101                             # x dimension of model <int>
 ny = 101                             # y dimension of model <int>
-nz = 31                              # z dimension of model <int>
+nz = 21                              # z dimension of model <int>
  
 dx = 50                              # x sample spacing of model [m] <float>
 dy = 50                              # y sample spacing of model [m] <float> 
@@ -42,7 +42,7 @@ shotSE = [4900, 100]      # SW -- SE # (x,y) [m] <float>
 
 # Setting NODES geometry -------------------------------------------------------------------------
 
-nodesElevation = 500                 # Receivers elevation [m] - flat surface <float>
+nodesElevation = 200                 # Receivers elevation [m] - flat surface <float>
 nodesGeometryType = 1                # 0 - circular nodes style; 1 - grid nodes style <int>
  
 # Circular NODES geometry (option: 0)
@@ -64,15 +64,15 @@ nodeSE = [4500, 500]      # SW -- SE # (x,y) in float WITHOUT SPACES
 
 nxTomo = 26                          # Resized x sample dimension of model <int>
 nyTomo = 26                          # Resized y sample dimension of model <int>
-nzTomo = 16                          # Resized z sample dimension of model <int>
+nzTomo = 11                          # Resized z sample dimension of model <int>
 
 dxTomo = 200                         # Resized model sample spacing [m] of x dimension <float> 
 dyTomo = 200                         # Resized model sample spacing [m] of y dimension <float>
 dzTomo = 100                         # Resized model sample spacing [m] of z dimension <float>
 
-xMask = [1000, 1000]                 # Mask of [left, right] x axis sides [m] <float>
-yMask = [1000, 1000]                 # Mask of [left, right] y axis sides [m] <float>
-zMask = [0, 0]                       # Mask of [up, bottom] z axis sides [m] <float>
+xMask = [500, 500]                   # Mask of [left, right] x axis sides [m] <float>
+yMask = [500, 500]                   # Mask of [left, right] y axis sides [m] <float>
+zMask = [200, 0]                     # Mask of [up, bottom] z axis sides [m] <float>
 
 # Inversion parameters ---------------------------------------------------------------------------
 
@@ -80,10 +80,9 @@ eikonalType = 1                       # 0 - Podvin & Lecomte (1991); 1 - Jeong &
 exportTravelTimes = False             # Flag to export travel times volume <bool> 
 exportFirstArrivals = True            # Flag to export first arrivals <bool> 
  
-regOrder = 0                          # Tikhonov regularization order <int>
-regParam = 100                        # Regularization parameter <float>
-maxIteration = 1                      # Tomography max iteration <int>                   
-dmMaxVariation = 1e-4                 # Delta slowness max variation <float>
+regOrder = 1                          # Tikhonov regularization order <int>
+regParam = 1e5                        # Regularization parameter <float>
+maxIteration = 2                      # Tomography max iteration <int>                   
 
 # Smoothing model per iteration ------------------------------------------------------------------
 
