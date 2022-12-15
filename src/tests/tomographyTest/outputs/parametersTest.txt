@@ -81,8 +81,8 @@ exportTravelTimes = False             # Flag to export travel times volume <bool
 exportFirstArrivals = True            # Flag to export first arrivals <bool> 
  
 regOrder = 1                          # Tikhonov regularization order <int>
-regParam = 1e5                        # Regularization parameter <float>
-maxIteration = 2                      # Tomography max iteration <int>                   
+regParam = 1e3                        # Regularization parameter <float>
+maxIteration = 7                      # Tomography max iteration <int>                   
 
 # Smoothing model per iteration ------------------------------------------------------------------
 

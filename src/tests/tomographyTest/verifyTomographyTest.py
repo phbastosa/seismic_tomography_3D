@@ -19,327 +19,176 @@ def readBinaryVolume(dim1,dim2,dim3,filename):
 
 def readBinaryArray(dim, filename):
     return np.fromfile(filename, dtype=np.int32, count=dim)
-
-def boxPlot(model, dx, dy, dz, xySlice, zySlice, zxSlice, colorbarFix = 1.5):
     
-    xyPlane = model[xySlice,:,:].T
-    zxPlane = model[:,:,zxSlice]
-    zyPlane = model[:,zySlice,:].T
+def boxPlot(models:np.ndarray, dh:np.ndarray, slices:np.ndarray, subplots:np.ndarray) -> None:
 
-    ticks = np.array([3,7,7], dtype = int)
+    modelShape = np.array(np.shape(models[0]))
+    maxModelDistance = np.max(np.shape(models[0]))
+    minModelDistance = np.min(np.shape(models[0]))
+    
+    [z, x, y] = 3.0 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
 
-    #------------------------------------------------
-    axis = np.array(np.shape(model))
-    [z, x, y] = axis * 0.6 / np.max(axis)
-
-    vmin = np.min(model)
-    vmax = np.max(model)
+    vmin = np.min(models[0])
+    vmax = np.max(models[0])
 
     px = 1/plt.rcParams['figure.dpi']  
-    fig = plt.figure(1, figsize=(1000*px, 800*px))
+    ticks = np.array([3,7,7], dtype = int)
 
-    xloc = np.linspace(0,nx,ticks[1], dtype = int)
-    yloc = np.linspace(0,ny,ticks[2], dtype = int)
-    zloc = np.linspace(0,nz,ticks[0], dtype = int)
+    fig = plt.figure(1, figsize=(600*px*subplots[1], 500*px*subplots[0]))
 
-    xlab = np.around(xloc * dx / 1000, decimals = 1)
-    ylab = np.around(yloc * dy / 1000, decimals = 1)
-    zlab = np.around(zloc * dz / 1000, decimals = 1)
+    xloc = np.linspace(0,nx-1,ticks[1], dtype = int)
+    yloc = np.linspace(0,ny-1,ticks[2], dtype = int)
+    zloc = np.linspace(0,nz-1,ticks[0], dtype = int)
 
-    #------------------------------------------------
-    ax1 = fig.add_axes([0.7 - x, 0.95 - y, 0 + x, 0 + y])
-    ax1.imshow(xyPlane, aspect = 'auto', cmap = "Greys", vmin = vmin, vmax = vmax)
-    ax1.tick_params(direction = 'in', axis='x') 
-    ax1.tick_params(direction = 'in', axis='y') 
-    ax1.set_xticklabels([])
+    m2km = 1e-3
 
-    ax1.plot(np.arange(axis[1]), np.ones(axis[1])*zxSlice, "--g")
-    ax1.plot(np.ones(axis[2])*zySlice, np.arange(axis[2]), "--m")
+    xlab = np.around(xloc * dx * m2km, decimals = 1)
+    ylab = np.around(yloc * dy * m2km, decimals = 1)
+    zlab = np.around(zloc * dz * m2km, decimals = 1)
 
-    ax1.set_xticks(xloc)
-    ax1.set_yticks(yloc[1:])
-    ax1.set_yticklabels(ylab[1:])
+    axes = np.array([[0.75 - x, 0.98 - y      , x, y], 
+                     [    0.75, 0.98 - y      , z, y],
+                     [0.75 - x, 0.98 - y - z  , x, z],
+                     [0.75 - x, 0.98 - y - 2*z, x, z]])
 
-    ax1.grid(color='w', linestyle='--', linewidth=0.3)
+    xTickDirection = ['out', 'out', 'out']
+    yTickDirection = ['in', 'in', 'in']
 
-    ax1.set_ylabel("Y [km]")
-    ax1.invert_yaxis()
+    xTickLock = [xloc, zloc[1:], xloc]
+    yTickLock = [yloc, yloc, zloc[1:]]
 
-    #------------------------------------------------
-    ax2 = fig.add_axes([0.7, 0.95 - y, 0 + z, 0 + y])
-    ax2.imshow(zyPlane, aspect = 'auto', cmap = "Greys", vmin = vmin, vmax = vmax)
-    ax2.tick_params(direction = 'out', axis='x') 
-    ax2.tick_params(direction = 'in', axis='y') 
-    ax2.set_yticklabels([])
+    xTickLabel = [[], zlab[1:], xlab]
+    yTickLabel = [ylab, [], zlab[1:]]
 
-    ax2.set_xlabel("Z [km]")
+    xLabel = ["X [km]", "Z [km]", "X [km]"]
+    yLabel = ["Y [km]", "      ", "Z [km]"]
 
-    ax2.plot(np.arange(axis[0]), np.ones(axis[0])*zxSlice, "--g")
-    ax2.plot(np.ones(axis[2])*xySlice, np.arange(axis[2]), "--r")
+    yInvert = [ True, False, False]
 
-    ax2.set_yticks(yloc)
+    xSlices = [[np.arange(modelShape[1]), np.ones(modelShape[1])*slices[1], "--g"],
+               [np.arange(modelShape[0]), np.ones(modelShape[0])*slices[1], "--g"],
+               [np.arange(modelShape[1]), np.ones(modelShape[1])*slices[0], "--r"]] 
 
-    ax2.set_xticks(zloc[1:])
-    ax2.set_xticklabels(zlab[1:])
+    ySlices = [[np.ones(modelShape[2])*slices[2], np.arange(modelShape[2]), "--m"],
+               [np.ones(modelShape[2])*slices[0], np.arange(modelShape[2]), "--r"],
+               [np.ones(modelShape[0])*slices[2], np.arange(modelShape[0]), "--m"]]
 
-    ax2.grid(color = 'w', linestyle = '--', linewidth = 0.3)
+    #--------------------------------------------------------------------------------    
 
-    #------------------------------------------------
-    ax3 = fig.add_axes([0.7 - x, 0.95 - y - z, 0 + x, 0 + z])
-    im = ax3.imshow(zxPlane, aspect = 'auto', cmap = "Greys", vmin = vmin, vmax = vmax)
-
-    ax3.plot(np.arange(axis[1]), np.ones(axis[1])*xySlice, "--r")
-    ax3.plot(np.ones(axis[0])*zySlice, np.arange(axis[0]), "--m")
-
-    ax3.set_xticks(xloc)
-    ax3.set_yticks(zloc)
-
-    ax3.set_xticklabels(xlab)
-    ax3.set_yticklabels(zlab)
-
-    ax3.grid(color = 'w', linestyle = '--', linewidth = 0.3)
-
-    ax3.set_xlabel("X [km]")
-    ax3.set_ylabel("Z [km]")
-
-    #------------------------------------------------
-    ax4 = fig.add_axes([0.7 - x, 0.95 - y - colorbarFix*z, 0 + x, 0 + z])
-
-    ax4.axis("off")
-
-    cmap = mpl.colormaps["Greys"]
-    norm = mpl.colors.Normalize(vmin*1e-3, vmax*1e-3)
-    divider = make_axes_locatable(ax4)
-    cax = divider.append_axes("bottom", size="10%", pad=0)
-    cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(vmin*1e-3, vmax*1e-3, 5), orientation = "horizontal")
-    cbar.ax.set_xticklabels(np.around(np.linspace(vmin*1e-3, vmax*1e-3, 5), decimals = 1))
-    cbar.set_label("P wave velocity [km/s]")
+    subfigs = fig.subfigures(subplots[0], subplots[1])
     
+    for i in range(subplots[0]):
+        for j in range(subplots[1]):
+
+            ind = i*subplots[0] + j 
+
+            ims = [models[ind, slices[0],:,:].T, models[ind,:,slices[2],:].T, models[ind,:,:,slices[1]]]
+            
+            for k, axs in enumerate(axes):
+
+                # Adjusting acording subplot size      
+                if subplots[0] == 1:
+                    if subplots[1] == 1:
+                        ax = subfigs.add_axes(axs)                         
+                    else:
+                        ax = subfigs[j].add_axes(axs)
+
+                elif subplots[1] == 1:
+                    if subplots[0] == 1:
+                        ax = subfigs.add_axes(axs)        
+                    else:    
+                        ax = subfigs[i].add_axes(axs)
+                
+                else:
+                    ax = subfigs[i,j].add_axes(axs)
+
+                # Setting colorbar
+                if k == 3:
+
+                    ax.axis("off")
+
+                    cmap = mpl.colormaps["Greys"]
+                    norm = mpl.colors.Normalize(vmin*1e-3, vmax*1e-3)
+                    divider = make_axes_locatable(ax)
+                    cax = divider.append_axes("bottom", size="10%", pad=0)
+                    cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(vmin*1e-3, vmax*1e-3, 5), orientation = "horizontal")
+                    cbar.ax.set_xticklabels(np.around(np.linspace(vmin*1e-3, vmax*1e-3, 5), decimals = 1))
+                    cbar.set_label("P wave velocity [km/s]")
+                
+                # plotting model slices 
+                else:
+                    
+                    ax.imshow(ims[k], aspect = 'auto', cmap = "Greys", vmin = vmin, vmax = vmax)
+                    
+                    ax.tick_params(direction = xTickDirection[k], axis='x') 
+                    ax.tick_params(direction = yTickDirection[k], axis='y') 
+                    
+                    ax.set_xticks(xTickLock[k])
+                    ax.set_yticks(yTickLock[k])
+
+                    ax.set_xticklabels(xTickLabel[k])
+                    ax.set_yticklabels(yTickLabel[k])
+ 
+                    ax.set_xlabel(xLabel[k])
+                    ax.set_ylabel(yLabel[k])
+
+                    ax.plot(xSlices[k][0], xSlices[k][1], xSlices[k][2])
+                    ax.plot(ySlices[k][0], ySlices[k][1], ySlices[k][2])
+                    
+                    if yInvert[k]:
+                       ax.invert_yaxis()
+    
+    plt.savefig("testFigure.png", dpi = 200)
+    plt.show()
+
     return None
 
 
+################################################################################################
+
 nx = 101
 ny = 101
-nz = 31
+nz = 21
 
-dh = 50.0
+dx = 50.0
+dy = 50.0
+dz = 50.0
 
-# model = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
-model = readBinaryVolume(nz,nx,ny,f"outputs/models/estimatedModel_iteration_10.bin")
+nIt = 7
 
-model[-1,:,:] = model[-2,:,:]
-model[:,-1,:] = model[:,-2,:]
-model[:,:,-1] = model[:,:,-2]
+# Importing geometry acquisition
 
-modelPerc = gaussian_filter(model, 0)
+shots = np.loadtxt(f"outputs/shotsPosition.txt", delimiter = ",",unpack=True)
+nodes = np.loadtxt(f"outputs/nodesPosition.txt", delimiter = ",",unpack=True)
 
-# modelPerc[:4,:,:] = 0
+# Importing models
+models = np.zeros((nIt+2, nz, nx, ny))
 
-sx,sy,sz = np.loadtxt(f"outputs/geometry/shotsPosition.txt", delimiter = ",",unpack=True)
-rx,ry,rz = np.loadtxt(f"outputs/geometry/nodesPosition.txt", delimiter = ",",unpack=True)
+models[0,:,:,:] = readBinaryVolume(nz,nx,ny,f"outputs/initModel_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
 
-xzPlane = int(ny / 2)
-yzPlane = int(nx / 2)
-xyPlane = int(nz / 2)
+for i in range(1,nIt+1):
+    models[i,:,:,:] = readBinaryVolume(nz,nx,ny,f"outputs/estimatedModel_iteration_{i}.bin")
 
-vmin = 1500
-vmax = 3500 
+models[-1,:,:,:] = readBinaryVolume(nz,nx,ny,f"outputs/trueModel_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
+ 
+# Defining plane positions
 
-xloc = np.linspace(0,nx-1,7,dtype=int)
-xlab = np.array(xloc * dh,dtype=int)
+dh = np.array([dz, dx, dy])
+slices = np.array([int(nz / 2), int(ny / 2), int(nx / 2)], dtype = int) # [xy, zx, zy]
+subplots = np.array([3, 3], dtype = int)
 
-yloc = np.linspace(0,ny-1,7,dtype=int)
-ylab = np.array(yloc * dh,dtype=int)
+# Plotting models
 
-zloc = np.linspace(0,nz-1,7,dtype=int)
-zlab = np.array(zloc * dh,dtype=int)
+boxPlot(models, dh, slices, subplots)
 
-plt.figure(1,figsize=(15, 5))
+# Plotting convergency 
 
-plt.suptitle("Illumination model 200 m", fontsize = 20)
+convergency = np.loadtxt("outputs/convergency.txt")
 
-G = gridspec.GridSpec(2, 5)
-
-axes_1 = plt.subplot(G[:1,:3])
-plt.imshow(modelPerc[:,xzPlane,:],aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
-plt.xticks(xloc,xlab)
-plt.yticks(zloc,zlab)
-plt.title(f"XZ plane", fontsize = 18)
-plt.xlabel("X axis [m]", fontsize = 15)
-plt.ylabel("Z axis [m]", fontsize = 15)
-
-# plt.scatter(sx/dh,sz/dh, label = "Shots")
-# plt.scatter(rx/dh,rz/dh, label = "Nodes") 
-
-plt.plot(np.ones(nz)*yzPlane,np.arange(nz),'--r')
-plt.plot(np.arange(nx),np.ones(nx)*xyPlane,'--r')
-
-# plt.legend(loc = "lower left", fontsize = 10)
-
-axes_2 = plt.subplot(G[1:,:3])
-plt.imshow(modelPerc[:,:,yzPlane],aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
-plt.xticks(yloc,ylab)
-plt.yticks(zloc,zlab)
-plt.title(f"YZ plane", fontsize = 18)
-plt.xlabel("Y axis [m]", fontsize = 15)
-plt.ylabel("Z axis [m]", fontsize = 15)
-
-# plt.scatter(sy/dh,sz/dh, label = "Shots")
-# plt.scatter(ry/dh,rz/dh, label = "Nodes")
-
-plt.plot(np.ones(nz)*xzPlane,np.arange(nz),'--r')
-plt.plot(np.arange(ny),np.ones(ny)*xyPlane,'--r')
-
-# plt.legend(loc = "lower left", fontsize = 10)
-
-axes_3 = plt.subplot(G[:,3:])
-plt.imshow(modelPerc[xyPlane,:,:],aspect="auto",cmap="Greys",vmin=vmin,vmax=vmax)
-
-plt.xticks(xloc,xlab)
-plt.yticks(yloc,ylab)
-plt.title(f"XY plane", fontsize = 18)
-plt.xlabel("X axis [m]", fontsize = 15)
-plt.ylabel("Y axis [m]", fontsize = 15)
-
-cbar = plt.colorbar()
-cbar.set_label("P wave velocity [m/s]",fontsize=15)
-
-# plt.scatter(sx/dh,sy/dh, s = 5, label = "Shots")
-# plt.scatter(rx/dh,ry/dh, s = 10, label = "Nodes")
-
-plt.plot(np.arange(nx),np.ones(nx)*xzPlane,'--r', markersize = 10)
-plt.plot(np.ones(ny)*yzPlane,np.arange(ny),'--r', markersize = 10)
-
-# plt.legend(loc = "lower left", fontsize = 10)
-
-plt.gca().invert_yaxis()
-
-plt.tight_layout()
-
+plt.figure(2, figsize = (10,5))
+plt.plot(convergency)
+plt.title("Convergency using Tikhonov first order with 1000 of regularization parameter")
+plt.xlabel("Iterations number")
+plt.ylabel("L2 residuous norm = sum((dobs - dcal)**2)")
+plt.savefig("convergency.png", dpi = 200)
 plt.show()
-
-trueModel = readBinaryVolume(nz,nx,ny,f"inputs/models/trueModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
-initModel = readBinaryVolume(nz,nx,ny,f"inputs/models/initModel_{nz}x{nx}x{ny}_{dh:.0f}m.bin")
-brrnModel = readBinaryVolume(nz,nx,ny,f"outputs/models/estimatedModel_iteration_10.bin")
-# tkv0Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk0.bin")
-# tkv1Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk1.bin")
-# tkv2Model = readBinaryVolume(nz,nx,ny,f"outputs/models/model_5it_tk2.bin")
-
-trueModel = trueModel[:,int(nx/2),int(ny/2)]
-initModel = initModel[:,int(nx/2),int(ny/2)]
-brrnModel = brrnModel[:,int(nx/2),int(ny/2)]
-# tkv0Model = tkv0Model[:,int(nx/2),int(ny/2)]
-# tkv1Model = tkv1Model[:,int(nx/2),int(ny/2)]
-# tkv2Model = tkv2Model[:,int(nx/2),int(ny/2)]
-
-n = 2
-
-brrnModel = 1.0 / gaussian_filter(1.0 / brrnModel, n)
-# tkv0Model = 1.0 / gaussian_filter(1.0 / tkv0Model, n)
-# tkv1Model = 1.0 / gaussian_filter(1.0 / tkv1Model, n)
-# tkv2Model = 1.0 / gaussian_filter(1.0 / tkv2Model, n)
-
-depth = np.arange(nz) * dh
-
-ylab = np.linspace(0,depth[-1],11, dtype = int)
-
-plt.figure(2, figsize=(15, 7))
-
-G = gridspec.GridSpec(1, 4)
-
-ax1 = plt.subplot(G[:,:1])
-
-plt.plot(trueModel, depth, label = "True model")
-plt.plot(initModel, depth, label = "Initial model")
-plt.plot(brrnModel, depth, label = "Recovered model")
-
-plt.ylim([0,(nz-1)*dh])
-
-plt.title("Berriman", fontsize = 18)
-plt.ylabel("Depth [m]", fontsize = 18)
-plt.xlabel("P wave velocity [m/s]", fontsize = 15)
-
-plt.legend(loc = "upper right")
-
-plt.yticks(ylab,ylab)
-
-plt.gca().invert_yaxis()
-
-# ax2 = plt.subplot(G[:,1:2])
-
-# plt.plot(trueModel, depth, label = "True model")
-# plt.plot(initModel, depth, label = "Initial model")
-# plt.plot(tkv0Model, depth, label = "Recovered model")
-
-# plt.title("Zero order Tikhonov", fontsize = 18)
-# plt.ylabel("Depth [m]", fontsize=18)
-# plt.xlabel("P wave velocity [m/s]", fontsize = 15)
-
-# plt.ylim([0,(nz-1)*dh])
-
-# plt.legend(loc = "upper right")
-
-# plt.gca().invert_yaxis()
-
-# ax3 = plt.subplot(G[:,2:3])
-# plt.plot(trueModel, depth, label = "True model")
-# plt.plot(initModel, depth, label = "Initial model")
-# plt.plot(tkv1Model, depth, label = "Recovered model")
-
-# plt.ylim([0,(nz-1)*dh])
-
-# plt.title("First order Tikhonov", fontsize = 18)
-# plt.ylabel("Depth [m]", fontsize=18)
-# plt.xlabel("P wave velocity [m/s]", fontsize = 15)
-
-# plt.legend(loc = "upper right")
-
-# plt.gca().invert_yaxis()
-
-# ax4 = plt.subplot(G[:,3:])
-
-# plt.plot(trueModel, depth, label = "True model")
-# plt.plot(initModel, depth, label = "Initial model")
-# plt.plot(tkv2Model, depth, label = "Recovered model")
-
-# plt.ylim([0,(nz-1)*dh])
-
-# plt.title("Second order Tikhonov", fontsize = 18)
-# plt.ylabel("Depth [m]", fontsize=18)
-# plt.xlabel("P wave velocity [m/s]", fontsize = 15)
-
-# plt.legend(loc = "upper right")
-
-# plt.gca().invert_yaxis()
-
-plt.tight_layout()
-plt.show()
-
-# resBer = np.loadtxt("outputs/convergency/residuo_berriman.txt")
-# resTk0 = np.loadtxt("outputs/convergency/residuo_tk0.txt")
-# resTk1 = np.loadtxt("outputs/convergency/residuo_tk1.txt")
-# resTk2 = np.loadtxt("outputs/convergency/residuo_tk2.txt")
-
-# iteration = np.arange(6)
-
-# plt.figure(1, figsize=(5,8))
-
-# plt.plot(resBer, iteration, label = "Berriman")
-# plt.plot(resTk0, iteration, label = "0th order Tikhonov")
-# plt.plot(resTk1, iteration, label = "1st order Tikhonov")
-# plt.plot(resTk2, iteration, label = "2nd order Tikhonov")
-
-# plt.xlim([0, 5])
-# plt.xlim([60,140])
-
-# plt.title("Convergence curve", fontsize = 20)
-# plt.ylabel("Iteration number", fontsize=18)
-# plt.xlabel(r"Residuous norm $||d_{obs} - d_{cal}||_2^2$", fontsize = 18)
-
-# plt.legend(loc = "lower right", fontsize = 15)
-
-# plt.tight_layout()
-# plt.gca().invert_yaxis()
-# plt.show()
-
-
