@@ -14,22 +14,25 @@ private:
 
 public:
 
-    int ns;
-    int nt;
-    float dt;
-    float fcut;
-    float * source;
+    int nt;               //
+    float dt;             // 
+    float fcut;           //
+    float tlag;           //
 
-    float * U_pre;
-    float * U_pas;
+    float * U_pre;        //
+    float * U_pas;        //
 
-    float * factor;
-    float * prismDampX;
-    float * prismDampY;
-    float * prismDampZ;
-    float * cubeDamper;
+    float * source;       //
+    
+    float factor;         // 
+    float * damp1D;       //
+    float * damp2D;       //
+    float * damp3D;       //
 
+    /* */
     void sourceGenerator();
+    
+    
     void dampingGenerator();
     void acousticWaveSolver();
     void dampingApplicator();
