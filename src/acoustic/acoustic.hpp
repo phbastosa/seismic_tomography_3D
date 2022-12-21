@@ -15,13 +15,23 @@ private:
 public:
 
     int nt;               //
+    int nsrc;             //
+    int shotId;           //
+    int timeStep;         //
+
+    int sIdx;             // 
+    int sIdy;             //
+    int sIdz;             //
+
     float dt;             // 
     float fcut;           //
     float tlag;           //
 
-    float * U_pre;        //
+    float * V;            //
     float * U_pas;        //
-
+    float * U_pre;        //
+    float * U_fut;        //
+    
     float * source;       //
     
     float factor;         // 
@@ -32,14 +42,32 @@ public:
     /* */
     void sourceGenerator();
     
-    
+    /* */
     void dampingGenerator();
-    void acousticWaveSolver();
-    void dampingApplicator();
-    void wavefieldUpdate();
-    void getSeismogram();
-    void exportSeismogram();
+    
+    /* */
+    void setWaveField();
 
+    /* */
+    void progressMessage();
+
+    /* */
+    void forwardModeling();
+
+    /* */
+    void wavePropagation();
+
+    /* */
+    void dampApplication();
+    
+    /* */
+    void wavefieldUpdate();
+    
+    /* */
+    void buildSeismogram();
+    
+    /* */
+    void exportSeismogram();
 };
 
 # endif

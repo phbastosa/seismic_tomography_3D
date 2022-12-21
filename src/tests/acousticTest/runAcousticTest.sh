@@ -5,7 +5,7 @@ utils="../../essentials/utils.cpp"
 geometry="../../essentials/geometry.cpp"
 acoustic="../../acoustic/acoustic.cpp"
 
-flags="-fopenmp -fast -acc -ta=tesla,cc60 -std=c++11 -g -lm"
+flags="-acc -fast -ta=multicore -lm"
 
 pgc++ $utils $model $geometry $acoustic acousticTest.cpp $flags -o acousticTest.exe
 

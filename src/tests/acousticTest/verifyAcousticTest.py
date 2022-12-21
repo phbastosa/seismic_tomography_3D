@@ -5,13 +5,14 @@ def readBinaryArray(n, filename):
     return np.fromfile(filename, dtype = np.float32, count = n)
 
 #------------------------------------------------------------------------------------
-nt = 1001
 dt = 1e-3
 tlag = 0.15
 
-t = np.arange(nt)*dt - tlag
+nt = int(2.0 * tlag / dt + 1)
 
-source = readBinaryArray(nt, "outputs/source_Nt1001.bin")
+t = np.arange(nt)*dt
+
+source = readBinaryArray(nt, f"outputs/source_Nt{nt}.bin")
 
 sourceFFT = np.fft.fft(source)
 f = np.fft.fftfreq(nt, dt) 
@@ -71,7 +72,13 @@ plt.imshow(damp3D[:,int(6*nb/8),:])
 plt.subplot(339)
 plt.imshow(damp3D[:,:,int(6*nb/8)])
 
-
 plt.show()
 
 
+sx, sy, sz = np.loadtxt("outputs/shotsPosition.txt", delimiter = ",", unpack = True)
+rx, ry, rz = np.loadtxt("outputs/nodesPosition.txt", delimiter = ",", unpack = True)
+
+plt.figure(4)
+plt.scatter(rx,ry)
+plt.scatter(sx,sy)
+plt.show()
