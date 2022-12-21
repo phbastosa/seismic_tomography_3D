@@ -12,7 +12,7 @@ int main(int argc, char**argv)
  
     // Testing source 
 
-    acoustic.nt = 1001;
+    acoustic.nt = 701;
     acoustic.dt = 0.001f;
     acoustic.fcut = 30.0f;
     acoustic.tlag = 0.15f;

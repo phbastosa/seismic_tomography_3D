@@ -98,9 +98,8 @@ void Acoustic::forwardModeling()
         for (timeStep = 0; timeStep < nt; timeStep++)
         {
             progressMessage();
-            
             wavePropagation();
-            // dampApplication();
+            dampApplication();
             wavefieldUpdate();
             // buildSeismogram();
         }
@@ -155,10 +154,117 @@ void Acoustic::wavePropagation()
 
 void Acoustic::dampApplication()
 {
+    for (int index = 0; index < nPointsB; index++) 
+    {
+        int k = (int) (index / (nxx*nzz));         // y direction
+        int j = (int) (index - k*nxx*nzz) / nzz;   // x direction
+        int i = (int) (index - j*nzz - k*nxx*nzz); // z direction
 
+        // Damping 1D ------------------------------------------------------------------------
 
+        if((i >= 0) && (i < nb) && (j >= nb) && (j < nxx-nb) && (k >= nb) && (k < nyy-nb)) 
+        {    
+            U_pre[i + j*nzz + k*nxx*nzz] *= damp1D[i];
+            U_fut[i + j*nzz + k*nxx*nzz] *= damp1D[i];            
+
+            U_pre[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp1D[i];
+            U_fut[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp1D[i];            
+        }
+
+        if((i >= nb) && (i < nzz-nb) && (j >= 0) && (j < nb) && (k >= nb) && (k < nyy-nb)) 
+        {
+            U_pre[i + j*nzz + k*nxx*nzz] *= damp1D[j];
+            U_fut[i + j*nzz + k*nxx*nzz] *= damp1D[j];            
+
+            U_pre[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp1D[j];
+            U_fut[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp1D[j];            
+        }
+
+        if((i >= nb) && (i < nzz-nb) && (j >= nb) && (j < nxx-nb) && (k >= 0) && (k < nb)) 
+        {
+            U_pre[i + j*nzz + k*nxx*nzz] *= damp1D[k];
+            U_fut[i + j*nzz + k*nxx*nzz] *= damp1D[k];            
+
+            U_pre[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp1D[k];
+            U_fut[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp1D[k];            
+        }
+
+        // Damping 2D ------------------------------------------------------------------------
+
+        if((i >= nb) && (i < nzz-nb) && (j >= 0) && (j < nb) && (k >= 0) && (k < nb))
+        {
+            U_pre[i + j*nzz + k*nxx*nzz] *= damp2D[j + k*nb];
+            U_fut[i + j*nzz + k*nxx*nzz] *= damp2D[j + k*nb];            
+
+            U_pre[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[(nb-j-1) + k*nb];
+            U_fut[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[(nb-j-1) + k*nb];            
+
+            U_pre[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[j + (nb-k-1)*nb];
+            U_fut[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[j + (nb-k-1)*nb];            
+
+            U_pre[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[(nb-j-1) + (nb-k-1)*nb];
+            U_fut[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[(nb-j-1) + (nb-k-1)*nb];            
+        }
+
+        if((i >= 0) && (i < nb) && (j >= nb) && (j < nxx-nb) && (k >= 0) && (k < nb))
+        {
+            U_pre[i + j*nzz + k*nxx*nzz] *= damp2D[i + k*nb];
+            U_fut[i + j*nzz + k*nxx*nzz] *= damp2D[i + k*nb];            
+
+            U_pre[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + k*nb];
+            U_fut[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + k*nb];            
+
+            U_pre[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[i + (nb-k-1)*nb];
+            U_fut[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[i + (nb-k-1)*nb];            
+
+            U_pre[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[(nb-i-1) + (nb-k-1)*nb];
+            U_fut[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[(nb-i-1) + (nb-k-1)*nb];            
+        }
+
+        if((i >= 0) && (i < nb) && (j >= 0) && (j < nb) && (k >= nb) && (k < nyy-nb))
+        {
+            U_pre[i + j*nzz + k*nxx*nzz] *= damp2D[i + j*nb];
+            U_fut[i + j*nzz + k*nxx*nzz] *= damp2D[i + j*nb];            
+
+            U_pre[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + j*nb];
+            U_fut[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + j*nb];            
+
+            U_pre[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[i + (nb-j-1)*nb];
+            U_fut[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[i + (nb-j-1)*nb];            
+
+            U_pre[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + (nb-j-1)*nb];
+            U_fut[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + (nb-j-1)*nb];            
+        }
+
+        // Damping 3D ------------------------------------------------------------------------
+        if((i >= 0) && (i < nb) && (j >= 0) && (j < nb) && (k >= 0) && (k < nb))
+        {
+            U_pre[i + j*nzz + k*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
+            U_fut[i + j*nzz + k*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
+
+            U_pre[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp3D[(nb-i-1) + j*nb + k*nb*nb];
+            U_fut[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp3D[(nb-i-1) + j*nb + k*nb*nb];
+
+            U_pre[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[i + (nb-j-1)*nb + k*nb*nb];
+            U_fut[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[i + (nb-j-1)*nb + k*nb*nb];
+
+            U_pre[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + (nb-k-1)*nb*nb];
+            U_fut[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + (nb-k-1)*nb*nb];
+
+            U_pre[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[(nb-i-1) + (nb-j-1)*nb + k*nb*nb];
+            U_fut[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[(nb-i-1) + (nb-j-1)*nb + k*nb*nb];
+
+            U_pre[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[(nb-i-1) + j*nb + (nb-k-1)*nb*nb];
+            U_fut[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[(nb-i-1) + j*nb + (nb-k-1)*nb*nb];
+
+            U_pre[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + (nb-j-1)*nb + (nb-k-1)*nb*nb];
+            U_fut[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + (nb-j-1)*nb + (nb-k-1)*nb*nb];
+
+            U_pre[(nzz-i-1) + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[(nb-i-1) + (nb-j-1)*nb + (nb-k-1)*nb*nb];
+            U_fut[(nzz-i-1) + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[(nb-i-1) + (nb-j-1)*nb + (nb-k-1)*nb*nb];
+        }
+    }
 }
-
 
 void Acoustic::wavefieldUpdate()
 {
