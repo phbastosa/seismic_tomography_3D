@@ -84,19 +84,23 @@ void Acoustic::forwardModeling()
 
     for (shotId = 0; shotId < shots.all; shotId++)
     {
-        sIdx = (int) (shots.x[shotId]/dx + nb);    
-        sIdy = (int) (shots.y[shotId]/dy + nb);    
-        sIdz = (int) (shots.z[shotId]/dz + nb);    
+        shots.idx = (int)(shots.x[shotId] / dx) + nb;
+        shots.idy = (int)(shots.y[shotId] / dy) + nb;
+        shots.idz = (int)(shots.z[shotId] / dz) + nb;
 
         setWaveField();
 
         # pragma acc enter data copyin(this[0:1], V[0:nPointsB])
         # pragma acc enter data copyin(this[0:1], source[0:nsrc])
+        # pragma acc enter data copyin(this[0:1], damp1D[0:nb])
+        # pragma acc enter data copyin(this[0:1], damp2D[0:nb*nb])
+        # pragma acc enter data copyin(this[0:1], damp3D[0:nb*nb*nb])
         # pragma acc enter data copyin(this[0:1], U_pas[0:nPointsB])
         # pragma acc enter data copyin(this[0:1], U_pre[0:nPointsB])
         # pragma acc enter data copyin(this[0:1], U_fut[0:nPointsB])
         for (timeStep = 0; timeStep < nt; timeStep++)
         {
+            applyWavelet();
             progressMessage();
             wavePropagation();
             dampApplication();
@@ -105,6 +109,9 @@ void Acoustic::forwardModeling()
         }
         # pragma acc exit data delete(V[0:nPointsB], this[0:1])
         # pragma acc exit data delete(source[0:nsrc], this[0:1])
+        # pragma acc exit data delete(damp1D[0:nb], this[0:1])
+        # pragma acc exit data delete(damp2D[0:nb*nb], this[0:1])
+        # pragma acc exit data delete(damp3D[0:nb*nb*nb], this[0:1])
         # pragma acc exit data delete(U_pas[0:nPointsB], this[0:1])
         # pragma acc exit data delete(U_pre[0:nPointsB], this[0:1])
         # pragma acc exit data copyout(U_fut[0:nPointsB], this[0:1])
@@ -115,17 +122,25 @@ void Acoustic::forwardModeling()
     }
 }
 
+void Acoustic::applyWavelet()
+{
+    int sId = shots.idz + shots.idx*nzz + shots.idy*nxx*nzz; 
+
+    # pragma acc kernels present(U_pre[0:nPointsB], source[0:nsrc])
+    {
+        if (timeStep < nsrc) 
+            U_pre[sId] += source[timeStep] / (dx * dy * dz);
+    }        
+}
+
 void Acoustic::wavePropagation()
 {
-    # pragma acc parallel loop present(source[0:nsrc], V[0:nPointsB], U_pas[0:nPointsB], U_pre[0:nPointsB], U_fut[0:nPointsB])
+    # pragma acc parallel loop present(V[0:nPointsB], U_pas[0:nPointsB], U_pre[0:nPointsB], U_fut[0:nPointsB])
     for (int index = 0; index < nPointsB; index++) 
     {
         int k = (int) (index / (nxx*nzz));         // y direction
         int j = (int) (index - k*nxx*nzz) / nzz;   // x direction
         int i = (int) (index - j*nzz - k*nxx*nzz); // z direction
-        
-        if ((index == 0) && (timeStep < nsrc)) 
-            U_pre[sIdz + sIdx*nzz + sIdy*nxx*nzz] += source[timeStep] / (dx * dy * dz);
 
         if((i > 3) && (i < nzz-4) && (j > 3) && (j < nxx-4) && (k > 3) && (k < nyy-4)) 
         {
@@ -154,6 +169,7 @@ void Acoustic::wavePropagation()
 
 void Acoustic::dampApplication()
 {
+    # pragma acc parallel loop present(U_pre[0:nPointsB], U_fut[0:nPointsB], damp1D[0:nb], damp2D[0:nb*nb], damp3D[0:nb*nb*nb])
     for (int index = 0; index < nPointsB; index++) 
     {
         int k = (int) (index / (nxx*nzz));         // y direction
@@ -196,14 +212,14 @@ void Acoustic::dampApplication()
             U_pre[i + j*nzz + k*nxx*nzz] *= damp2D[j + k*nb];
             U_fut[i + j*nzz + k*nxx*nzz] *= damp2D[j + k*nb];            
 
-            U_pre[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[(nb-j-1) + k*nb];
-            U_fut[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[(nb-j-1) + k*nb];            
+            U_pre[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[j + k*nb];
+            U_fut[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[j + k*nb];            
 
-            U_pre[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[j + (nb-k-1)*nb];
-            U_fut[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[j + (nb-k-1)*nb];            
+            U_pre[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[j + k*nb];
+            U_fut[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[j + k*nb];            
 
-            U_pre[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[(nb-j-1) + (nb-k-1)*nb];
-            U_fut[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[(nb-j-1) + (nb-k-1)*nb];            
+            U_pre[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[j + k*nb];
+            U_fut[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[j + k*nb];            
         }
 
         if((i >= 0) && (i < nb) && (j >= nb) && (j < nxx-nb) && (k >= 0) && (k < nb))
@@ -211,14 +227,14 @@ void Acoustic::dampApplication()
             U_pre[i + j*nzz + k*nxx*nzz] *= damp2D[i + k*nb];
             U_fut[i + j*nzz + k*nxx*nzz] *= damp2D[i + k*nb];            
 
-            U_pre[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + k*nb];
-            U_fut[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + k*nb];            
+            U_pre[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[i + k*nb];
+            U_fut[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[i + k*nb];            
 
-            U_pre[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[i + (nb-k-1)*nb];
-            U_fut[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[i + (nb-k-1)*nb];            
+            U_pre[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[i + k*nb];
+            U_fut[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[i + k*nb];            
 
-            U_pre[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[(nb-i-1) + (nb-k-1)*nb];
-            U_fut[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[(nb-i-1) + (nb-k-1)*nb];            
+            U_pre[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[i + k*nb];
+            U_fut[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp2D[i + k*nb];            
         }
 
         if((i >= 0) && (i < nb) && (j >= 0) && (j < nb) && (k >= nb) && (k < nyy-nb))
@@ -226,14 +242,14 @@ void Acoustic::dampApplication()
             U_pre[i + j*nzz + k*nxx*nzz] *= damp2D[i + j*nb];
             U_fut[i + j*nzz + k*nxx*nzz] *= damp2D[i + j*nb];            
 
-            U_pre[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + j*nb];
-            U_fut[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + j*nb];            
+            U_pre[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[i + j*nb];
+            U_fut[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp2D[i + j*nb];            
 
-            U_pre[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[i + (nb-j-1)*nb];
-            U_fut[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[i + (nb-j-1)*nb];            
+            U_pre[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[i + j*nb];
+            U_fut[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[i + j*nb];            
 
-            U_pre[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + (nb-j-1)*nb];
-            U_fut[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[(nb-i-1) + (nb-j-1)*nb];            
+            U_pre[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[i + j*nb];
+            U_fut[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp2D[i + j*nb];            
         }
 
         // Damping 3D ------------------------------------------------------------------------
@@ -242,26 +258,26 @@ void Acoustic::dampApplication()
             U_pre[i + j*nzz + k*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
             U_fut[i + j*nzz + k*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
 
-            U_pre[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp3D[(nb-i-1) + j*nb + k*nb*nb];
-            U_fut[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp3D[(nb-i-1) + j*nb + k*nb*nb];
+            U_pre[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
+            U_fut[(nzz-i-1) + j*nzz + k*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
 
-            U_pre[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[i + (nb-j-1)*nb + k*nb*nb];
-            U_fut[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[i + (nb-j-1)*nb + k*nb*nb];
+            U_pre[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
+            U_fut[i + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
 
-            U_pre[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + (nb-k-1)*nb*nb];
-            U_fut[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + (nb-k-1)*nb*nb];
+            U_pre[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
+            U_fut[i + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
 
-            U_pre[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[(nb-i-1) + (nb-j-1)*nb + k*nb*nb];
-            U_fut[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[(nb-i-1) + (nb-j-1)*nb + k*nb*nb];
+            U_pre[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
+            U_fut[(nzz-i-1) + (nxx-j-1)*nzz + k*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
 
-            U_pre[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[(nb-i-1) + j*nb + (nb-k-1)*nb*nb];
-            U_fut[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[(nb-i-1) + j*nb + (nb-k-1)*nb*nb];
+            U_pre[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
+            U_fut[(nzz-i-1) + j*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
 
-            U_pre[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + (nb-j-1)*nb + (nb-k-1)*nb*nb];
-            U_fut[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + (nb-j-1)*nb + (nb-k-1)*nb*nb];
+            U_pre[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
+            U_fut[i + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
 
-            U_pre[(nzz-i-1) + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[(nb-i-1) + (nb-j-1)*nb + (nb-k-1)*nb*nb];
-            U_fut[(nzz-i-1) + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[(nb-i-1) + (nb-j-1)*nb + (nb-k-1)*nb*nb];
+            U_pre[(nzz-i-1) + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
+            U_fut[(nzz-i-1) + (nxx-j-1)*nzz + (nyy-k-1)*nxx*nzz] *= damp3D[i + j*nb + k*nb*nb];
         }
     }
 }

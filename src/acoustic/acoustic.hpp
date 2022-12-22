@@ -19,10 +19,6 @@ public:
     int shotId;           //
     int timeStep;         //
 
-    int sIdx;             // 
-    int sIdy;             //
-    int sIdz;             //
-
     float dt;             // 
     float fcut;           //
     float tlag;           //
@@ -53,6 +49,9 @@ public:
 
     /* */
     void forwardModeling();
+
+    /* */
+    void applyWavelet();
 
     /* */
     void wavePropagation();
