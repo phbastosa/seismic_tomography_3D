@@ -5,7 +5,7 @@ utils="../../essentials/utils.cpp"
 geometry="../../essentials/geometry.cpp"
 acoustic="../../acoustic/acoustic.cpp"
 
-flags="-acc -fast -ta=multicore -lm"
+flags=" -ta=multicore -lm"
 
 pgc++ $utils $model $geometry $acoustic acousticTest.cpp $flags -o acousticTest.exe
 
@@ -13,4 +13,4 @@ pgc++ $utils $model $geometry $acoustic acousticTest.cpp $flags -o acousticTest.
 
 rm *.o *.exe
 
-python3 verifyAcousticTest.py 
+# python3 verifyAcousticTest.py 

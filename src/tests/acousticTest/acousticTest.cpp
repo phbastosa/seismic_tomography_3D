@@ -24,7 +24,7 @@ int main(int argc, char**argv)
     // Testing Cerjan factor attenuation
 
     acoustic.nb = 50;
-    acoustic.factor = 0.0045;
+    acoustic.factor = 0.0065;
 
     acoustic.dampingGenerator();
 
