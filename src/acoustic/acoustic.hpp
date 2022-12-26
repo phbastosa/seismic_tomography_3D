@@ -13,27 +13,35 @@ private:
     
 
 public:
+ 
+    int nt;                //
+    int nsrc;              //
+    int shotId;            //
+    int timeStep;          //
 
-    int nt;               //
-    int nsrc;             //
-    int shotId;           //
-    int timeStep;         //
+    float dt;              // 
+    float fmax;            //
+    float tlag;            //
 
-    float dt;             // 
-    float fcut;           //
-    float tlag;           //
-
-    float * V;            //
-    float * U_pas;        //
-    float * U_pre;        //
-    float * U_fut;        //
+    float * V;             //
+    float * U_pas;         //
+    float * U_pre;         //
+    float * U_fut;         //
     
-    float * source;       //
+    float * source;        //
     
-    float factor;         // 
-    float * damp1D;       //
-    float * damp2D;       //
-    float * damp3D;       //
+    float factor;          // 
+    float * damp1D;        //
+    float * damp2D;        //
+    float * damp3D;        //
+
+    float * seismogram;    //
+
+    std::string seisLabel; // 
+    std::string paramFile; //
+
+    /* */
+    void setParameters();
 
     /* */
     void sourceGenerator();

@@ -12,7 +12,7 @@ python3 generateTomoModels.py
 
 pgc++ $utils $model $geometry $eikonal $tomography tomographyTest.cpp $flags -o tomographyTest.exe
 
-./tomographyTest.exe outputs/parametersTest.txt
+./tomographyTest.exe parametersTest.txt
 
 python3 verifyTomographyTest.py
 

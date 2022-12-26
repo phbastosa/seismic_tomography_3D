@@ -3,6 +3,96 @@
 
 # include "acoustic.hpp"
 
+void Acoustic::setParameters()
+{
+    /* Importing time domain paramFile */
+
+    nt = std::stoi(catchParameter("nt", paramFile));    
+    dt = std::stof(catchParameter("dt", paramFile));
+    tlag = std::stof(catchParameter("tlag", paramFile));
+    fmax = std::stof(catchParameter("fmax", paramFile));
+
+    seisLabel = catchParameter("seisLabel", paramFile);
+
+    /* Importing model paramFile */
+
+    nx = std::stoi(catchParameter("nx", paramFile));
+    ny = std::stoi(catchParameter("ny", paramFile));
+    nz = std::stoi(catchParameter("nz", paramFile));
+
+    dx = std::stof(catchParameter("dx", paramFile));
+    dy = std::stof(catchParameter("dy", paramFile));
+    dz = std::stof(catchParameter("dz", paramFile));
+
+    nb = std::stoi(catchParameter("nb", paramFile));
+    
+    factor = std::stof(catchParameter("factor", paramFile));
+
+    initialize();
+    sourceGenerator();
+    dampingGenerator();
+
+    /* Importing geometry paramFile */
+
+    reciprocity = str2bool(catchParameter("reciprocity", paramFile));
+    saveGeometry = str2bool(catchParameter("saveGeometry", paramFile));
+
+    shots.elevation = std::stof(catchParameter("shotsElevation", paramFile));
+    nodes.elevation = std::stof(catchParameter("nodesElevation", paramFile));
+
+    std::vector<std::string> splitted;
+
+    /* Setting nodes position */
+
+    shots.n_xline = std::stoi(catchParameter("xShotNumber", paramFile));
+    shots.n_yline = std::stoi(catchParameter("yShotNumber", paramFile));
+    
+    splitted = split(catchParameter("shotSW", paramFile),',');
+    set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    splitted = split(catchParameter("shotNW", paramFile),',');
+    set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    splitted = split(catchParameter("shotSE", paramFile),',');
+    set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    setGridGeometry(shots);
+
+    /* Setting nodes position */
+
+    nodes.n_xline = std::stoi(catchParameter("xNodeNumber", paramFile));
+    nodes.n_yline = std::stoi(catchParameter("yNodeNumber", paramFile));
+    
+    splitted = split(catchParameter("nodeSW", paramFile),',');
+    set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    splitted = split(catchParameter("nodeNW", paramFile),',');
+    set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    splitted = split(catchParameter("nodeSE", paramFile),',');
+    set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    setGridGeometry(nodes);
+
+    shotsPath = catchParameter("shotsPath", paramFile);
+    nodesPath = catchParameter("nodesPath", paramFile);
+
+    if (reciprocity) setReciprocity();
+    if (saveGeometry) exportPositions();
+
+    std::vector<std::string>().swap(splitted);
+
+    /* Importing model and set wavefield volumes */
+
+    V = expand(readBinaryFloat(catchParameter("modelPath", paramFile), nPoints));    
+
+    U_pas = new float[nPointsB]();
+    U_pre = new float[nPointsB]();
+    U_fut = new float[nPointsB]();
+    
+    seismogram = new float[nt*nodes.all]();
+}
+
 void Acoustic::sourceGenerator()
 {
     nsrc = (int) (2.0f * tlag / dt + 1);
@@ -10,13 +100,13 @@ void Acoustic::sourceGenerator()
     source = new float[nsrc]();
 
     float pi = 4.0f * atanf(1.0f);
-    float fc = fcut / (3.0f * sqrtf(pi));
+    float fc = fmax / (3.0f * sqrtf(pi));
 
     int s = (int) (nsrc / 2);
 
     for (int t = -s; t < s; t++)
     {
-        float aux1 = 1.0f - 2.0f * pi * powf(t*dt, 2.0f) * powf(fc, 2.0f) * pow(pi, 2.0f);
+        float aux1 = 1.0f - 2.0f * pi * powf(t*dt, 2.0f) * powf(fc, 2.0f) * powf(pi, 2.0f);
         float aux2 = expf(-pi * powf(t*dt, 2.0f)*powf(fc, 2.0f)*powf(pi, 2.0f));
 
         source[t + s] = aux1 * aux2;
@@ -78,10 +168,6 @@ void Acoustic::setWaveField()
 
 void Acoustic::forwardModeling()
 {
-    U_pas = new float[nPointsB]();
-    U_pre = new float[nPointsB]();
-    U_fut = new float[nPointsB]();
-
     for (shotId = 0; shotId < shots.all; shotId++)
     {
         shots.idx = (int)(shots.x[shotId] / dx) + nb;
@@ -98,6 +184,7 @@ void Acoustic::forwardModeling()
         # pragma acc enter data copyin(this[0:1], U_pas[0:nPointsB])
         # pragma acc enter data copyin(this[0:1], U_pre[0:nPointsB])
         # pragma acc enter data copyin(this[0:1], U_fut[0:nPointsB])
+        # pragma acc enter data copyin(this[0:1], seismogram[0:nt*nodes.all])
         for (timeStep = 0; timeStep < nt; timeStep++)
         {
             applyWavelet();
@@ -105,7 +192,7 @@ void Acoustic::forwardModeling()
             wavePropagation();
             dampApplication();
             wavefieldUpdate();
-            // buildSeismogram();
+            buildSeismogram();
         }
         # pragma acc exit data delete(V[0:nPointsB], this[0:1])
         # pragma acc exit data delete(source[0:nsrc], this[0:1])
@@ -114,11 +201,10 @@ void Acoustic::forwardModeling()
         # pragma acc exit data delete(damp3D[0:nb*nb*nb], this[0:1])
         # pragma acc exit data delete(U_pas[0:nPointsB], this[0:1])
         # pragma acc exit data delete(U_pre[0:nPointsB], this[0:1])
-        # pragma acc exit data copyout(U_fut[0:nPointsB], this[0:1])
+        # pragma acc exit data delete(U_fut[0:nPointsB], this[0:1])
+        # pragma acc exit data copyout(seismogram[0:nt*nodes.all], this[0:1])
     
-        writeBinaryFloat("outputs/waveFiels3D.bin", U_fut, nPointsB);
-
-        // exportSeismogram();
+        exportSeismogram();
     }
 }
 
@@ -294,14 +380,21 @@ void Acoustic::wavefieldUpdate()
 
 void Acoustic::buildSeismogram()
 {
+    for (int receiver = 0; receiver < nodes.all; receiver++)
+    {
+        nodes.idx = (int)(nodes.x[receiver] / dx) + nb;
+        nodes.idy = (int)(nodes.y[receiver] / dy) + nb;
+        nodes.idz = (int)(nodes.z[receiver] / dz) + nb;
 
+        int index = nodes.idz + nodes.idx*nzz + nodes.idy*nxx*nzz;
 
+        seismogram[timeStep*nodes.all + receiver] = U_fut[index];
+    } 
 }
 
 void Acoustic::exportSeismogram()
 {
-
-
+    writeBinaryFloat("seismogram.bin", seismogram, nt * nodes.all);
 }
 
 void Acoustic::progressMessage()

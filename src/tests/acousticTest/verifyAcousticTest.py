@@ -75,8 +75,8 @@ plt.imshow(damp3D[:,:,int(6*nb/8)])
 plt.show()
 
 
-sx, sy, sz = np.loadtxt("outputs/shotsPosition.txt", delimiter = ",", unpack = True)
-rx, ry, rz = np.loadtxt("outputs/nodesPosition.txt", delimiter = ",", unpack = True)
+sx, sy, sz = np.loadtxt("outputs/shots.txt", delimiter = ",", unpack = True)
+rx, ry, rz = np.loadtxt("outputs/nodes.txt", delimiter = ",", unpack = True)
 
 plt.figure(4)
 plt.scatter(rx,ry)
