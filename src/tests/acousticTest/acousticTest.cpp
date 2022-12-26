@@ -25,8 +25,8 @@ int main(int argc, char **argv)
     acoustic.writeBinaryFloat("outputs/damp3D_" + std::to_string(acoustic.nb*acoustic.nb*acoustic.nb) + "_samples.bin", acoustic.damp3D, acoustic.nb*acoustic.nb*acoustic.nb);
         
     // Preparing shots loop
-
-    // acoustic.forwardModeling();
+    
+    acoustic.forwardModeling();
 
     auto end = std::chrono::steady_clock::now();
 

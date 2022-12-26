@@ -109,7 +109,7 @@ void Acoustic::sourceGenerator()
         float aux1 = 1.0f - 2.0f * pi * powf(t*dt, 2.0f) * powf(fc, 2.0f) * powf(pi, 2.0f);
         float aux2 = expf(-pi * powf(t*dt, 2.0f)*powf(fc, 2.0f)*powf(pi, 2.0f));
 
-        source[t + s] = aux1 * aux2;
+        source[t + s] = 1e5 * aux1 * aux2;
     }
 }
 
@@ -388,13 +388,13 @@ void Acoustic::buildSeismogram()
 
         int index = nodes.idz + nodes.idx*nzz + nodes.idy*nxx*nzz;
 
-        seismogram[timeStep*nodes.all + receiver] = U_fut[index];
+        seismogram[timeStep + receiver*nt] = U_fut[index];
     } 
 }
 
 void Acoustic::exportSeismogram()
 {
-    writeBinaryFloat("seismogram.bin", seismogram, nt * nodes.all);
+    writeBinaryFloat(seisLabel + "_shot_" + std::to_string(shotId+1) + ".bin", seismogram, nt * nodes.all);
 }
 
 void Acoustic::progressMessage()
@@ -402,7 +402,7 @@ void Acoustic::progressMessage()
     if (timeStep % (nt/5) == 0)
     {    
         system("clear");
-        std::cout<<"Running shot "<<shotId+1<<" at position: (z = "<<shots.z[shotId]<<", x = "<<shots.x[shotId]<<", y = "<<shots.z[shotId]<<")"<<std::endl;
+        std::cout<<"Running shot "<<shotId+1<<" at position: (z = "<<shots.z[shotId]<<", x = "<<shots.x[shotId]<<", y = "<<shots.y[shotId]<<")"<<std::endl;
         std::cout<<"Time step: "<<timeStep*dt<<std::endl;
     }
 }

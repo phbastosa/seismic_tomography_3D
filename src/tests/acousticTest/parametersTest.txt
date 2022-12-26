@@ -52,4 +52,4 @@ nodeSE = [625, 625]                  # SW -- SE   (x, y) [m] <float>
 xNodeNumber = 1                      # Number of receivers in x direction
 yNodeNumber = 1                      # Number of receivers in y direction
 
-nodesElevation = 200                 # Receivers elevation [m] <float>
+nodesElevation = 25                 # Receivers elevation [m] <float>
