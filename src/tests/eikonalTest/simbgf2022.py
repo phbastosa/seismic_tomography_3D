@@ -169,6 +169,7 @@ else:
 
     plt.tight_layout()    
     plt.savefig("modelGeometry.png", dpi=200, bbox_inches="tight")
+    plt.show(block = False)
 
     #-----------------------------------------------------------------------------------------
     sId = np.array([1,3,2,4,5], dtype=int)
@@ -267,4 +268,4 @@ else:
         plt.tight_layout()
         plt.savefig(f"shot{sId[s]}.png", dpi=200, bbox_inches="tight")
     
-    plt.show()    
+    plt.show(block = False) 

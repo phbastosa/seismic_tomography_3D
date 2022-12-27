@@ -57,8 +57,8 @@ int main(int argc, char **argv)
     int n = 3;
     double t0;
 
-    eikonal.exportTimesVolume = true;
-    eikonal.exportFirstArrivals = true;
+    eikonal.exportTimesVolume = false;
+    eikonal.exportFirstArrivals = false;
 
     std::vector <std::string> labels {"pod_", "fim_", "fsm_"};
 

@@ -32,3 +32,6 @@ do
 done
 
 python3 simbgf2022.py 0
+
+rm outputs/*.bin
+rm outputs/*.txt
