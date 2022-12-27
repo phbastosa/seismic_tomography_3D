@@ -30,4 +30,5 @@ for i in range(len(axs)):
         ind += 1
 
 plt.tight_layout()
-plt.show()
+plt.savefig("allGeometries.png", dpi = 200)
+plt.show(block = False)
