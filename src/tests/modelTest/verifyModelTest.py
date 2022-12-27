@@ -124,7 +124,9 @@ zySlice = int(nx/2)
 zxSlice = int(ny/2)
 
 boxPlot(expandedModel, dx, dy, dz, xySlice, zySlice, zxSlice)
-plt.show()
+plt.savefig("expandedModel.png", dpi = 200)
+plt.show(block=False)
 
 boxPlot(reducedModel, dx, dy, dz, xySlice, zySlice, zxSlice)
-plt.show()
+plt.savefig("reducedModel.png", dpi = 200)
+plt.show(block=False)

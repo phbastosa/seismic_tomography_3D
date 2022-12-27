@@ -9,3 +9,5 @@ pgc++ $utils $model modelTest.cpp $flags -o modelTest.exe
 rm *.o *.exe
 
 python3 verifyModelTest.py
+
+rm outputs/*.bin
