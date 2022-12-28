@@ -1,7 +1,6 @@
 # include <chrono>
 # include <iostream>
 
-# include "../../essentials/utils.hpp"
 # include "../../acoustic/acoustic.hpp"
 
 int main(int argc, char **argv)
