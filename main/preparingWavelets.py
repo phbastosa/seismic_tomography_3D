@@ -203,8 +203,8 @@ mRicker = fourierInterpolation(rickerReconst, dt, new_dt)
 
 new_ns = len(zRicker)
 
-zRicker.astype("float32", order = "F").tofile(f"../inputs/wavelets/sourceZeroPhase_{new_ns}_{fmax:.0f}Hz.bin")
-mRicker.astype("float32", order = "F").tofile(f"../inputs/wavelets/sourceMinPhase_{new_ns}_{fmax:.0f}Hz.bin")
+zRicker.astype("float32", order = "F").tofile(f"../inputs/wavelets/sourceZeroPhase_{new_ns}_{fmax:.0f}Hz_{new_dt*1000:.0f}ms.bin")
+mRicker.astype("float32", order = "F").tofile(f"../inputs/wavelets/sourceMinPhase_{new_ns}_{fmax:.0f}Hz_{new_dt*1000:.0f}ms.bin")
 
 new_ns += 3000
 
