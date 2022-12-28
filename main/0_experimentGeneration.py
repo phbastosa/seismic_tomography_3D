@@ -438,6 +438,9 @@ models = np.zeros((2,nz,nx,ny))
 models[0,:,:,:] = model
 models[1,:,:,:] = initModel
 
+initModel.flatten("F").astype("float32", order = "F").tofile(f"../inputs/models/initModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
+model.flatten("F").astype("float32", order = "F").tofile(f"../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
+
 dh = np.array([dz, dx, dy])
 slices = np.array([int(nz / 2), int(ny / 2), int(nx / 2)], dtype = int) # [xy, zx, zy]
 subplots = np.array([1, 2], dtype = int)
