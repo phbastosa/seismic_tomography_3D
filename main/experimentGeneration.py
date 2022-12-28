@@ -8,10 +8,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 #-------------------------------------------------------------------------------------------
 
 def buildModel3D(nx,ny,nz,property,z):
-    '''
-
-
-    '''
 
     model = np.zeros((nz,nx,ny), dtype=float)
 
@@ -26,9 +22,6 @@ def buildModel3D(nx,ny,nz,property,z):
     return model
 
 def createGaussianSurface(nx,ny,dx,dy,A,xc,yc,sigx,sigy):
-    '''
-
-    '''
 
     x, y = np.meshgrid(np.arange(nx)*dx, np.arange(ny)*dy)
 
@@ -37,6 +30,7 @@ def createGaussianSurface(nx,ny,dx,dy,A,xc,yc,sigx,sigy):
     return surface
 
 def analiticalRefraction(v,z,x):
+
     t_direct = x/v[0]
     
     t_refrac = np.zeros((len(z),len(x)))
