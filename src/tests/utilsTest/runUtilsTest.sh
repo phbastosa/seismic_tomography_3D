@@ -1,10 +1,13 @@
-utils="../../essentials/utils.cpp"
+#!/bin/bash
+
 flags="-fopenmp -fast -acc -ta=tesla,cc60 -std=c++11 -g -lm"
 
-pgc++ $utils utilsTest.cpp $flags -o utilsTest.exe
+pgc++ utilsTest.cpp $flags -o utilsTest.exe
 
 ./utilsTest.exe
 
-rm *.o *.exe
+rm *.exe
 
 python3 verifyUtilsTest.py
+
+rm outputs/*.bin
