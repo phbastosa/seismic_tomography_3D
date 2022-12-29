@@ -6,49 +6,49 @@
 
 int main(int argc, char**argv)
 {
-    auto model = Model();
-    auto utils = Utils();
 
-    model.nb = 10;
+    int nb = 10;
 
-    model.nx = 201;
-    model.ny = 201;
-    model.nz = 51;
+    int nx = 201;
+    int ny = 201;
+    int nz = 51;
+    
+    float dx = 25.0f;
+    float dy = 25.0f;
+    float dz = 25.0f;
 
-    model.initialize();
+    float * Vp = new float[nx*ny*nz]();
 
-    model.dx = 25.0f;
-    model.dy = 25.0f;
-    model.dz = 25.0f;
-
-    float * Vp = new float[model.nPoints]();
-
-    for (int i = 0; i < model.nz; i++)
+    for (int i = 0; i < nz; i++)
     {
-        for (int j = 0; j < model.nx; j++)
+        for (int j = 0; j < nx; j++)
         {
-            for (int k = 0; k < model.ny; k++)
+            for (int k = 0; k < ny; k++)
             {
-                Vp[i + j*model.nz + k*model.nx*model.nz] = 1500 + 0.6*i*model.dz + 0.2*j*model.dx + 0.1*k*model.dy; 
+                Vp[i + j*nz + k*nx*nz] = 1500 + 0.6*i*dz + 0.2*j*dx + 0.1*k*dy; 
             }
         }
     }
 
-    std::cout<<"Expanding velocity model dimensions to (z = "<<model.nzz<<", x = "<<model.nxx<<", y = "<<model.nyy<<") samples"<<std::endl;
+    int nxx = nx + 2*nb;
+    int nyy = ny + 2*nb;
+    int nzz = nz + 2*nb;
 
-    float * fullVp = model.expand(Vp);
+    std::cout<<"Expanding velocity model dimensions to (z = "<<nzz<<", x = "<<nxx<<", y = "<<nyy<<") samples"<<std::endl;
+
+    float * fullVp = expandModel(Vp, nx, ny, nz, nb);
 
     std::cout<<"Writing the expanded velocity model"<<std::endl;
 
-    utils.writeBinaryFloat("outputs/expandedModel.bin", fullVp, model.nPointsB);
+    writeBinaryFloat("outputs/expandedModel.bin", fullVp, nxx*nyy*nzz);
 
-    std::cout<<"Reducing expanded velocity model back to (z = "<<model.nz<<", x = "<<model.nx<<", y = "<<model.ny<<") samples"<<std::endl;
+    std::cout<<"Reducing expanded velocity model back to (z = "<<nz<<", x = "<<nx<<", y = "<<ny<<") samples"<<std::endl;
 
-    float * innerVp = model.reduce(fullVp);
+    float * innerVp = reduceModel(fullVp, nx, ny, nz, nb);
 
     std::cout<<"Writing reduced velocity model"<<std::endl;
 
-    utils.writeBinaryFloat("outputs/innerModel.bin", innerVp, model.nPoints);
+    writeBinaryFloat("outputs/innerModel.bin", innerVp, nx*ny*nz);
 
     delete[] Vp;
     delete[] fullVp;

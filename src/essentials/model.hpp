@@ -1,35 +1,91 @@
 # ifndef MODEL_HPP
 # define MODEL_HPP
-
-# include <string>
-
-class Model
+   
+/* Returns the expanded volume based on input model properties */
+float * expandModel(float * inputModel, int nx, int ny, int nz, int nb)
 {
-public:    
-    int nb;               // Boundary samples
-    int nx;               // N samples in x direction
-    int ny;               // N samples in y direction
-    int nz;               // N samples in z direction   
+    int nxx = nx + 2*nb; 
+    int nyy = ny + 2*nb; 
+    int nzz = nz + 2*nb; 
 
-    int nxx;              // N samples in x expanded direction
-    int nyy;              // N samples in y expanded direction 
-    int nzz;              // N samples in z expanded direction 
+    int nPoints = nxx*nyy*nzz;
 
-    int nPoints;          // Total samples in model 
-    int nPointsB;         // Total samples in expanded model 
+    float * outputModel = new float[nPoints]();
 
-    float dx;             // Sample spacing in x direction
-    float dy;             // Sample spacing in y direction
-    float dz;             // Sample spacing in z direction
+    // Centering
+    for (int z = nb; z < nzz - nb; z++)
+    {
+        for (int y = nb; y < nyy - nb; y++)
+        {
+            for (int x = nb; x < nxx - nb; x++)
+            {
+                outputModel[z + x*nzz + y*nxx*nzz] = inputModel[(z - nb) + (x - nb)*nz + (y - nb)*nx*nz];
+            }
+        }
+    }
 
-    /* Fill model variables with other attributes dependance, invoke before declare model volumes */
-    void initialize();
+    // Z direction
+    for (int z = 0; z < nb; z++)
+    {
+        for (int y = nb; y < nyy - nb; y++)
+        {
+            for (int x = nb; x < nxx - nb; x++)
+            {
+                outputModel[z + x*nzz + y*nxx*nzz] = inputModel[0 + (x - nb)*nz + (y - nb)*nx*nz];
+                outputModel[(nzz - z - 1) + x*nzz + y*nxx*nzz] = inputModel[(nz - 1) + (x - nb)*nz + (y - nb)*nx*nz];
+            }
+        }
+    }
 
-    /* Returns the expanded volume based on input model properties */
-    float * expand(float * volume);
+    // X direction
+    for (int x = 0; x < nb; x++)
+    {
+        for (int z = 0; z < nzz; z++)
+        {
+            for (int y = nb; y < nyy - nb; y++)
+            {
+                outputModel[z + x*nzz + y*nxx*nzz] = outputModel[z + nb*nzz + y*nxx*nzz];
+                outputModel[z + (nxx - x - 1)*nzz + y*nxx*nzz] = outputModel[z + (nxx - nb - 1)*nzz + y*nxx*nzz];
+            }
+        }
+    }
 
-    /* Returns the volume in original size without boundaries */
-    float * reduce(float * volume); 
-};
+    // Y direction
+    for (int y = 0; y < nb; y++)
+    {
+        for (int z = 0; z < nzz; z++)
+        {
+            for (int x = 0; x < nxx; x++)
+            {
+                outputModel[z + x*nzz + y*nxx*nzz] = outputModel[z + x*nzz + nb*nxx*nzz];
+                outputModel[z + x*nzz + (nyy - y - 1)*nxx*nzz] = outputModel[z + x*nzz + (nyy - nb - 1)*nxx*nzz];
+            }
+        }
+    }
+
+    return outputModel;
+}
+
+/* Returns the volume in original size without boundaries */
+float * reduceModel(float * inputModel, int nx, int ny, int nz, int nb)
+{
+    int nxx = nx + 2*nb; 
+    int nzz = nz + 2*nb; 
+
+    int nPoints = nx*ny*nz;
+
+    float * outputModel = new float[nPoints];
+
+    for (int index = 0; index < nPoints; index++)
+    {
+        int y = (int) (index / (nx*nz));         // y direction
+        int x = (int) (index - y*nx*nz) / nz;    // x direction
+        int z = (int) (index - x*nz - y*nx*nz);  // z direction
+
+        outputModel[z + x*nz + y*nx*nz] = inputModel[(z + nb) + (x + nb)*nzz + (y + nb)*nxx*nzz];
+    }
+
+    return outputModel;    
+} 
 
 # endif

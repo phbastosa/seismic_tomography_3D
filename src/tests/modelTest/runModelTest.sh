@@ -1,12 +1,12 @@
-utils="../../essentials/utils.cpp"
-model="../../essentials/model.cpp"
-flags="-fopenmp -fast -acc -ta=tesla,cc60 -std=c++11 -g -lm"
+#!/bin/bash
 
-pgc++ $utils $model modelTest.cpp $flags -o modelTest.exe
+flags="-acc -fast -ta=tesla,cc60 -std=c++11 -g -lm"
+
+pgc++ modelTest.cpp $flags -o modelTest.exe
 
 ./modelTest.exe
 
-rm *.o *.exe
+rm *.exe
 
 python3 verifyModelTest.py
 
