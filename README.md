@@ -1,2 +1,3 @@
 # 3D seismic tomography
-Master degree project using object-oriented programming
+## Ocean and Earth Dynamic post-graduation program - UFF / Brazil
+### Master degree project working at Seismic Inversion and Imaging Group 
