@@ -1,6 +1,6 @@
 #!/bin/bash
 
-flags="-fast -acc -ta=tesla,cc60 -std=c++11 -g -lm"
+flags="-fast -acc -ta=tesla,cc60 -lm"
 
 pgc++ utilsTest.cpp $flags -o utilsTest.exe
 
