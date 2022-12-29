@@ -1,84 +1,149 @@
 # ifndef GEOMETRY_HPP
 # define GEOMETRY_HPP
 
-# include <string>
+# include <cmath>
 # include <vector>
+# include <string>
+# include <fstream>
 
-class Geometry
+typedef struct                   // Position struct to storage coordinates    
 {
-private:
+    float * x;                   // Position x of geometry element
+    float * y;                   // Position y of geometry element
+    float * z;                   // Position z of geometry element
 
-    typedef struct                   // Position struct to storage coordinates    
+    int n;
+
+} Position;
+
+typedef struct                   // Struct to storage a simple 2D point
+{
+    float x;                     // x plane position
+    float y;                     // y plane position
+
+} Point;            
+
+/* Function to calculate a linear spaced position */
+std::vector<float> linspace(float xi, float xf, int n)
+{
+    std::vector<float> linspaced;
+
+    if (n == 0) return linspaced;
+        
+    if (n == 1)
     {
-        float * x;                   // Position x of geometry element
-        float * y;                   // Position y of geometry element
-        float * z;                   // Position z of geometry element
+        linspaced.push_back(xi);
+        return linspaced;
+    } 
 
-        int idx;                     // Position x in samples with boundary compansation
-        int idy;                     // Position y in samples with boundary compansation  
-        int idz;                     // Position z in samples with boundary compansation 
+    linspaced.reserve(n);
 
-        int all;                     // Total elements in simulation
-        int n_xline;                 // Total geometry unit in xline
-        int n_yline;                 // Total geometry unit in yline
+    float delta = (xf - xi) / (n - 1);
 
-        float xcenter;               // X center circle position
-        float ycenter;               // Y center circle position   
-        float elevation;             // Geometry element elevation (always positive number)
-        float circle_spacing;        // Distance between geometry element in circle 
-
-        std::vector<float> offsets;  // Circle ratios
-
-    } Position;
-
-    typedef struct                   // Struct to storage a simple 2D point
+    for (int i = 0; i < n; i++)
     {
-        float x;                     // x plane position
-        float y;                     // y plane position
+        linspaced.emplace_back(xi + (float)(delta*i));
+    }
 
-    } Point;            
+    return linspaced;
+}        
 
-    Point SW;                        // South western point
-    Point NW;                        // North western point
-    Point SE;                        // South eastern point
+/* Method to set shots positions giving three points in grid */
+Position setGridGeometry(Point SE, Point SW, Point NW, int n_xline, int n_yline, float elev)
+{
+    Position obj;
 
-public:  
+    obj.n = n_xline * n_yline;
 
-    Position shots;                  // Struct to storage x,y,z coordinates of shots
-    Position nodes;                  // Struct to storage x,y,z coordinates of nodes
+    obj.x = new float[obj.n];
+    obj.y = new float[obj.n];
+    obj.z = new float[obj.n];
 
-    std::string shotsPath;           // Location to export shots position in .txt file
-    std::string nodesPath;           // Location to export nodes position in .txt file
+    std::vector<float> x = linspace(SW.x, SE.x, n_xline);
+    std::vector<float> y = linspace(SW.y, NW.y, n_yline);
 
-    int shotsGeometryType;           // 0 - circular shots | 1 - grid shots
-    int nodesGeometryType;           // 0 - circular nodes | 1 - grid nodes
+    for (int k = 0; k < y.size(); k++)
+    {
+        for (int j = 0; j < x.size(); j++)
+        {
+            obj.x[j + k*x.size()] = x[j];
+            obj.y[j + k*x.size()] = y[k];
+            obj.z[j + k*x.size()] = elev;
+        }
+    }    
 
-    bool reciprocity;                // To set reciprocity 
-    bool saveGeometry;               // To save geometry
+    std::vector< float >().swap(x);
+    std::vector< float >().swap(y);
 
-    /* Function to calculate a linear spaced position */
-    std::vector<float> linspace(float xi, float xf, int n);        
+    return obj;
+}
 
-    /* South-western element in geometry */
-    void set_SW(float x, float y);
+/* Method to set nodes positions giving three points in grid */
+Position setCircularGeometry(std::vector<float> circleRadius, float circleSpacing, float xCenter, float yCenter, float elev)
+{
+    Position obj;
 
-    /* North-western element in geometry */
-    void set_NW(float x, float y);
-    
-    /* South-estern element in geometry */
-    void set_SE(float x, float y);
+    std::vector<float> x, y;
 
-    /* Method to set shots positions giving three points in grid */
-    void setGridGeometry(Position &obj);
-    
-    /* Method to set nodes positions giving three points in grid */
-    void setCircularGeometry(Position &obj);
+    for (float radius : circleRadius)
+    {
+        float theta = 0.0f;
 
-    /* Switch the nodes position to shots position */
-    void setReciprocity();
+        while (theta < 2.0f * 4.0f*atan(1.0f))
+        {            
+            x.push_back(radius*sin(theta) + xCenter);        
+            y.push_back(radius*cos(theta) + yCenter);        
 
-    /* Method to save geometry in hard drive */
-    void exportPositions();
-};
+            theta += acos(1.0f - powf(circleSpacing, 2.0f)/(2.0f*powf(radius, 2.0f)));    
+        }
+    }
+
+    obj.n = x.size();
+
+    obj.x = new float[obj.n]();
+    obj.y = new float[obj.n]();
+    obj.z = new float[obj.n]();
+
+    for (int i = 0; i < obj.n; i++)
+    {
+        obj.x[i] = x[i]; 
+        obj.y[i] = y[i];
+        obj.z[i] = elev;
+    }
+
+    std::vector< float >().swap(x);
+    std::vector< float >().swap(y);
+
+    return obj;
+}
+
+/* Switch the nodes position to shots position */
+void setReciprocity(Position shots, Position nodes)
+{
+    std::swap(shots.x, nodes.x);
+    std::swap(shots.y, nodes.y);
+    std::swap(shots.z, nodes.z);
+    std::swap(shots.n, nodes.n);
+}
+
+/* Method to save geometry in hard drive */
+void exportPositions(std::string folder, Position shots, Position nodes)
+{
+    std::ofstream shotsFile(folder + "shots.txt");        
+    std::ofstream nodesFile(folder + "nodes.txt");
+
+    for (int node = 0; node < nodes.n; node++)        
+    {   
+        nodesFile <<nodes.x[node]<<", "<<nodes.y[node]<<", "<<nodes.z[node]<<std::endl;
+    }
+
+    for (int shot = 0; shot < shots.n; shot++)        
+    {   
+        shotsFile <<shots.x[shot]<<", "<<shots.y[shot]<<", "<<shots.z[shot]<<std::endl;    
+    }
+
+    shotsFile.close();
+    nodesFile.close();
+}
 
 # endif
