@@ -1,6 +1,6 @@
 # ifndef MODEL_HPP
 # define MODEL_HPP
-   
+
 /* Returns the expanded volume based on input model properties */
 float * expandModel(float * inputModel, int nx, int ny, int nz, int nb)
 {

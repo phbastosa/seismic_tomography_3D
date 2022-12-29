@@ -1,6 +1,6 @@
 #!/bin/bash
 
-flags="-fopenmp -fast -acc -ta=tesla,cc60 -std=c++11 -g -lm"
+flags="-fast -acc -ta=tesla,cc60 -std=c++11 -g -lm"
 
 pgc++ utilsTest.cpp $flags -o utilsTest.exe
 

@@ -101,8 +101,7 @@ std::string catchParameter(std::string target, std::string file)
     if (parameters.is_open())
     {
         while (getline(parameters, line))
-        {   
-            std::cout<<line<<std::endl;        
+        {      
             if ((line.front() != comment) && (line.front() != spaces))        
             {
                 if (line.find(target) == 0)

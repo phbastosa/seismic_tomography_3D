@@ -1,12 +1,11 @@
 # include <string>
 # include <iostream>
 
-# include "../../essentials/utils.hpp"
-# include "../../essentials/model.hpp"
+# include "../../src/utils.hpp"
+# include "../../src/model.hpp"
 
 int main(int argc, char**argv)
 {
-
     int nb = 10;
 
     int nx = 201;
