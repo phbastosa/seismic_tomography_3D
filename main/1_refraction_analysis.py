@@ -15,16 +15,21 @@ def analiticalRefraction(v,z,x):
 
     return t_direct, t_refrac
 
-v = np.array([2000,3000,4000])
-z = np.array([800,300]) 
+V = np.zeros((201,201,201)) + 2000
 
-x = np.linspace(500, 9500, 721)
+V.flatten("F").astype("float32", order = "F").tofile("../inputs/models/homogeneous_201x201x201_10m.bin")
 
-td, tr = analiticalRefraction(v,z,x)
 
-plt.plot(td)
-plt.plot(tr[0])
-plt.plot(tr[1])
+# v = np.array([2000,3000,4000])
+# z = np.array([800,300]) 
 
-plt.gca().invert_yaxis()
-plt.show()
+# x = np.linspace(500, 9500, 721)
+
+# td, tr = analiticalRefraction(v,z,x)
+
+# plt.plot(td)
+# plt.plot(tr[0])
+# plt.plot(tr[1])
+
+# plt.gca().invert_yaxis()
+# plt.show()

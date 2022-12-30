@@ -1,0 +1,97 @@
+#-------------------------------------------------------------------------------------------------
+# Model paramenters ------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
+ 
+nx = 201                               # x dimension of model <int>
+ny = 201                               # y dimension of model <int>
+nz = 201                                # z dimension of model <int>
+ 
+dx = 10                              # x sample spacing of model [m] <float>
+dy = 10                              # y sample spacing of model [m] <float> 
+dz = 10                              # z sample spacing of model [m] <float>  
+
+modelPath = "../inputs/models/homogeneous_201x201x201_10m.bin"        # Velocity model location
+
+#-------------------------------------------------------------------------------------------------
+# Geometry parameters ----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
+
+reciprocity = True                     # Shots become nodes and nodes become shots <bool>  
+saveGeometry = True                    # To save shots and nodes position in a .txt file <bool>
+
+# Grid SHOTS geometry                        
+
+xShotNumber = 1                     # Number of sources in x direction <int>
+yShotNumber = 1                     # Number of sources in y direction <int>
+shotSW = [1000, 1000]    # NW       # (x,y) [m] <float>    
+shotNW = [1000, 1000]    #  |       # (x,y) [m] <float>    
+shotSE = [1000, 1000]    # SW -- SE # (x,y) [m] <float>   
+
+shotsElevation = 1000               # Sources elevation [m]- flat surface <float>             
+
+# Grid NODES geometry                        
+
+xNodeNumber = 37                     # Number of sources in x direction
+yNodeNumber = 37                     # Number of sources in y direction
+nodeSW = [100, 100]       # NW       # (x,y) in float WITHOUT SPACES    
+nodeNW = [100, 1900]      #  |       # (x,y) in float WITHOUT SPACES   
+nodeSE = [1900, 100]      # SW -- SE # (x,y) in float WITHOUT SPACES   
+
+nodesElevation = 1000                 # Receivers elevation [m] - flat surface <float>
+
+#-------------------------------------------------------------------------------------------------
+# Seismic modeling parameters --------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
+
+nb = 50                              # Total samples in boundary 
+factor = 0.0045                      # Attenuation factor to apply ABC
+
+nt = 1001                            # Total samples in time domain
+dt = 0.001                           # Sample spacing in time domain
+nsrc = 330                           # Total samples in source
+
+seismFolder = "../inputs/seismograms/"           #
+waveletPath = "../inputs/wavelets/sourceZeroPhase_330_30Hz_1ms.bin"     #
+
+#-------------------------------------------------------------------------------------------------
+# Tomography parameters --------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
+
+nxTomo = 26                          # Resized x sample dimension of model <int>
+nyTomo = 26                          # Resized y sample dimension of model <int>
+nzTomo = 11                          # Resized z sample dimension of model <int>
+
+dxTomo = 200                         # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 200                         # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 100                         # Resized model sample spacing [m] of z dimension <float>
+
+xMask = [500, 500]                   # Mask of [left, right] x axis sides [m] <float>
+yMask = [500, 500]                   # Mask of [left, right] y axis sides [m] <float>
+zMask = [200, 0]                     # Mask of [up, bottom] z axis sides [m] <float>
+
+# Inversion parameters 
+
+eikonalType = 1                       # 0 - Podvin & Lecomte (1991); 1 - Jeong & Whitaker (2008); 2 - Noble (2014) <int>  
+exportTravelTimes = False             # Flag to export travel times volume <bool> 
+exportFirstArrivals = True            # Flag to export first arrivals <bool> 
+ 
+regOrder = 1                          # Tikhonov regularization order <int>
+regParam = 1e3                        # Regularization parameter <float>
+maxIteration = 7                      # Tomography max iteration <int>                   
+
+# Smoothing model per iteration 
+
+smooth = False                       # Flag to smooth or not the model <bool>
+smoothingType = 0                    # 0 - gaussian filter; 1 - moving average filter <int>
+filterSamples = 11                   # Samples in filter, must to be an odd number! <int>
+standardDeviation = 2.0              # For gaussian filter case to control smoothing <float>
+
+# Folders location
+
+dobsPath = "outputs/dcal_"                       # Folder to write calculated data
+dcalPath = "outputs/dcal_"                       # Folder to write calculated data
+eikonalFolder = "outputs/"                       # Folder to write travel time volume per shot
+shotsPositionPath = "outputs/shotsPosition.txt"  # Full path of receivers position     
+nodesPositionPath = "outputs/nodesPosition.txt"  # Full path of shots position   
+convergencyFolder = "outputs/"                   # Folder to write convergency line to residuous norm
+estimatedModelsFolder = "outputs/"               # Folder to write estimated models per iteration 

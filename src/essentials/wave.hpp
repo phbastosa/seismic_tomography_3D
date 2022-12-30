@@ -6,7 +6,7 @@
 
 void progressMessage(int timeStep, int nt, float dt, int sId, float sx, float sy, float sz)
 {
-    if (timeStep % (nt/5) == 0)
+    if (timeStep % (nt/10) == 0)
     {    
         system("clear");
         std::cout<<"Running shot "<<sId+1<<" at position: (z = "<<sz<<", x = "<<sx<<", y = "<<sy<<")"<<std::endl;
@@ -66,14 +66,18 @@ void setWaveField(float * U_pas, float * U_pre, float * U_fut, int nPoints)
 
 void applyWavelet(float * U_pre, float * wavelet, int timeStep, int nsrc, int sId)
 {
-    if (timeStep < nsrc) 
-        U_pre[sId] += wavelet[timeStep];
+    # pragma acc kernels 
+    {
+        if (timeStep < nsrc) 
+            U_pre[sId] += wavelet[timeStep];
+    }
 }
 
 void wavePropagation(float * V, float * U_pas, float * U_pre, float * U_fut, int nxx, int nyy, int nzz, float dx, float dy, float dz, float dt)
 {
     int nPoints = nxx*nyy*nzz;
 
+    # pragma acc parallel loop present(V[0:nPoints],U_pas[0:nPoints],U_pre[0:nPoints],U_fut[0:nPoints])
     for (int index = 0; index < nPoints; index++) 
     {
         int k = (int) (index / (nxx*nzz));         // y direction
@@ -109,6 +113,7 @@ void dampApplication(float * U_pre, float * U_fut, float * damp1D, float * damp2
 {
     int nPoints = nxx*nyy*nzz;
 
+    # pragma acc parallel loop present(U_pre[0:nPoints],U_fut[0:nPoints],damp1D[0:nb],damp2D[0:nb*nb],damp3D[0:nb*nb*nb])
     for (int index = 0; index < nPoints; index++) 
     {
         int k = (int) (index / (nxx*nzz));         // y direction
@@ -223,6 +228,7 @@ void dampApplication(float * U_pre, float * U_fut, float * damp1D, float * damp2
 
 void wavefieldUpdate(float * U_pas, float * U_pre, float * U_fut, int nPoints)
 {
+    # pragma acc parallel loop present(U_pas[0:nPoints], U_pre[0:nPoints], U_fut[0:nPoints])
     for (int index = 0; index < nPoints; index++)
     {
         U_pas[index] = U_pre[index];
@@ -230,8 +236,9 @@ void wavefieldUpdate(float * U_pas, float * U_pre, float * U_fut, int nPoints)
     }
 }
 
-void buildSeismogram(float * U_fut, int nxx, int nzz, float * seismogram, int timeStep, int nt, int * rx, int * ry, int * rz, int nrec)
+void buildSeismogram(float * U_fut, int nxx, int nyy, int nzz, float * seismogram, int timeStep, int nt, int * rx, int * ry, int * rz, int nrec)
 {
+    # pragma acc parallel loop present(U_fut[0:nxx*nyy*nzz], seismogram[0:nt*nrec])
     for (int receiver = 0; receiver < nrec; receiver++)
     {
         int index = rz[receiver] + rx[receiver]*nzz + ry[receiver]*nxx*nzz;
