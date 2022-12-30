@@ -1,6 +1,4 @@
-# ifndef UTILS_HPP
-# define UTILS_HPP
-
+# include <omp.h>
 # include <cmath>
 # include <vector>
 # include <string>
@@ -8,49 +6,23 @@
 # include <fstream>
 # include <algorithm>
 
-/* 
-Struct to define a sparse matrix:
-    n - number of rows
-    m - number of cols
-    nnz - number of non zero elements
-    i - row index
-    j - col index
-    v - values 
-*/ 
-typedef struct     
-{
-    int * i;       // Rows indexes
-    int * j;       // Cols indexes 
-    float * v;     // Value
+# include "utils.hpp"
 
-    int n;         // Rows number
-    int m;         // Cols number
-    int nnz;       // Non-zero elements
+int Utils::imin(int v1, int v2) { return !(v1 > v2) ? v1 : v2; }
 
-    /* Function to initialize the vectorial components of sparse matrix */
-    void init(int nrows, int ncols, int nonZeros)
-    {
-        n = nrows;
-        m = ncols;
-        nnz = nonZeros;
+int Utils::imax(int v1, int v2) { return !(v1 < v2) ? v1 : v2; }
 
-        i = new int[nnz]();  
-        j = new int[nnz](); 
-        v = new float[nnz](); 
-    }
+float Utils::min(float v1, float v2) { return !(v1 > v2) ? v1 : v2; }
 
-    /* Function to delete the vectorial components of sparse matrix */
-    void erase()
-    {
-        delete[] i;
-        delete[] j;
-        delete[] v;
-    }
+float Utils::max(float v1, float v2) { return !(v1 < v2) ? v1 : v2; }
 
-} sparseMatrix;
+float Utils::max3(float v1, float v2, float v3) { return max(v1, max(v2, v3)); }
 
-/* Reads and returns a binary float */
-float * readBinaryFloat(std::string path, int n)
+float Utils::min3(float v1, float v2, float v3) { return min(v1, min(v2, v3)); }
+
+float Utils::min4(float v1, float v2, float v3, float v4) { return min(v1, min(v2, min(v3, v4))); }
+
+float * Utils::readBinaryFloat(std::string path, int n)
 {
     std::ifstream file(path, std::ios::in);
     
@@ -70,8 +42,7 @@ float * readBinaryFloat(std::string path, int n)
     return array;
 }
 
-/* Writes a binary float */
-void writeBinaryFloat(std::string path, float *array, int n)
+void Utils::writeBinaryFloat(std::string path, float *array, int n)
 {
     std::ofstream file(path, std::ios::out);
     
@@ -87,8 +58,7 @@ void writeBinaryFloat(std::string path, float *array, int n)
     file.close();
 }
 
-/* Finds each parameter in text file */
-std::string catchParameter(std::string target, std::string file)
+std::string Utils::catchParameter(std::string target, std::string file)
 {
     char spaces = ' ';
     char comment = '#';
@@ -101,7 +71,7 @@ std::string catchParameter(std::string target, std::string file)
     if (parameters.is_open())
     {
         while (getline(parameters, line))
-        {      
+        {           
             if ((line.front() != comment) && (line.front() != spaces))        
             {
                 if (line.find(target) == 0)
@@ -117,7 +87,7 @@ std::string catchParameter(std::string target, std::string file)
             }                 
         }
         parameters.close();
-    }
+    }        
 
     // Quality control for file paths
 
@@ -136,61 +106,7 @@ std::string catchParameter(std::string target, std::string file)
     return variable;
 }
 
-/* Function to calculate minimum value between two float inputs */
-float min(float v1, float v2) 
-{ 
-    return !(v1 > v2) ? v1 : v2; 
-}
-
-/* Function to calculate maximum value between two float inputs */
-float max(float v1, float v2) 
-{ 
-    return !(v1 < v2) ? v1 : v2; 
-}
-
-/* Function to calculate minimum value between two integer inputs */
-int imin(int v1, int v2) 
-{ 
-    return !(v1 > v2) ? v1 : v2; 
-}
-
-/* Function to calculate maximum value between two integer inputs */
-int imax(int v1, int v2) 
-{ 
-    return !(v1 < v2) ? v1 : v2; 
-}
-    
-/* Function to calculate minimum value between three float inputs */
-float min3(float v1, float v2, float v3) 
-{ 
-    return min(v1, min(v2, v3)); 
-}
-
-/* Function to calculate maximum value between three float inputs */
-float max3(float v1, float v2, float v3) 
-{ 
-    return max(v1, max(v2, v3)); 
-}
-
-/* Function to calculate minimum value between four float inputs */
-float min4(float v1, float v2, float v3, float v4) 
-{ 
-    return min(v1, min(v2, min(v3, v4))); 
-}
-
-/* Function to convert string to boolean */
-bool str2bool(std::string s)
-{
-    bool b;
-
-    std::for_each(s.begin(), s.end(), [](char & c) {c = ::tolower(c);});
-    std::istringstream(s) >> std::boolalpha >> b;
-
-    return b;
-}
-
-/* Function to separete values with a delimiter */
-std::vector<std::string> split(std::string s, char delimiter)
+std::vector<std::string> Utils::split(std::string s, char delimiter)
 {
     std::string token;
     std::vector<std::string> tokens;
@@ -202,18 +118,18 @@ std::vector<std::string> split(std::string s, char delimiter)
     return tokens;
 }
 
-/* Function to compute a sparse matrix least square conjugate gradient 
-
-Solution of A'A x = A'B without generate A'A 
-
-inputs:
-    A - sparse matrix 
-    B - second member of linear system  
-    maxIt - max iterations 
-    cgTol - tolerance 
-*/
-float * sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
+bool Utils::str2bool(std::string s)
 {
+    bool b;
+
+    std::for_each(s.begin(), s.end(), [](char & c) {c = ::tolower(c);});
+    std::istringstream(s) >> std::boolalpha >> b;
+
+    return b;
+}
+
+float * Utils::sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
+{    
     float a, b, qTq, rTr, rd;
 
     float * s = new float[A.n]();
@@ -289,8 +205,61 @@ float * sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
     return x;
 }
 
-/* */
-float * movingAverageSmoothing(float * volume, int nx, int ny, int nz, int samples)
+Utils::sparseMatrix Utils::getDerivativeMatrix(int n, int degree)
+{
+	sparseMatrix L;
+    
+    int elements = degree + 1;
+		
+	L.m = n;
+    L.n = n - degree;
+    L.nnz = elements * L.n;
+
+    L.init();
+
+	if (degree == 0)
+	{
+		for (int index = 0; index < L.nnz; index++)
+		{
+			L.i[index] = index;
+			L.j[index] = index;
+			L.v[index] = 1.0f;
+		}
+		
+		return L;
+	} 
+
+	int * df = new int[elements]();	
+	int * df1 = new int[elements + 1]();
+	int * df2 = new int[elements + 1]();
+	
+	df[0] = -1; df[1] = 1;
+	
+	for (int index = 1; index < degree; index++)
+	{
+		for (int k = 0; k < elements; k++)
+		{
+			df2[k] = df[k];
+			df1[k + 1] = df[k];
+
+			df[k] = df1[k] - df2[k]; 
+		}		 
+	}
+	
+	for (int index = 0; index < L.n; index++)
+	{
+		for (int k = 0; k < elements; k++)
+		{
+			L.i[elements*index + k] = index;	
+			L.j[elements*index + k] = index + k;
+			L.v[elements*index + k] = df[k];
+		}	
+	}
+	
+	return L;
+}
+
+float * Utils::movingAverageSmoothing(float * volume, int nx, int ny, int nz, int samples)
 {
     int nPoints = nx*ny*nz;
 
@@ -332,12 +301,11 @@ float * movingAverageSmoothing(float * volume, int nx, int ny, int nz, int sampl
     return smoothed;
 }
 
-/* */
-float * gaussianFilterSmoothing(float * volume, int nx, int ny, int nz, float stdv, int samples)
+float * Utils::gaussianFilterSmoothing(float * volume, int nx, int ny, int nz, float stdv, int samples)
 {
     int init = samples / 2;
-    int nPoints = nx*ny*nz;
-    int nKernel = samples*samples*samples;
+    int nPoints = nx * ny * nz;
+    int nKernel = samples * samples * samples;
 
     float pi = 4.0f * atanf(1.0f); 
 
@@ -406,60 +374,8 @@ float * gaussianFilterSmoothing(float * volume, int nx, int ny, int nz, float st
     return smoothed;
 }
 
-/* */
-sparseMatrix getDerivativeMatrix(int n, int degree)
-{
-	sparseMatrix L;
-    
-    int elements = degree + 1;    // number of elements per line
-
-    L.init(n, n - degree, elements * n);
-
-	if (degree == 0)
-	{
-		for (int index = 0; index < L.nnz; index++)
-		{
-			L.i[index] = index;
-			L.j[index] = index;
-			L.v[index] = 1.0f;
-		}
-		
-		return L;
-	} 
-
-	int * df = new int[elements]();	
-	int * df1 = new int[elements + 1]();
-	int * df2 = new int[elements + 1]();
-	
-	df[0] = -1; df[1] = 1;
-	
-	for (int index = 1; index < degree; index++)
-	{
-		for (int k = 0; k < elements; k++)
-		{
-			df2[k] = df[k];
-			df1[k + 1] = df[k];
-
-			df[k] = df1[k] - df2[k]; 
-		}		 
-	}
-	
-	for (int index = 0; index < L.n; index++)
-	{
-		for (int k = 0; k < elements; k++)
-		{
-			L.i[elements*index + k] = index;	
-			L.j[elements*index + k] = index + k;
-			L.v[elements*index + k] = df[k];
-		}	
-	}
-	
-	return L;
-}
-
-/* Function to compute a trilinear interpolation */
-float triLinearInterpolation(float c000, float c001, float c100, float c101, float c010, float c011, float c110, float c111, 
-                                float x0, float x1, float y0, float y1, float z0, float z1, float x, float y, float z)
+float Utils::triLinearInterpolation(float c000, float c001, float c100, float c101, float c010, float c011, float c110, float c111, 
+                                    float x0, float x1, float y0, float y1, float z0, float z1, float x, float y, float z)
 {
     float xd = (x - x0) / (x1 - x0);
     float yd = (y - y0) / (y1 - y0);
@@ -474,6 +390,4 @@ float triLinearInterpolation(float c000, float c001, float c100, float c101, flo
     float c1 = c01*(1 - yd) + c11*yd;
 
     return (c0*(1 - zd) + c1*zd);
-}                                
-
-# endif
+}

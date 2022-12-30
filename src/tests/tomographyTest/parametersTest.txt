@@ -1,0 +1,101 @@
+# Tomography Parameters file ---------------------------------------------------------------------
+
+# Inputs Folders ----------------------------------------------------------------------------------
+
+dobsPath = "outputs/dobs_"                     # Name style of observed data
+modelPath = "outputs/initModel_21x101x101_50m.bin"  # Full initial velocity model path
+
+# Model paramenters ------------------------------------------------------------------------------
+ 
+nx = 101                             # x dimension of model <int>
+ny = 101                             # y dimension of model <int>
+nz = 21                              # z dimension of model <int>
+ 
+dx = 50                              # x sample spacing of model [m] <float>
+dy = 50                              # y sample spacing of model [m] <float> 
+dz = 50                              # z sample spacing of model [m] <float>  
+
+# Geometry parameters ----------------------------------------------------------------------------
+ 
+reciprocity = True                   # Shots become nodes and nodes become shots <bool>  
+saveGeometry = True                  # To save shots and nodes position in a .txt file <bool>
+
+# Setting SHOTS geometry -------------------------------------------------------------------------
+
+shotsElevation = 10                  # Sources elevation [m]- flat surface <float>             
+shotsGeometryType = 1                # 0 - circular shots style; 1 - grid shots style <int>
+ 
+# Circular SHOTS geometry (option: 0)
+
+xShotCenter = 2500                   # x source center position [m] <float>  
+yShotCenter = 2500                   # y source center position [m] <float>
+shotSpacing = 25                     # Shot spacing [m] <float>
+shotOffsets = [1000, 1500, 2000]     # Source offsets [m] <float>
+
+# Grid SHOTS geometry (option: 1)                        
+
+xShotNumber = 51                     # Number of sources in x direction <int>
+yShotNumber = 51                     # Number of sources in y direction <int>
+shotSW = [100, 100]       # NW       # (x,y) [m] <float>    
+shotNW = [100, 4900]      #  |       # (x,y) [m] <float>    
+shotSE = [4900, 100]      # SW -- SE # (x,y) [m] <float>   
+
+# Setting NODES geometry -------------------------------------------------------------------------
+
+nodesElevation = 200                 # Receivers elevation [m] - flat surface <float>
+nodesGeometryType = 1                # 0 - circular nodes style; 1 - grid nodes style <int>
+ 
+# Circular NODES geometry (option: 0)
+
+xNodeCenter = 2500                   # x receiver center position <float>
+yNodeCenter = 2500                   # y receiver center position <float>
+nodeSpacing = 50                     # Receiver spacing <float>
+nodeOffsets = [1000, 1500, 2000]     # Receiver offsets WITHOUT SPACES <float>
+
+# Grid NODES geometry (option: 1)                       
+
+xNodeNumber = 21                     # Number of sources in x direction
+yNodeNumber = 21                     # Number of sources in y direction
+nodeSW = [500, 500]       # NW       # (x,y) in float WITHOUT SPACES    
+nodeNW = [500, 4500]      #  |       # (x,y) in float WITHOUT SPACES   
+nodeSE = [4500, 500]      # SW -- SE # (x,y) in float WITHOUT SPACES   
+
+# Tomography model parameters --------------------------------------------------------------------
+
+nxTomo = 26                          # Resized x sample dimension of model <int>
+nyTomo = 26                          # Resized y sample dimension of model <int>
+nzTomo = 11                          # Resized z sample dimension of model <int>
+
+dxTomo = 200                         # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 200                         # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 100                         # Resized model sample spacing [m] of z dimension <float>
+
+xMask = [500, 500]                   # Mask of [left, right] x axis sides [m] <float>
+yMask = [500, 500]                   # Mask of [left, right] y axis sides [m] <float>
+zMask = [200, 0]                     # Mask of [up, bottom] z axis sides [m] <float>
+
+# Inversion parameters ---------------------------------------------------------------------------
+
+eikonalType = 1                       # 0 - Podvin & Lecomte (1991); 1 - Jeong & Whitaker (2008); 2 - Noble (2014) <int>  
+exportTravelTimes = False             # Flag to export travel times volume <bool> 
+exportFirstArrivals = True            # Flag to export first arrivals <bool> 
+ 
+regOrder = 1                          # Tikhonov regularization order <int>
+regParam = 1e3                        # Regularization parameter <float>
+maxIteration = 7                      # Tomography max iteration <int>                   
+
+# Smoothing model per iteration ------------------------------------------------------------------
+
+smooth = False                       # Flag to smooth or not the model <bool>
+smoothingType = 0                    # 0 - gaussian filter; 1 - moving average filter <int>
+filterSamples = 11                   # Samples in filter, must to be an odd number! <int>
+standardDeviation = 2.0              # For gaussian filter case to control smoothing <float>
+
+# Some folders location -------------------------------------------------------------------------------------------------
+
+dcalPath = "outputs/dcal_"                  # Folder to write calculated data
+eikonalFolder = "outputs/"                       # Folder to write travel time volume per shot
+shotsPositionPath = "outputs/shotsPosition.txt"  # Full path of receivers position     
+nodesPositionPath = "outputs/nodesPosition.txt"  # Full path of shots position   
+convergencyFolder = "outputs/"                   # Folder to write convergency line to residuous norm
+estimatedModelsFolder = "outputs/"               # Folder to write estimated models per iteration 

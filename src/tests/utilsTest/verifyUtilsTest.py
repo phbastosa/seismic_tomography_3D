@@ -45,8 +45,7 @@ for i in range(len(axs)):
             axs[i,j].set_ylabel("y")
 
 plt.tight_layout()
-plt.savefig("smoothingFilters.png", dpi = 200)
-plt.show(block = False)
+plt.show()
 
 # Plotting function interpolated
 
@@ -76,5 +75,4 @@ axs[2].set_xlabel("X")
 axs[2].set_ylabel("Y")
 
 plt.tight_layout()
-plt.savefig("interpolatedPlanes.png", dpi = 200)
-plt.show(block=False)
+plt.show()

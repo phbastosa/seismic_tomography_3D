@@ -1,0 +1,55 @@
+# Acoustic Parameters file -----------------------------------------------------------------------
+
+# Time domain parameters ------------------------------------------------------------------------------
+
+nt = 1001                            # Total samples in time domain modeling <int>
+dt = 1e-3                            # Time sample spacing in seconds <float>  
+tlag = 0.15                          # Ricker source time lag in seconds <float>
+fmax = 30.0                          # Ricker source maximum frequency <float>
+
+seisLabel = "outputs/seismogram"     # Label of sesimograms per shot
+
+# Model paramenters ------------------------------------------------------------------------------
+ 
+nx = 101                             # x dimension of model <int>
+ny = 101                             # y dimension of model <int>
+nz = 51                              # z dimension of model <int>
+ 
+dx = 12.5                            # x sample spacing of model [m] <float>
+dy = 12.5                            # y sample spacing of model [m] <float> 
+dz = 12.5                            # z sample spacing of model [m] <float>  
+
+nb = 50                              # Samples to build Absorbing Boundary Condition <int>  
+factor = 0.0045                      # Attenuation factor to use Cerjan ABC <float>
+
+modelPath = "outputs/model_51x101x101.bin"  # Full velocity model path <string>
+
+# Geometry parameters ----------------------------------------------------------------------------
+ 
+reciprocity = True                   # Shots become nodes and nodes become shots <bool>  
+saveGeometry = True                  # To save shots and nodes position in a .txt file <bool>
+
+shotsPath = "outputs/shots.txt"      # Full path of receivers position     
+nodesPath = "outputs/nodes.txt"      # Full path of shots position   
+
+# Setting grid SHOTS geometry -------------------------------------------------------------------------
+
+shotSW = [50, 50]                    # NW        (x, y) [m] <float>    
+shotNW = [50, 1200]                  #  |        (x, y) [m] <float>   
+shotSE = [1200, 50]                  # SW -- SE  (x, y) [m] <float>   
+
+xShotNumber = 24                     # Number of sources in x direction <int>
+yShotNumber = 24                     # Number of sources in y direction <int>
+
+shotsElevation = 25                  # Sources elevation [m] <float>             
+
+# Setting grid NODES geometry -------------------------------------------------------------------------
+
+nodeSW = [625, 625]                  # NW         (x, y) [m] <float>    
+nodeNW = [625, 625]                  #  |         (x, y) [m] <float>    
+nodeSE = [625, 625]                  # SW -- SE   (x, y) [m] <float>   
+
+xNodeNumber = 1                      # Number of receivers in x direction
+yNodeNumber = 1                      # Number of receivers in y direction
+
+nodesElevation = 200                 # Receivers elevation [m] <float>

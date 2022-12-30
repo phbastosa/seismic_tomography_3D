@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-files = [["point_shots", "point_nodes"], ["xLine_shots", "xLine_nodes"], 
-         ["yLine_shots", "yLine_nodes"], ["carpet_shots", "carpet_nodes"], 
-         ["carpetReciprocity_shots", "carpetReciprocity_nodes"],  
-         ["circular_shots", "circular_nodes"]]
+files = [["pointShot", "pointNode"], ["xLineShots", "xLineNodes"], 
+         ["yLineShots", "yLineNodes"], ["carpetShots", "carpetNodes"], 
+         ["carpetShotsReciprocity", "carpetNodesReciprocity"],  
+         ["circularShots", "circularNodes"]]
 
 fig, axs = plt.subplots(2,3, figsize = (13, 8))
 
