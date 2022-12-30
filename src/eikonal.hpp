@@ -32,39 +32,43 @@ void writeTravelTimes(float * T, int nx, int ny, int nz, int sId, std::string fo
 }
     
 /* */
-void writeFirstArrivals(float * T, Position nodes, int nx, int ny, int nz, float dx, float dy, float dz, int sId, std::string folder)
+void writeFirstArrivals(float * T, Position *nodes, int nx, int ny, int nz, float dx, float dy, float dz, int sId, std::string folder)
 {
-    float * firstArrivals = new float[nodes.n]();
+    float * firstArrivals = new float[nodes->n]();
         
-    for (int r = 0; r < nodes.n; r++)
+    for (int r = 0; r < nodes->n; r++)
     {
-        float x = nodes.x[r];
-        float y = nodes.y[r];
-        float z = nodes.z[r];
+        float x = nodes->x[r];
+        float y = nodes->y[r];
+        float z = nodes->z[r];
 
-        float x0 = floorf(x/dx)*dx;
-        float y0 = floorf(y/dy)*dy;
-        float z0 = floorf(z/dz)*dz;
+        int rIdx = (int) (nodes->x[r] / dx);
+        int rIdy = (int) (nodes->y[r] / dy);
+        int rIdz = (int) (nodes->z[r] / dz);
 
-        float x1 = floorf(x/dx)*dx + dx;
-        float y1 = floorf(y/dy)*dy + dy;
-        float z1 = floorf(z/dz)*dz + dz;
+        int rid = rIdz + rIdx*nz + rIdy*nx*nz;
 
-        int id = (int)((z/dz) + (x/dx)*nz + (y/dy)*nx*nz);
+        float x0 = rIdx*dx;
+        float y0 = rIdy*dy;
+        float z0 = rIdz*dz;
 
-        float c000 = T[id];
-        float c001 = T[id + 1];
-        float c100 = T[id + nz]; 
-        float c101 = T[id + 1 + nz]; 
-        float c010 = T[id + nx*nz]; 
-        float c011 = T[id + 1 + nx*nz]; 
-        float c110 = T[id + nz + nx*nz]; 
-        float c111 = T[id + 1 + nz + nx*nz];
+        float x1 = rIdx*dx + dx;
+        float y1 = rIdy*dy + dy;
+        float z1 = rIdz*dz + dz;
+
+        float c000 = T[rid];
+        float c001 = T[rid + 1];
+        float c100 = T[rid + nz]; 
+        float c010 = T[rid + nx*nz]; 
+        float c101 = T[rid + 1 + nz]; 
+        float c011 = T[rid + 1 + nx*nz]; 
+        float c110 = T[rid + nz + nx*nz]; 
+        float c111 = T[rid + 1 + nz + nx*nz];
 
         firstArrivals[r] = triLinearInterpolation(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);        
     }
 
-    writeBinaryFloat(folder + "times_nr" + std::to_string(nodes.n) + "_shot_" + std::to_string(sId+1) + ".bin", firstArrivals, nodes.n);
+    writeBinaryFloat(folder + "times_nr" + std::to_string(nodes->n) + "_shot_" + std::to_string(sId+1) + ".bin", firstArrivals, nodes->n);
 
     delete[] firstArrivals;
 }

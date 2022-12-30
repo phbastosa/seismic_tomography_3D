@@ -6,5 +6,5 @@ pgc++ timeTest.cpp $flags -o test.exe
 
 ./test.exe
 
-rm *.o *.exe *.bin
+rm *.exe outputs/*.bin outputs/*.txt
 

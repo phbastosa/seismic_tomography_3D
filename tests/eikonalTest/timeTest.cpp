@@ -42,6 +42,8 @@ int main(int argc, char **argv)
 
     auto nodes = setCircularGeometry(offsets,spacing,xcenter,ycenter,elevation);
 
+    exportPositions("outputs/", shots, nodes);
+
     // Compressed loop
 
     std::cout<<"\nEikonal equation runtime test"<<std::endl;
@@ -65,19 +67,21 @@ int main(int argc, char **argv)
 
     // Comparing eikonal execution time
 
-    bool writeTT = true;
-    bool writeFA = true;    
+    int shotId = 0;
 
-    std::string folder;
-
-    float sx = shots.x[0];
-    float sy = shots.y[0];
-    float sz = shots.z[0];
+    float sx = shots.x[shotId];
+    float sy = shots.y[shotId];
+    float sz = shots.z[shotId];
 
     std::vector <std::string> labels = {"pod_", "fim_", "fsm_"};
     std::vector <std::string> formulation = {"Podvin & Lecomte (1991) formulation",
                                              "Jeong & Witaker (2008) formulation", 
                                              "Noble, Gesret and Belayouni (2014) formulation"};
+
+    std::string folder;
+
+    bool writeTT = true;
+    bool writeFA = true;    
 
     for (int type = 0; type < labels.size(); type++) // eikonal type
     {
@@ -87,8 +91,8 @@ int main(int argc, char **argv)
 
         float * T = eikonalComputing(V,nx,ny,nz,dx,dy,dz,sx,sy,sz,type);
         
-        if (writeTT) writeTravelTimes(T,nx,ny,nz,0,folder);    
-        if (writeFA) writeFirstArrivals(T,nodes,nx,ny,nz,dx,dy,dz,0,folder); 
+        if (writeTT) writeTravelTimes(T,nx,ny,nz,shotId,folder);    
+        if (writeFA) writeFirstArrivals(T,&nodes,nx,ny,nz,dx,dy,dz,shotId,folder); 
 
         auto tf = std::chrono::steady_clock::now();
 
