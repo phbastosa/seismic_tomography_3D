@@ -45,7 +45,8 @@ for i in range(len(axs)):
             axs[i,j].set_ylabel("y")
 
 plt.tight_layout()
-plt.show()
+plt.savefig("smoothing.png", dpi = 200)
+plt.show(block=False)
 
 # Plotting function interpolated
 
@@ -75,4 +76,5 @@ axs[2].set_xlabel("X")
 axs[2].set_ylabel("Y")
 
 plt.tight_layout()
-plt.show()
+plt.savefig("triLinearInterpolation.png", dpi = 200)
+plt.show(block = False)

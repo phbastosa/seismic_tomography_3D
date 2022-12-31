@@ -2,7 +2,7 @@
 # include <vector>
 # include <iostream>
 
-# include "../../essentials/utils.hpp"
+# include "../../src/essentials/utils.hpp"
 
 int main(int argc, char**argv)
 {
@@ -33,7 +33,7 @@ int main(int argc, char**argv)
 
     std::cout<<"\nTesting pick up parameter from file"<<std::endl;
 
-    std::string parameterFile = "outputs/parameterFileTest.txt";
+    std::string parameterFile = "outputs/parametersTest.txt";
 
     // string reading structure
     std::string p1 = utils.catchParameter("parameter1", parameterFile);         
