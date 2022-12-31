@@ -1,66 +1,57 @@
-# include <omp.h>
+# include <chrono>
 # include <iostream>
 
-# include "../../eikonal/eikonal.hpp"
+# include "../../src/eikonal/eikonal.hpp"
 
 int main(int argc, char **argv)
 {
     auto eikonal = Eikonal();
 
-    eikonal.nx = 881;
-    eikonal.ny = 881;    
-    eikonal.nz = 45;
+    eikonal.nb = 2;
+
+    eikonal.nx = 401;
+    eikonal.ny = 401;    
+    eikonal.nz = 401;
 
     eikonal.dx = 25.0f;
     eikonal.dy = 25.0f;
     eikonal.dz = 25.0f;
 
-    eikonal.nb = 2;
-
     eikonal.initialize();
 
     eikonal.V = new float[eikonal.nPointsB];
 
-    int interface = (int)(1000.0f/eikonal.dz) + eikonal.nxx*eikonal.nzz + eikonal.nyy*eikonal.nxx*eikonal.nzz;
-
     for (int i = 0; i < eikonal.nPointsB; ++i) 
     {
-        eikonal.V[i] = 1500.0f;
-        
-        if (i >= interface) eikonal.V[i] = 2000.0f;
+        eikonal.V[i] = 2000.0f;        
     }
 
     // Generate central shot
 
-    eikonal.set_SW(11000.0f, 11000.0f);     
-    eikonal.set_NW(11000.0f, 11000.0f);    
-    eikonal.set_SE(11000.0f, 11000.0f);    
+    float x = (float)(eikonal.nx/2)*eikonal.dx;
+    float y = (float)(eikonal.ny/2)*eikonal.dy;
+
+    eikonal.set_SW(x,y);     
+    eikonal.set_NW(x,y);    
+    eikonal.set_SE(x,y);    
 
     eikonal.shots.n_xline = 1; 
     eikonal.shots.n_yline = 1; 
-    eikonal.shots.elevation = 0.0f;
+    eikonal.shots.elevation = (float)(eikonal.nz/2)*eikonal.dz;
     
     eikonal.setGridGeometry(eikonal.shots);
 
     // Generate circular receiver survey
     
-    eikonal.nodes.xcenter = 11000.0f;
-    eikonal.nodes.ycenter = 11000.0f;
-    eikonal.nodes.offsets = {10000.0f};
-    eikonal.nodes.elevation = 0.0f;
-    eikonal.nodes.circle_spacing = 12.5f;
+    eikonal.nodes.xcenter = x;
+    eikonal.nodes.ycenter = y;
+    eikonal.nodes.offsets = {(float) eikonal.dx*(eikonal.nx - 5) / 2.0f};
+    eikonal.nodes.elevation = (float)(eikonal.nz/2)*eikonal.dz;
+    eikonal.nodes.circle_spacing = 25.0f;
     
     eikonal.setCircularGeometry(eikonal.nodes);
 
     // Compressed loop
-
-    int n = 3;
-    double t0;
-
-    eikonal.exportTimesVolume = false;
-    eikonal.exportFirstArrivals = false;
-
-    std::vector <std::string> labels {"pod_", "fim_", "fsm_"};
 
     std::cout<<"\nEikonal equation runtime test"<<std::endl;
     std::cout<<"\nModel dimensions:"<<std::endl;
@@ -83,14 +74,22 @@ int main(int argc, char **argv)
 
     // Comparing eikonal execution time
 
+    eikonal.exportTimesVolume = true;
+    eikonal.exportFirstArrivals = true;
+
+    std::vector <std::string> labels {"outputs/pod_", "outputs/fim_", "outputs/fsm_"};
+
+    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::_V2::system_clock::time_point ti, tf;
+
     eikonal.T = new float[eikonal.nPointsB]();
 
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < labels.size(); i++)
     {
         eikonal.eikonalFolder = labels[i];
         eikonal.arrivalFolder = labels[i];
 
-        t0 = omp_get_wtime();
+        ti = std::chrono::system_clock::now();
 
         eikonal.shotId = 0;   
         eikonal.eikonalType = i;
@@ -99,13 +98,19 @@ int main(int argc, char **argv)
         switch (i)
         {
         case 0:
-            std::cout<<"Podvin & Lecomte (1991) time = "<<omp_get_wtime() - t0<<" s."<<std::endl;
+            tf = std::chrono::system_clock::now();
+            elapsed_seconds = tf - ti;
+            std::cout<<"Podvin & Lecomte (1991) time = "<<elapsed_seconds.count()<<" s."<<std::endl;            
             break;
         case 1:
-            std::cout<<"Jeong & Whitaker (2008) time = "<<omp_get_wtime() - t0<<" s."<<std::endl;
+            tf = std::chrono::system_clock::now();
+            elapsed_seconds = tf - ti;
+            std::cout<<"Jeong & Whitaker (2008) time = "<<elapsed_seconds.count()<<" s."<<std::endl;
             break;
         case 2:
-            std::cout<<"Noble, Gesret and Belayouni (2014) time = "<<omp_get_wtime() - t0<<" s."<<std::endl;
+            tf = std::chrono::system_clock::now();
+            elapsed_seconds = tf - ti;
+            std::cout<<"Noble, Gesret and Belayouni (2014) time = "<<elapsed_seconds.count()<<" s."<<std::endl;
             break;
         }
     }
