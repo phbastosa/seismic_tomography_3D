@@ -1,16 +1,19 @@
-# include <omp.h>
 # include <string>
+# include <chrono>
 # include <iostream>
 
-# include "../../essentials/utils.hpp"
-# include "../../essentials/model.hpp"
-# include "../../essentials/geometry.hpp"
-# include "../../eikonal/eikonal.hpp"
-# include "../../tomography/tomography.hpp"
+# include "../../src/essentials/utils.hpp"
+# include "../../src/essentials/model.hpp"
+# include "../../src/essentials/geometry.hpp"
+# include "../../src/eikonal/eikonal.hpp"
+# include "../../src/tomography/tomography.hpp"
 
 int main(int argc, char **argv)
 {
     auto tomo = Tomography();
+
+    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::_V2::system_clock::time_point ti, tf;
 
     tomo.setParameters(argv[1]);
 
@@ -40,7 +43,7 @@ int main(int argc, char **argv)
 
     tomo.arrivalFolder = tomo.dcalPath;
 
-    double t0 = omp_get_wtime();
+    ti = std::chrono::system_clock::now();
 
     while (true)
     {
@@ -57,7 +60,11 @@ int main(int argc, char **argv)
 
     tomo.exportConvergency();
 
-    std::cout<<"\nTomography run time: "<<omp_get_wtime() - t0<<" s."<<std::endl;
+    tf = std::chrono::system_clock::now();
+
+    elapsed_seconds = tf - ti;
+
+    std::cout<<"\nTomography run time: "<<elapsed_seconds.count()<<" s."<<std::endl;
 
     return 0;
 }

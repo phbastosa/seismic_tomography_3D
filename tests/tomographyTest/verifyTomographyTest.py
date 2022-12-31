@@ -139,7 +139,7 @@ def boxPlot(models:np.ndarray, dh:np.ndarray, slices:np.ndarray, subplots:np.nda
                        ax.invert_yaxis()
     
     plt.savefig("testFigure.png", dpi = 200)
-    plt.show()
+    plt.show(block = False)
 
     return None
 
@@ -191,4 +191,4 @@ plt.title("Convergency using Tikhonov first order with 1000 of regularization pa
 plt.xlabel("Iterations number")
 plt.ylabel("L2 residuous norm = sum((dobs - dcal)**2)")
 plt.savefig("convergency.png", dpi = 200)
-plt.show()
+plt.show(block = False)

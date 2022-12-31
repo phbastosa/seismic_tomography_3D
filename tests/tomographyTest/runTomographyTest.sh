@@ -1,12 +1,12 @@
 #/bin/bash
 
-utils="../../essentials/utils.cpp"
-model="../../essentials/model.cpp"
-geometry="../../essentials/geometry.cpp"
-eikonal="../../eikonal/eikonal.cpp"
-tomography="../../tomography/tomography.cpp"
+utils="../../src/essentials/utils.cpp"
+model="../../src/essentials/model.cpp"
+geometry="../../src/essentials/geometry.cpp"
+eikonal="../../src/eikonal/eikonal.cpp"
+tomography="../../src/tomography/tomography.cpp"
 
-flags="-fopenmp -fast -acc -ta=tesla,cc60 -std=c++11 -g -lm"
+flags="-acc -fast -ta=tesla,cc60 -std=c++11 -g -lm"
 
 python3 generateTomoModels.py
 
