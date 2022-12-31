@@ -1,8 +1,8 @@
 # include <string>
 # include <iostream>
 
-# include "../../essentials/utils.hpp"
-# include "../../essentials/model.hpp"
+# include "../../src/essentials/utils.hpp"
+# include "../../src/essentials/model.hpp"
 
 int main(int argc, char**argv)
 {
