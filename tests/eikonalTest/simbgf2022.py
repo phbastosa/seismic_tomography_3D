@@ -48,13 +48,10 @@ else:
     xyPlane = int(nz[n] / 2)
 
     model = readBinaryVolume(nz[n],nx[n],ny[n],"outputs/refractiveModel_45x881x881_25m.bin")
-    times = readBinaryVolume(nz[n],nx[n],ny[n],"outputs/central_eikonal_nz45_nx881_ny881_shot_1.bin")
+    times = readBinaryVolume(nz[n],nx[n],ny[n],"outputs/pod_25m_eikonal_nz45_nx881_ny881_shot_5.bin")
 
     rx, ry, rz = np.loadtxt("outputs/nodesPosition.txt", delimiter = ",", unpack = True)
-
-    sx = np.array([1000, 21000, 1000, 21000, 11000])
-    sy = np.array([1000, 1000, 21000, 21000, 11000])
-    sz = np.zeros(len(sx))
+    sx, sy, sz = np.loadtxt("outputs/shotsPosition.txt", delimiter = ",", unpack = True)
 
     nsrc = len(sx)
     nrec = len(rx)
@@ -196,9 +193,9 @@ else:
         plt.plot(tta, label = "Analytic travel times")
 	
         for n in range(len(dh)):
-            pod = readBinaryArray(nrec,f"outputs/pod_{s+1}_{dh[n]:.0f}m.bin")
-            fim = readBinaryArray(nrec,f"outputs/fim_{s+1}_{dh[n]:.0f}m.bin")
-            fsm = readBinaryArray(nrec,f"outputs/fsm_{s+1}_{dh[n]:.0f}m.bin")
+            pod = readBinaryArray(nrec,f"outputs/pod_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
+            fim = readBinaryArray(nrec,f"outputs/fim_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
+            fsm = readBinaryArray(nrec,f"outputs/fsm_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
 
             plt.plot(pod, label = f"Podvin (1991) {dh[n]:.0f} m spacing")
             plt.plot(fim, label = f"Jeong (2008) {dh[n]:.0f} m spacing")
@@ -222,7 +219,7 @@ else:
  
         ax2 = plt.subplot(G[4:6,:])
         for n in range(len(dh)):
-            pod = readBinaryArray(nrec,f"outputs/pod_{s+1}_{dh[n]:.0f}m.bin")
+            pod = readBinaryArray(nrec,f"outputs/pod_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
 
             plt.plot(np.abs(tta - pod) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
@@ -237,7 +234,7 @@ else:
 
         ax3 = plt.subplot(G[6:8,:])
         for n in range(len(dh)):
-            fim = readBinaryArray(nrec,f"outputs/fim_{s+1}_{dh[n]:.0f}m.bin")
+            fim = readBinaryArray(nrec,f"outputs/fim_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
 
             plt.plot(np.abs(tta - fim) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
@@ -252,7 +249,7 @@ else:
 
         ax4 = plt.subplot(G[8:,:])
         for n in range(len(dh)):
-            fsm = readBinaryArray(nrec,f"outputs/fsm_{s+1}_{dh[n]:.0f}m.bin")
+            fsm = readBinaryArray(nrec,f"outputs/fsm_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
 
             plt.plot(np.abs(tta - fsm) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
