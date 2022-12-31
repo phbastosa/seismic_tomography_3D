@@ -25,7 +25,7 @@
 
 ### Eikonal equation runtime test
 
-## Asus x5570zd: Ryzen 5 3500 and GTX 1050 4GB mobile
+## Asus x5570zd: Ryzen 5 2500u and GTX 1050 4GB mobile
 
     Model dimensions:
     Samples in x: 881 -> 22000 m
