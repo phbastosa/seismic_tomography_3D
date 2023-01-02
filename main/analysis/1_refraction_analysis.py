@@ -15,21 +15,28 @@ def analiticalRefraction(v,z,x):
 
     return t_direct, t_refrac
 
-V = np.zeros((201,201,201)) + 2000
+nx = 801
+ny = 81
+nz = 81
 
-V.flatten("F").astype("float32", order = "F").tofile("../inputs/models/homogeneous_201x201x201_10m.bin")
+dh = 12.5
 
+v = np.array([2000,3500])
+z = np.array([500]) 
 
-# v = np.array([2000,3000,4000])
-# z = np.array([800,300]) 
+refractiveModel = np.zeros((nz,nx,ny))
 
-# x = np.linspace(500, 9500, 721)
+refractiveModel[:int(z[0]/dh),:,:] = v[0]
+refractiveModel[int(z[0]/dh):,:,:] = v[1]
 
-# td, tr = analiticalRefraction(v,z,x)
+refractiveModel.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/refractiveModel_{nz}x{nx}x{ny}_{dh:.1f}m.bin")
 
-# plt.plot(td)
-# plt.plot(tr[0])
-# plt.plot(tr[1])
+x = np.linspace(500, 9500, 721)
 
-# plt.gca().invert_yaxis()
-# plt.show()
+td, tr = analiticalRefraction(v,z,x)
+
+plt.plot(td)
+plt.plot(tr[0])
+
+plt.gca().invert_yaxis()
+plt.show()

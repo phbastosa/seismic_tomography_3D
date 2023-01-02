@@ -2,42 +2,42 @@
 # Model paramenters -------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
  
-nx = 201                               # x dimension of model <int>
-ny = 201                               # y dimension of model <int>
-nz = 201                                # z dimension of model <int>
+nx = 801                               # x dimension of model <int>
+ny = 81                                # y dimension of model <int>
+nz = 81                               # z dimension of model <int>
  
-dx = 10                              # x sample spacing of model [m] <float>
-dy = 10                              # y sample spacing of model [m] <float> 
-dz = 10                              # z sample spacing of model [m] <float>  
+dx = 12.5                              # x sample spacing of model [m] <float>
+dy = 12.5                              # y sample spacing of model [m] <float> 
+dz = 12.5                              # z sample spacing of model [m] <float>  
 
-modelPath = "../inputs/models/homogeneous_201x201x201_10m.bin"        # Velocity model location
+modelPath = "../../inputs/models/refractiveModel_81x801x81_12.5m.bin"        # Velocity model location
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-reciprocity = True                     # Shots become nodes and nodes become shots <bool>  
+reciprocity = False                     # Shots become nodes and nodes become shots <bool>  
 saveGeometry = True                    # To save shots and nodes position in a .txt file <bool>
 
 # Grid SHOTS geometry                        
 
 xShotNumber = 1                     # Number of sources in x direction <int>
 yShotNumber = 1                     # Number of sources in y direction <int>
-shotSW = [1000, 1000]    # NW       # (x,y) [m] <float>    
-shotNW = [1000, 1000]    #  |       # (x,y) [m] <float>    
-shotSE = [1000, 1000]    # SW -- SE # (x,y) [m] <float>   
+shotSW = [500, 500]    # NW       # (x,y) [m] <float>    
+shotNW = [500, 500]    #  |       # (x,y) [m] <float>    
+shotSE = [500, 500]    # SW -- SE # (x,y) [m] <float>   
 
-shotsElevation = 1000               # Sources elevation [m]- flat surface <float>             
+shotsElevation = 0               # Sources elevation [m]- flat surface <float>             
 
 # Grid NODES geometry                        
 
-xNodeNumber = 37                     # Number of sources in x direction
-yNodeNumber = 37                     # Number of sources in y direction
-nodeSW = [100, 100]       # NW       # (x,y) in float WITHOUT SPACES    
-nodeNW = [100, 1900]      #  |       # (x,y) in float WITHOUT SPACES   
-nodeSE = [1900, 100]      # SW -- SE # (x,y) in float WITHOUT SPACES   
+xNodeNumber = 721                     # Number of sources in x direction
+yNodeNumber = 1                     # Number of sources in y direction
+nodeSW = [1000, 500]       # NW       # (x,y) in float WITHOUT SPACES    
+nodeNW = [1000, 500]      #  |       # (x,y) in float WITHOUT SPACES   
+nodeSE = [9500, 500]      # SW -- SE # (x,y) in float WITHOUT SPACES   
 
-nodesElevation = 1000                 # Receivers elevation [m] - flat surface <float>
+nodesElevation = 0                 # Receivers elevation [m] - flat surface <float>
 
 #-------------------------------------------------------------------------------------------------
 # Seismic modeling parameters --------------------------------------------------------------------
@@ -46,12 +46,12 @@ nodesElevation = 1000                 # Receivers elevation [m] - flat surface <
 nb = 50                              # Total samples in boundary 
 factor = 0.0045                      # Attenuation factor to apply ABC
 
-nt = 1001                            # Total samples in time domain
+nt = 4001                            # Total samples in time domain
 dt = 0.001                           # Sample spacing in time domain
 nsrc = 330                           # Total samples in source
 
-seismFolder = "../inputs/seismograms/"           #
-waveletPath = "../inputs/wavelets/sourceZeroPhase_330_30Hz_1ms.bin"     #
+seismFolder = "../../inputs/seismograms/"           #
+waveletPath = "../../inputs/wavelets/sourceZeroPhase_330_30Hz_1ms.bin"     #
 
 #-------------------------------------------------------------------------------------------------
 # Tomography parameters --------------------------------------------------------------------------

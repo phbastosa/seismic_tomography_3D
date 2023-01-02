@@ -1,10 +1,10 @@
 # include <chrono>
 # include <iostream>
 
-# include "../src/essentials/wave.hpp"
-# include "../src/essentials/model.hpp"
-# include "../src/essentials/utils.hpp"
-# include "../src/essentials/geometry.hpp"
+# include "../../src/essentials/wave.hpp"
+# include "../../src/essentials/model.hpp"
+# include "../../src/essentials/utils.hpp"
+# include "../../src/essentials/geometry.hpp"
 
 int main (int argc, char**argv)
 {
