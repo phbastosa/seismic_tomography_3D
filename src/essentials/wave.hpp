@@ -14,40 +14,36 @@ void progressMessage(int timeStep, int nt, float dt, int sId, float sx, float sy
     }
 }
 
-void dampingGeneration(float * damp1D, float * damp2D, float * damp3D, float factor, int nb)
+void pml_dampers(float * damp1D, float * damp2D, float * damp3D, float factor, int nb)
 {
+    float pi = 4.0f * atan(1.0f);
+
     /* 1D damp construction */
     for (int i = 0; i < nb; i++) 
     {
-        damp1D[i] = expf(-powf(factor * (nb - i), 2.0f)); 
+        damp1D[i] = factor * (1.0 - cos(pi * (nb - i) / (2.0 * nb)));
     }
 
     /* 2D damp construction */
     for(int i = 0; i < nb; i++) 
     {
-        damp2D[i + i*nb] = damp1D[i];            
-
-        for (int j = i; j < nb; j++)
+        for (int j = 0; j < nb; j++)
         {   
-            damp2D[j + i*nb] = damp1D[i];
-            damp2D[i + j*nb] = damp1D[i];
-        }    
+            damp2D[j + i*nb] += damp1D[i]; // up to bottom
+            damp2D[i + j*nb] += damp1D[i]; // left to right
+        }
     }
 
     /* 3D damp construction */
     for (int i  = 0; i < nb; i++)
     {
-        for (int j = 0; j < nb; j++)
+        for(int j = 0; j < nb; j++)
         {
-            damp3D[i + j*nb + j*nb*nb] = damp2D[i + j*nb];
-        }
-
-        for(int j = 0; j < nb-1; j++)
-        {
-            for(int k = j+1; k < nb; k++)
+            for(int k = 0; k < nb; k++)
             {
-                damp3D[i + j*nb + k*nb*nb] = damp3D[i + j*nb + j*nb*nb];
-                damp3D[i + k*nb + j*nb*nb] = damp3D[i + j*nb + j*nb*nb];
+                damp3D[i + j*nb + k*nb*nb] += damp2D[i + j*nb]; // XY plane
+                damp3D[i + j*nb + k*nb*nb] += damp2D[j + k*nb]; // ZX plane
+                damp3D[i + j*nb + k*nb*nb] += damp2D[i + k*nb]; // ZY plane
             }
         }
     }        
@@ -73,38 +69,161 @@ void applyWavelet(float * U_pre, float * wavelet, int timeStep, int nsrc, int sI
     }
 }
 
-void wavePropagation(float * V, float * U_pas, float * U_pre, float * U_fut, int nxx, int nyy, int nzz, float dx, float dy, float dz, float dt)
+void pml_wavePropagation(float * V, float * U_pas, float * U_pre, float * U_fut, float * damp1D, float * damp2D, float * damp3D, int nb, int nxx, int nyy, int nzz, float dx, float dy, float dz, float dt)
 {
     int nPoints = nxx*nyy*nzz;
 
-    # pragma acc parallel loop present(V[0:nPoints],U_pas[0:nPoints],U_pre[0:nPoints],U_fut[0:nPoints])
+    float alpha1, alpha2;
+    float d2_Px2, d2_Py2, d2_Pz2;
+
+    # pragma acc parallel loop present(V[0:nPoints],U_pas[0:nPoints],U_pre[0:nPoints],U_fut[0:nPoints],damp1D[0:nb],damp2D[0:nb*nb],damp3D[0:nb*nb*nb])
     for (int index = 0; index < nPoints; index++) 
     {
         int k = (int) (index / (nxx*nzz));         // y direction
         int j = (int) (index - k*nxx*nzz) / nzz;   // x direction
         int i = (int) (index - j*nzz - k*nxx*nzz); // z direction
 
-        if((i > 3) && (i < nzz-4) && (j > 3) && (j < nxx-4) && (k > 3) && (k < nyy-4)) 
+        float damper = 0.0f;
+
+        if((i >= 4) && (i < nzz-4) && (j >= 4) && (j < nxx-4) && (k >= 4) && (k < nyy-4)) 
         {
-            float d2_Px2 = (- 9.0f*(U_pre[i + (j-4)*nzz + k*nxx*nzz] + U_pre[i + (j+4)*nzz + k*nxx*nzz])
-                        +   128.0f*(U_pre[i + (j-3)*nzz + k*nxx*nzz] + U_pre[i + (j+3)*nzz + k*nxx*nzz])
-                        -  1008.0f*(U_pre[i + (j-2)*nzz + k*nxx*nzz] + U_pre[i + (j+2)*nzz + k*nxx*nzz])
-                        +  8064.0f*(U_pre[i + (j-1)*nzz + k*nxx*nzz] + U_pre[i + (j+1)*nzz + k*nxx*nzz])
-                        - 14350.0f*(U_pre[i + j*nzz + k*nxx*nzz]))/(5040.0f*powf(dx, 2.0f));
+            d2_Px2 = (- 9.0f*(U_pre[i + (j-4)*nzz + k*nxx*nzz] + U_pre[i + (j+4)*nzz + k*nxx*nzz])
+                  +   128.0f*(U_pre[i + (j-3)*nzz + k*nxx*nzz] + U_pre[i + (j+3)*nzz + k*nxx*nzz])
+                  -  1008.0f*(U_pre[i + (j-2)*nzz + k*nxx*nzz] + U_pre[i + (j+2)*nzz + k*nxx*nzz])
+                  +  8064.0f*(U_pre[i + (j-1)*nzz + k*nxx*nzz] + U_pre[i + (j+1)*nzz + k*nxx*nzz])
+                  - 14350.0f*(U_pre[i + j*nzz + k*nxx*nzz]))/(5040.0f*powf(dx, 2.0f));
 
-            float d2_Py2 = (- 9.0f*(U_pre[i + j*nzz + (k-4)*nxx*nzz] + U_pre[i + j*nzz + (k+4)*nxx*nzz])
-                        +   128.0f*(U_pre[i + j*nzz + (k-3)*nxx*nzz] + U_pre[i + j*nzz + (k+3)*nxx*nzz])
-                        -  1008.0f*(U_pre[i + j*nzz + (k-2)*nxx*nzz] + U_pre[i + j*nzz + (k+2)*nxx*nzz])
-                        +  8064.0f*(U_pre[i + j*nzz + (k-1)*nxx*nzz] + U_pre[i + j*nzz + (k+1)*nxx*nzz])
-                        - 14350.0f*(U_pre[i + j*nzz + k*nxx*nzz]))/(5040.0f*powf(dy,2.0f));
+            d2_Py2 = (- 9.0f*(U_pre[i + j*nzz + (k-4)*nxx*nzz] + U_pre[i + j*nzz + (k+4)*nxx*nzz])
+                  +   128.0f*(U_pre[i + j*nzz + (k-3)*nxx*nzz] + U_pre[i + j*nzz + (k+3)*nxx*nzz])
+                  -  1008.0f*(U_pre[i + j*nzz + (k-2)*nxx*nzz] + U_pre[i + j*nzz + (k+2)*nxx*nzz])
+                  +  8064.0f*(U_pre[i + j*nzz + (k-1)*nxx*nzz] + U_pre[i + j*nzz + (k+1)*nxx*nzz])
+                  - 14350.0f*(U_pre[i + j*nzz + k*nxx*nzz]))/(5040.0f*powf(dy,2.0f));
 
-            float d2_Pz2 = (- 9.0f*(U_pre[(i-4) + j*nzz + k*nxx*nzz] + U_pre[(i+4) + j*nzz + k*nxx*nzz])
-                        +   128.0f*(U_pre[(i-3) + j*nzz + k*nxx*nzz] + U_pre[(i+3) + j*nzz + k*nxx*nzz])
-                        -  1008.0f*(U_pre[(i-2) + j*nzz + k*nxx*nzz] + U_pre[(i+2) + j*nzz + k*nxx*nzz])
-                        +  8064.0f*(U_pre[(i-1) + j*nzz + k*nxx*nzz] + U_pre[(i+1) + j*nzz + k*nxx*nzz])
-                        - 14350.0f*(U_pre[i + j*nzz + k*nxx*nzz]))/(5040.0f*powf(dz,2.0f));
+            d2_Pz2 = (- 9.0f*(U_pre[(i-4) + j*nzz + k*nxx*nzz] + U_pre[(i+4) + j*nzz + k*nxx*nzz])
+                  +   128.0f*(U_pre[(i-3) + j*nzz + k*nxx*nzz] + U_pre[(i+3) + j*nzz + k*nxx*nzz])
+                  -  1008.0f*(U_pre[(i-2) + j*nzz + k*nxx*nzz] + U_pre[(i+2) + j*nzz + k*nxx*nzz])
+                  +  8064.0f*(U_pre[(i-1) + j*nzz + k*nxx*nzz] + U_pre[(i+1) + j*nzz + k*nxx*nzz])
+                  - 14350.0f*(U_pre[i + j*nzz + k*nxx*nzz]))/(5040.0f*powf(dz,2.0f));
+        
+            // 1D damping
+            if((i < nb) && (j >= nb) && (j < nxx-nb) && (k >= nb) && (k < nyy-nb)) 
+            {
+                damper = damp1D[i];
+            }         
+            else if((i >= nzz-nb) && (i < nzz) && (j >= nb) && (j < nxx-nb) && (k >= nb) && (k < nyy-nb)) 
+            {
+                damper = damp1D[nb-(i-(nzz-nb))-1];
+            }         
+            else if((i >= nb) && (i < nzz-nb) && (j >= 0) && (j < nb) && (k >= nb) && (k < nyy-nb)) 
+            {
+                damper = damp1D[j];
+            }
+            else if((i >= nb) && (i < nzz-nb) && (j >= nxx-nb) && (j < nxx) && (k >= nb) && (k < nyy-nb)) 
+            {
+                damper = damp1D[nb-(j-(nxx-nb))-1];
+            }
+            else if((i >= nb) && (i < nzz-nb) && (j >= nb) && (j < nxx-nb) && (k >= 0) && (k < nb)) 
+            {
+                damper = damp1D[k];
+            }
+            else if((i >= nb) && (i < nzz-nb) && (j >= nb) && (j < nxx-nb) && (k >= nyy-nb) && (k < nyy)) 
+            {
+                damper = damp1D[nb-(k-(nyy-nb))-1];
+            }
 
-            U_fut[index] = powf(dt, 2.0f) * powf(V[index], 2.0f) * (d2_Px2 + d2_Py2 + d2_Pz2) + 2.0f*U_pre[index] - U_pas[index];
+            // 2D damping 
+            else if((i >= nb) && (i < nzz-nb) && (j >= 0) && (j < nb) && (k >= 0) && (k < nb))
+            {
+                damper = damp2D[j + k*nb];
+            }
+            else if((i >= nb) && (i < nzz-nb) && (j >= nxx-nb) && (j < nxx) && (k >= 0) && (k < nb))
+            {
+                damper = damp2D[nb-(j-(nxx-nb))-1 + k*nb];
+            }
+            else if((i >= nb) && (i < nzz-nb) && (j >= 0) && (j < nb) && (k >= nyy-nb) && (k < nyy))
+            {
+                damper = damp2D[j + (nb-(k-(nyy-nb))-1)*nb];
+            }
+            else if((i >= nb) && (i < nzz-nb) && (j >= nxx-nb) && (j < nxx) && (k >= nyy-nb) && (k < nyy))
+            {
+                damper = damp2D[nb-(j-(nxx-nb))-1 + (nb-(k-(nyy-nb))-1)*nb];
+            }
+
+
+            else if((i >= 0) && (i < nb) && (j >= nb) && (j < nxx-nb) && (k >= 0) && (k < nb))
+            {
+                damper = damp2D[i + k*nb];
+            }
+            else if((i >= nzz-nb) && (i < nzz) && (j >= nb) && (j < nxx-nb) && (k >= 0) && (k < nb))
+            {
+                damper = damp2D[nb-(i-(nzz-nb))-1 + k*nb];
+            }
+            else if((i >= 0) && (i < nb) && (j >= nb) && (j < nxx-nb) && (k >= nyy-nb) && (k < nyy))
+            {
+                damper = damp2D[i + (nb-(k-(nyy-nb))-1)*nb];
+            }
+            else if((i >= nzz-nb) && (i < nzz) && (j >= nb) && (j < nxx-nb) && (k >= nyy-nb) && (k < nyy))
+            {
+                damper = damp2D[nb-(i-(nzz-nb))-1 + (nb-(k-(nyy-nb))-1)*nb];
+            }
+
+
+            else if((i >= 0) && (i < nb) && (j >= 0) && (j < nb) && (k >= nb) && (k < nyy-nb))
+            {
+                damper = damp2D[i + j*nb];
+            }
+            else if((i >= nzz-nb) && (i < nzz) && (j >= 0) && (j < nb) && (k >= nb) && (k < nyy-nb))
+            {
+                damper = damp2D[nb-(i-(nzz-nb))-1 + j*nb];
+            }
+            else if((i >= 0) && (i < nb) && (j >= nxx-nb) && (j < nxx) && (k >= nb) && (k < nyy-nb))
+            {
+                damper = damp2D[i + (nb-(j-(nxx-nb))-1)*nb];
+            }
+            else if((i >= nzz-nb) && (i < nzz) && (j >= nxx-nb) && (j < nxx) && (k >= nb) && (k < nyy-nb))
+            {
+                damper = damp2D[nb-(i-(nzz-nb))-1 + (nb-(j-(nxx-nb))-1)*nb];
+            }
+
+            // 3D damping
+            else if((i >= 0) && (i < nb) && (j >= 0) && (j < nb) && (k >= 0) && (k < nb))
+            {
+                damper = damp3D[i + j*nb + k*nb*nb];
+            }
+            else if((i >= nzz-nb) && (i < nzz) && (j >= 0) && (j < nb) && (k >= 0) && (k < nb))
+            {
+                damper = damp3D[nb-(i-(nzz-nb))-1 + j*nb + k*nb*nb];
+            }
+            else if((i >= 0) && (i < nb) && (j >= nxx-nb) && (j < nxx) && (k >= 0) && (k < nb))
+            {
+                damper = damp3D[i + (nb-(j-(nxx-nb))-1)*nb + k*nb*nb];
+            }
+            else if((i >= 0) && (i < nb) && (j >= 0) && (j < nb) && (k >= nyy-nb) && (k < nyy))
+            {
+                damper = damp3D[i + j*nb + (nb-(k-(nyy-nb))-1)*nb*nb];
+            }
+            else if((i >= nzz-nb) && (i < nzz) && (j >= nxx-nb) && (j < nxx) && (k >= 0) && (k < nb))
+            {
+                damper = damp3D[nb-(i-(nzz-nb))-1 + (nb-(j-(nxx-nb))-1)*nb + k*nb*nb];
+            }
+            else if((i >= nzz-nb) && (i < nzz) && (j >= 0) && (j < nb) && (k >= nyy-nb) && (k < nyy))
+            {
+                damper = damp3D[nb-(i-(nzz-nb))-1 + j*nb + (nb-(k-(nyy-nb))-1)*nb*nb];
+            }
+            else if((i >= 0) && (i < nb) && (j >= nxx-nb) && (j < nxx) && (k >= nyy-nb) && (k < nyy))
+            {
+                damper = damp3D[i + (nb-(j-(nxx-nb))-1)*nb + (nb-(k-(nyy-nb))-1)*nb*nb];
+            }
+            else if((i >= nzz-nb) && (i < nzz) && (j >= nxx-nb) && (j < nxx) && (k >= nyy-nb) && (k < nyy))
+            {
+                damper = damp3D[nb-(i-(nzz-nb))-1 + (nb-(j-(nxx-nb))-1)*nb + (nb-(k-(nyy-nb))-1)*nb*nb];
+            }
+
+
+            alpha1 = (damper*dt - 1.0)*U_pas[index];
+            alpha2 = (2.0 - damper*damper*dt*dt) * U_pre[index];
+
+            U_fut[index] = 1.0/(1.0 + damper*dt)*(alpha2 + alpha1 + V[index]*V[index]*dt*dt*(d2_Pz2 + d2_Px2 + d2_Py2));
         } 
     }
 }    
