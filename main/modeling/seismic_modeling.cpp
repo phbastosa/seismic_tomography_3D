@@ -8,6 +8,8 @@
 
 int main (int argc, char**argv)
 {
+    auto ti = std::chrono::system_clock::now();
+
     auto utils = Utils();
     auto model = Model();
     auto geometry = Geometry();
@@ -38,7 +40,7 @@ int main (int argc, char**argv)
     float * U_pre = new float[model.nPointsB]();
     float * U_fut = new float[model.nPointsB]();
 
-    // Absorbing boundary condition
+    // Absorbing boundary condition - Perfectly Matched Layers (PML)
 
     float factor = std::stof(utils.catchParameter("factor", parameters));
 
@@ -46,7 +48,7 @@ int main (int argc, char**argv)
     float * damp2D = new float[model.nb*model.nb]();
     float * damp3D = new float[model.nb*model.nb*model.nb]();
 
-    dampingGeneration(damp1D, damp2D, damp3D, factor, model.nb);
+    pml_dampers(damp1D, damp2D, damp3D, factor, model.nb);
 
     // Geometry
 
@@ -117,8 +119,6 @@ int main (int argc, char**argv)
 
     float * seismogram = new float[nt * geometry.nodes.all]();
 
-    auto ti = std::chrono::system_clock::now();
-    
     // Shots loop
 
     for (int shotId = 0; shotId < geometry.shots.all; shotId++)
@@ -151,9 +151,7 @@ int main (int argc, char**argv)
                 
                 applyWavelet(U_pre,wavelet,timeStep,nsrc,sId);
 
-                wavePropagation(V,U_pas,U_pre,U_fut,model.nxx,model.nyy,model.nzz,model.dx,model.dy,model.dz,dt);
-
-                dampApplication(U_pre,U_fut,damp1D,damp2D,damp3D,model.nxx,model.nyy,model.nzz,model.nb);
+                pml_wavePropagation(V,U_pas,U_pre,U_fut,damp1D,damp2D,damp3D,model.nb,model.nxx,model.nyy,model.nzz,model.dx,model.dy,model.dz,dt);
 
                 wavefieldUpdate(U_pas,U_pre,U_fut,model.nPointsB);
 
@@ -165,7 +163,7 @@ int main (int argc, char**argv)
         # pragma acc exit data delete(V[0:model.nPointsB])
         # pragma acc exit data delete(U_pas[0:model.nPointsB])
         # pragma acc exit data delete(U_pre[0:model.nPointsB])
-        # pragma acc exit data delete(U_fut[0:model.nPointsB])
+        # pragma acc exit data copyout(U_fut[0:model.nPointsB])
         # pragma acc exit data delete(damp2D[0:model.nb*model.nb])
         # pragma acc exit data delete(damp3D[0:model.nb*model.nb*model.nb])
         # pragma acc exit data copyout(seismogram[0:nt*geometry.nodes.all])
