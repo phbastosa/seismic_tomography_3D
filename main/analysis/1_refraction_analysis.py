@@ -16,13 +16,13 @@ def analiticalRefraction(v,z,x):
     return t_direct, t_refrac
 
 nx = 801
-ny = 81
-nz = 81
+ny = 161
+nz = 201
 
 dh = 12.5
 
 v = np.array([2000,3500])
-z = np.array([500]) 
+z = np.array([1200]) 
 
 refractiveModel = np.zeros((nz,nx,ny))
 
@@ -31,7 +31,7 @@ refractiveModel[int(z[0]/dh):,:,:] = v[1]
 
 refractiveModel.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/refractiveModel_{nz}x{nx}x{ny}_{dh:.1f}m.bin")
 
-x = np.linspace(500, 9500, 721)
+x = np.linspace(1000, 9500, 321)
 
 td, tr = analiticalRefraction(v,z,x)
 
