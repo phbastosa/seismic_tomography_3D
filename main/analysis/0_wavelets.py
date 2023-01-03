@@ -69,7 +69,7 @@ def fourierInterpolation(signal, dt, new_dt):
 
 nsrc = 30
 dt = 0.01
-fmax = 30
+fmax = 20
 
 ricker = rickerGenerator(fmax, nsrc, dt)
 
@@ -155,7 +155,7 @@ plt.xlabel("Frequência [Hz]", fontsize = 15)
 plt.ylabel("Ângulo [°]", fontsize = 15)
 
 plt.tight_layout()
-plt.savefig("../figures/4_zeroPhaseRicker.png", dpi = 200)
+plt.savefig("../../figures/4_zeroPhaseRicker.png", dpi = 200)
 plt.show(block=False)
 
 #--------------------------------------------------------------
@@ -188,7 +188,7 @@ plt.xlabel("Frequência [Hz]", fontsize = 15)
 plt.ylabel("Ângulo [°]", fontsize = 15)
 
 plt.tight_layout()
-plt.savefig("../figures/5_minPhaseRicker.png", dpi = 200)
+plt.savefig("../../figures/5_minPhaseRicker.png", dpi = 200)
  
 plt.show(block=False)
 
@@ -201,8 +201,8 @@ mRicker = fourierInterpolation(rickerReconst, dt, new_dt)
 
 new_ns = len(zRicker)
 
-zRicker.astype("float32", order = "F").tofile(f"../inputs/wavelets/sourceZeroPhase_{new_ns}_{fmax:.0f}Hz_{new_dt*1000:.0f}ms.bin")
-mRicker.astype("float32", order = "F").tofile(f"../inputs/wavelets/sourceMinPhase_{new_ns}_{fmax:.0f}Hz_{new_dt*1000:.0f}ms.bin")
+zRicker.astype("float32", order = "F").tofile(f"../../inputs/wavelets/sourceZeroPhase_{new_ns}_{fmax:.0f}Hz_{new_dt*1000:.0f}ms.bin")
+mRicker.astype("float32", order = "F").tofile(f"../../inputs/wavelets/sourceMinPhase_{new_ns}_{fmax:.0f}Hz_{new_dt*1000:.0f}ms.bin")
 
 new_ns += 3000
 
@@ -252,5 +252,5 @@ ax[1][1].set_xlabel("Frequência [Hz]", fontsize = 15)
 ax[1][1].set_ylabel("Amplitude", fontsize = 15)
 
 plt.tight_layout()
-plt.savefig("../figures/7_targetWavelets.png", dpi = 200)
+plt.savefig("../../figures/7_targetWavelets.png", dpi = 200)
 plt.show(block = False)
