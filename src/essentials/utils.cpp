@@ -1,9 +1,9 @@
-# include <omp.h>
 # include <cmath>
 # include <vector>
 # include <string>
 # include <sstream>
 # include <fstream>
+# include <iostream>
 # include <algorithm>
 
 # include "utils.hpp"
@@ -54,6 +54,8 @@ void Utils::writeBinaryFloat(std::string path, float *array, int n)
     {
         throw std::invalid_argument("Error: file could not be opened!");
     }
+
+    std::cout<<"Binary file was written with name " + path<<std::endl;
 
     file.close();
 }

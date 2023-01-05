@@ -55,6 +55,9 @@ private:
     /* */
     void nobleFSM();
 
+    /* */
+    void rayTracing();
+
 public:    
     
     /* 0 - podvin & Lecomte (1991); 
@@ -69,14 +72,26 @@ public:
     float * T;                           // Travel times volume
     float * S;                           // Slowness volume 
 
+    float * illumination;                // Illumination matrix for all shots 
+
     bool exportTimesVolume;              // To set if you want to write the times volume 
     bool exportFirstArrivals;            // To set if you want to write the first arrivals
+    bool exportIllumination;             // To set if you want to write illumination matrix
+    bool exportRayPosition;              // To set if you want to write ray positions 
 
+    std::string raysFolder;              // Folder to write ray position points 
     std::string eikonalFolder;           // Folder to write travel times volume 
     std::string arrivalFolder;           // Folder to write first arrivals
+    std::string illuminationFolder;      // Folder to write illumination volume
 
     /* */
     void eikonalComputing();
+
+    /* */
+    void writeIllumination();
+    
+    /* */
+    void setEikonalParameters(char * parameters);
 };
 
 # endif

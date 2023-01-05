@@ -6,8 +6,8 @@ geometry="../../src/essentials/geometry.cpp"
 
 flags="-acc -fast -ta=tesla,cc60 -std=c++11 -g -lm"
 
-pgc++ $utils $model $geometry seismic_modeling.cpp $flags -o seismic_modeling.exe
+pgc++ $utils $model $geometry acoustic_main.cpp $flags -o acoustic_main.exe
 
-./seismic_modeling.exe ../parameters.txt
+./acoustic_main.exe ../parameters.txt
 
 rm *.o *.exe

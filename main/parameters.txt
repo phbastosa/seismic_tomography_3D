@@ -2,96 +2,108 @@
 # Model paramenters -------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
  
-nx = 201                               # x dimension of model <int>
-ny = 201                               # y dimension of model <int>
-nz = 201                               # z dimension of model <int>
- 
-dx = 10                              # x sample spacing of model [m] <float>
-dy = 10                              # y sample spacing of model [m] <float> 
-dz = 10                              # z sample spacing of model [m] <float>  
+nx = 481   # x dimension of model <int>
+ny = 41    # y dimension of model <int>
+nz = 51    # z dimension of model <int>
 
-modelPath = "../../inputs/models/homogeneous_201x201x201_10m.bin"        # Velocity model location
+dx = 12.5  # x sample spacing of model [m] <float>
+dy = 12.5  # y sample spacing of model [m] <float> 
+dz = 12.5  # z sample spacing of model [m] <float>  
+
+modelPath = "../../inputs/models/refractiveModel_51x481x41_12.5m.bin"   # Velocity model location
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-reciprocity = False                    # Shots become nodes and nodes become shots <bool>  
-saveGeometry = True                    # To save shots and nodes position in a .txt file <bool>
+reciprocity = False   # Shots become nodes and nodes become shots <bool>  
+saveGeometry = True   # To save shots and nodes position in a .txt file <bool>
 
 # Grid SHOTS geometry                        
 
-xShotNumber = 1                      # Number of sources in x direction <int>
-yShotNumber = 1                      # Number of sources in y direction <int>
-shotSW = [1000, 1000]       # NW       # (x,y) [m] <float>    
-shotNW = [1000, 1000]       #  |       # (x,y) [m] <float>    
-shotSE = [1000, 1000]       # SW -- SE # (x,y) [m] <float>   
+xShotNumber = 1     # Number of sources in x direction <int>
+yShotNumber = 1     # Number of sources in y direction <int>
+shotSW = [500, 250]   # NW       # (x,y) [m] <float>    
+shotNW = [500, 250]   #  |       # (x,y) [m] <float>    
+shotSE = [500, 250]   # SW -- SE # (x,y) [m] <float>   
 
-shotsElevation = 1000              # Sources elevation [m]- flat surface <float>             
+shotsElevation = 0  # Sources elevation [m]- flat surface <float>             
 
 # Grid NODES geometry                        
 
-xNodeNumber = 19                      # Number of sources in x direction
-yNodeNumber = 19                      # Number of sources in y direction
-nodeSW = [100, 100]      # NW       # (x,y) in float WITHOUT SPACES    
-nodeNW = [100, 1900]      #  |       # (x,y) in float WITHOUT SPACES   
-nodeSE = [1900, 100]      # SW -- SE # (x,y) in float WITHOUT SPACES   
+xNodeNumber = 91       # Number of sources in x direction
+yNodeNumber = 1        # Number of sources in y direction
+nodeSW = [1000, 250]   # NW       # (x,y) in float WITHOUT SPACES    
+nodeNW = [1000, 250]   #  |       # (x,y) in float WITHOUT SPACES   
+nodeSE = [5500, 250]   # SW -- SE # (x,y) in float WITHOUT SPACES   
 
-nodesElevation = 1000                 # Receivers elevation [m] - flat surface <float>
+nodesElevation = 0     # Receivers elevation [m] - flat surface <float>
+
+shotsPath = "../../outputs/geometry/shots.txt"   # Full path of receivers position     
+nodesPath = "../../outputs/geometry/nodes.txt"   # Full path of shots position   
 
 #-------------------------------------------------------------------------------------------------
 # Seismic modeling parameters --------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nb = 100                             # Total samples in boundary 
-factor = 100                         # Attenuation factor to apply in PML
+nb = 200          # Total samples in boundary 
+factor = 0.0      # Attenuation factor to apply in PML
 
-nt = 5001                            # Total samples in time domain
-dt = 0.001                           # Sample spacing in time domain
-nsrc = 330                           # Total samples in source
+nt = 2501        # Total samples in time domain
+dt = 0.001       # Sample spacing in time domain
+nsrc = 330       # Total samples in source
 
-seismFolder = "../../inputs/seismograms/"           #
-waveletPath = "../../inputs/wavelets/sourceZeroPhase_330_20Hz_1ms.bin"     #
+seismFolder = "../../inputs/seismograms/minPhase_"           #
+waveletPath = "../../inputs/wavelets/sourceMinPhase_330_20Hz_1ms.bin"     #
+
+#-------------------------------------------------------------------------------------------------
+# Eikonal parameters --------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
+
+eikonalType = 2              # 0 - Podvin & Lecomte (1991); 1 - Jeong & Whitaker (2008); 2 - Noble (2014) <int>  
+
+exportRayPosition = True     # Flag to export ray position per shot <bool>
+exportTravelTimes = True     # Flag to export travel times volume <bool> 
+exportIllumination = False   # Flag to export illumination matrix per shot <bool>
+exportFirstArrivals = True   # Flag to export first arrivals <bool> 
+
+raysFolder = "../../outputs/rayPosition/"             #
+eikonalFolder = "../../outputs/travelTimes/"          # Folder to write travel time volume per shot
+arrivalFolder = "../../outputs/dcal/"                 #  
+illuminationFolder = "../../outputs/illumination/"    #
 
 #-------------------------------------------------------------------------------------------------
 # Tomography parameters --------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nxTomo = 26                          # Resized x sample dimension of model <int>
-nyTomo = 26                          # Resized y sample dimension of model <int>
-nzTomo = 11                          # Resized z sample dimension of model <int>
+nxTomo = 26   # Resized x sample dimension of model <int>
+nyTomo = 26   # Resized y sample dimension of model <int>
+nzTomo = 11   # Resized z sample dimension of model <int>
 
-dxTomo = 200                         # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 200                         # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 100                         # Resized model sample spacing [m] of z dimension <float>
+dxTomo = 200   # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 200   # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 100   # Resized model sample spacing [m] of z dimension <float>
 
-xMask = [500, 500]                   # Mask of [left, right] x axis sides [m] <float>
-yMask = [500, 500]                   # Mask of [left, right] y axis sides [m] <float>
-zMask = [200, 0]                     # Mask of [up, bottom] z axis sides [m] <float>
+xMask = [500, 500]   # Mask of [left, right] x axis sides [m] <float>
+yMask = [500, 500]   # Mask of [left, right] y axis sides [m] <float>
+zMask = [200, 0]     # Mask of [up, bottom] z axis sides [m] <float>
 
 # Inversion parameters 
 
-eikonalType = 1                       # 0 - Podvin & Lecomte (1991); 1 - Jeong & Whitaker (2008); 2 - Noble (2014) <int>  
-exportTravelTimes = False             # Flag to export travel times volume <bool> 
-exportFirstArrivals = True            # Flag to export first arrivals <bool> 
- 
-regOrder = 1                          # Tikhonov regularization order <int>
-regParam = 1e3                        # Regularization parameter <float>
-maxIteration = 7                      # Tomography max iteration <int>                   
+regOrder = 1       # Tikhonov regularization order <int>
+regParam = 1e3     # Regularization parameter <float>
+maxIteration = 7   # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
 
-smooth = False                       # Flag to smooth or not the model <bool>
-smoothingType = 0                    # 0 - gaussian filter; 1 - moving average filter <int>
-filterSamples = 11                   # Samples in filter, must to be an odd number! <int>
-standardDeviation = 2.0              # For gaussian filter case to control smoothing <float>
+smooth = False            # Flag to smooth or not the model <bool>
+smoothingType = 0         # 0 - gaussian filter; 1 - moving average filter <int>
+filterSamples = 11        # Samples in filter, must to be an odd number! <int>
+standardDeviation = 2.0   # For gaussian filter case to control smoothing <float>
 
 # Folders location
 
-dobsPath = "outputs/dcal_"                       # Folder to write calculated data
-dcalPath = "outputs/dcal_"                       # Folder to write calculated data
-eikonalFolder = "outputs/"                       # Folder to write travel time volume per shot
-shotsPositionPath = "outputs/shotsPosition.txt"  # Full path of receivers position     
-nodesPositionPath = "outputs/nodesPosition.txt"  # Full path of shots position   
-convergencyFolder = "outputs/"                   # Folder to write convergency line to residuous norm
-estimatedModelsFolder = "outputs/"               # Folder to write estimated models per iteration 
+dobsPath = "outputs/dcal_"           # Folder to write calculated data
+dcalPath = "outputs/dcal_"           # Folder to write calculated data
+convergencyFolder = "outputs/"       # Folder to write convergency line to residuous norm
+estimatedModelsFolder = "outputs/"   # Folder to write estimated models per iteration 

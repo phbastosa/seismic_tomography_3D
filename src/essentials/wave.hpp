@@ -219,7 +219,6 @@ void pml_wavePropagation(float * V, float * U_pas, float * U_pre, float * U_fut,
                 damper = damp3D[nb-(i-(nzz-nb))-1 + (nb-(j-(nxx-nb))-1)*nb + (nb-(k-(nyy-nb))-1)*nb*nb];
             }
 
-
             alpha1 = (damper*dt - 1.0)*U_pas[index];
             alpha2 = (2.0 - damper*damper*dt*dt) * U_pre[index];
 
