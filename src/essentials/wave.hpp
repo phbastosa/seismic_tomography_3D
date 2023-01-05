@@ -14,6 +14,25 @@ void progressMessage(int timeStep, int nt, float dt, int sId, float sx, float sy
     }
 }
 
+float * rickerGeneration(float delay, float fmax, float dt, int nt)
+{   
+    float * ricker = new float[nt];
+
+    float pi = 4.0f * atanf(1.0f);  
+
+    float fc = fmax / (3.0f * sqrtf(pi));
+
+    for (int t = 0; t < nt; t++)
+    {        
+        float aux1 = 1.0f - 2.0f*pi*powf(t*dt - delay, 2.0f) * powf(fc, 2.0f) * powf(pi, 2.0f);
+        float aux2 = expf(-pi * powf(t*dt - delay, 2.0f) * powf(fc, 2.0f) * pow(pi, 2.0f));    
+        
+        ricker[t] = aux1 * aux2;    
+    }
+
+    return ricker;
+}
+
 void pml_dampers(float * damp1D, float * damp2D, float * damp3D, float factor, int nb)
 {
     float pi = 4.0f * atan(1.0f);
@@ -60,12 +79,11 @@ void setWaveField(float * U_pas, float * U_pre, float * U_fut, int nPoints)
     }
 }
 
-void applyWavelet(float * U_pre, float * wavelet, int timeStep, int nsrc, int sId)
+void applyWavelet(float * U_pre, float * wavelet, int timeStep, int sId)
 {
     # pragma acc kernels 
     {
-        if (timeStep < nsrc) 
-            U_pre[sId] += wavelet[timeStep];
+        U_pre[sId] += wavelet[timeStep];
     }
 }
 

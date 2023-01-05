@@ -59,22 +59,23 @@ for i in range(len(offsets)):
         
 dt = 1e-3        
 nt = 2501
-ns = 330
-ntf = 2001
 
-seismic = readBinaryMatrix(nt,len(offsets), f"../../inputs/seismograms/zeroPhase_seismogram_{nt}x{len(offsets)}_shot_1.bin")
+cutTime = 2.0
+delayTime = 0.15 
 
-seismic = seismic[int(ns/2):,:] # removing anti causal 
-seismic = seismic[:ntf,:]
-seismic[1700:,:40] = 5e-6
+seismic = readBinaryMatrix(nt,len(offsets), f"../../inputs/seismograms/seismogram_{nt}x{len(offsets)}_shot_1.bin")
+
+seismic = seismic[int(delayTime/dt-1):,:] # removing anti causal 
+seismic = seismic[:int(cutTime/dt+1),:]   # cutting in 2 seconds
 
 perc = 0.5 * np.std(seismic)
 
-plt.figure(2, figsize = (10, 8))
+fig, ax = plt.subplots(1, 3, figsize = (12, 6))
 
-plt.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -perc, vmax = perc)
+ax[0].imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -perc, vmax = perc)
+ax[0].plot(analyticalArrivals/dt)
 
-plt.plot(analyticalArrivals/dt)
 
-# plt.gca().invert_yaxis()
+
+plt.tight_layout()
 plt.show()

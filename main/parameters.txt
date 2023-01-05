@@ -2,75 +2,81 @@
 # Model paramenters -------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
  
-nx = 481   # x dimension of model <int>
-ny = 41    # y dimension of model <int>
-nz = 51    # z dimension of model <int>
+nx = 201   # x dimension of model <int>
+ny = 201    # y dimension of model <int>
+nz = 201    # z dimension of model <int>
 
-dx = 12.5  # x sample spacing of model [m] <float>
-dy = 12.5  # y sample spacing of model [m] <float> 
-dz = 12.5  # z sample spacing of model [m] <float>  
+dx = 10  # x sample spacing of model [m] <float>
+dy = 10  # y sample spacing of model [m] <float> 
+dz = 10  # z sample spacing of model [m] <float>  
 
-modelPath = "../../inputs/models/refractiveModel_51x481x41_12.5m.bin"   # Velocity model location
+modelPath = "../../inputs/models/homogeneous_201x201x201_10m.bin"   # Velocity model location <string>
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
 reciprocity = False   # Shots become nodes and nodes become shots <bool>  
-saveGeometry = True   # To save shots and nodes position in a .txt file <bool>
+saveGeometry = False   # To save shots and nodes position in a .txt file <bool>
 
 # Grid SHOTS geometry                        
 
 xShotNumber = 1     # Number of sources in x direction <int>
 yShotNumber = 1     # Number of sources in y direction <int>
-shotSW = [500, 250]   # NW       # (x,y) [m] <float>    
-shotNW = [500, 250]   #  |       # (x,y) [m] <float>    
-shotSE = [500, 250]   # SW -- SE # (x,y) [m] <float>   
+shotSW = [1000, 1000]   # NW       # (x,y) [m] <float>    
+shotNW = [1000, 1000]   #  |       # (x,y) [m] <float>    
+shotSE = [1000, 1000]   # SW -- SE # (x,y) [m] <float>   
 
-shotsElevation = 0  # Sources elevation [m]- flat surface <float>             
+shotsElevation = 1000  # Sources elevation [m] - flat surface <float>             
 
 # Grid NODES geometry                        
 
-xNodeNumber = 91       # Number of sources in x direction
-yNodeNumber = 1        # Number of sources in y direction
-nodeSW = [1000, 250]   # NW       # (x,y) in float WITHOUT SPACES    
-nodeNW = [1000, 250]   #  |       # (x,y) in float WITHOUT SPACES   
-nodeSE = [5500, 250]   # SW -- SE # (x,y) in float WITHOUT SPACES   
+xNodeNumber = 19       # Number of sources in x direction <int>
+yNodeNumber = 19        # Number of sources in y direction
+nodeSW = [100, 100]   # NW       # (x,y) <float>     
+nodeNW = [100, 1900]   #  |       # (x,y) <float>   
+nodeSE = [1900, 100]   # SW -- SE # (x,y) <float>   
 
-nodesElevation = 0     # Receivers elevation [m] - flat surface <float>
+nodesElevation = 1000     # Receivers elevation - flat surface [m] <float>
 
-shotsPath = "../../outputs/geometry/shots.txt"   # Full path of receivers position     
-nodesPath = "../../outputs/geometry/nodes.txt"   # Full path of shots position   
+shotsPath = "../../outputs/geometry/shots.txt"   # Full path of receivers position <string>     
+nodesPath = "../../outputs/geometry/nodes.txt"   # Full path of shots position <string>   
 
 #-------------------------------------------------------------------------------------------------
 # Seismic modeling parameters --------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nb = 200          # Total samples in boundary 
-factor = 0.0      # Attenuation factor to apply in PML
+nb = 50          # Total samples in boundary <int>
+factor = 45      # Attenuation factor to apply in PML <float>
 
-nt = 2501        # Total samples in time domain
-dt = 0.001       # Sample spacing in time domain
-nsrc = 330       # Total samples in source
+nt = 2001        # Total samples in time domain <int>
+dt = 0.001       # Sample spacing in time domain [s] <float>
 
-seismFolder = "../../inputs/seismograms/minPhase_"           #
-waveletPath = "../../inputs/wavelets/sourceMinPhase_330_20Hz_1ms.bin"     #
+fmax = 30.0      # Max frequency in source [Hz] <float>
+delay = 0.15     # Delay of source - anti causal [s] <float>
+
+seismFolder = "../../inputs/seismograms/"    # Folder to write seismograms <string>
+waveletFolder = "../../inputs/wavelets/"     # Folder to write wavelets <string>
 
 #-------------------------------------------------------------------------------------------------
 # Eikonal parameters --------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-eikonalType = 2              # 0 - Podvin & Lecomte (1991); 1 - Jeong & Whitaker (2008); 2 - Noble (2014) <int>  
+# 0 - Podvin & Lecomte (1991); 
+# 1 - Jeong & Whitaker (2008); 
+# 2 - Noble, Gesret and Belayouni (2014); 
 
-exportRayPosition = True     # Flag to export ray position per shot <bool>
-exportTravelTimes = True     # Flag to export travel times volume <bool> 
-exportIllumination = False   # Flag to export illumination matrix per shot <bool>
-exportFirstArrivals = True   # Flag to export first arrivals <bool> 
+eikonalType = 2    # Eikonal Type flag <int>          
 
-raysFolder = "../../outputs/rayPosition/"             #
-eikonalFolder = "../../outputs/travelTimes/"          # Folder to write travel time volume per shot
-arrivalFolder = "../../outputs/dcal/"                 #  
-illuminationFolder = "../../outputs/illumination/"    #
+exportRayPosition = True     # Ray position flag <bool>
+exportTravelTimes = True     # Travel times volume flag <bool> 
+exportIllumination = False   # Illumination matrix flag <bool>
+exportFirstArrivals = True   # First arrivals flag <bool> 
+
+raysFolder = "../../outputs/rayPosition/"             # Ray positions folder <string>
+eikonalFolder = "../../outputs/travelTimes/"          # Travel time volume folder <string>
+arrivalFolder = "../../outputs/dcal/"                 # Eikonal volume folder <string>
+illuminationFolder = "../../outputs/illumination/"    # Illumination volume folder <string>
 
 #-------------------------------------------------------------------------------------------------
 # Tomography parameters --------------------------------------------------------------------------

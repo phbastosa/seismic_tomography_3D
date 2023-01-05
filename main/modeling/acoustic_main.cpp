@@ -114,14 +114,16 @@ int main (int argc, char**argv)
     // Wavelet and time variables
 
     int nt = std::stoi(utils.catchParameter("nt", parameters));
-    int nsrc = std::stoi(utils.catchParameter("nsrc", parameters));
-
     float dt = std::stof(utils.catchParameter("dt", parameters));
+    float fmax = std::stof(utils.catchParameter("fmax", parameters));
+    float delay = std::stof(utils.catchParameter("delay", parameters));
 
-    std::string waveletPath = utils.catchParameter("waveletPath", parameters);
     std::string seismFolder = utils.catchParameter("seismFolder", parameters);
+    std::string waveletFolder = utils.catchParameter("waveletFolder", parameters);
 
-    float * wavelet = utils.readBinaryFloat(waveletPath, nsrc);
+    float * wavelet = rickerGeneration(delay, fmax, dt, nt);
+
+    utils.writeBinaryFloat(waveletFolder + "ricker_" + std::to_string((int)fmax) + "Hz_" + std::to_string(nt) + ".bin", wavelet, nt);
 
     float * seismogram = new float[nt * geometry.nodes.all]();
 
@@ -141,7 +143,7 @@ int main (int argc, char**argv)
 
         setWaveField(U_pas,U_pre,U_fut,model.nPointsB);
 
-        # pragma acc enter data copyin(wavelet[0:nsrc])
+        # pragma acc enter data copyin(wavelet[0:nt])
         # pragma acc enter data copyin(damp1D[0:model.nb])
         # pragma acc enter data copyin(V[0:model.nPointsB])
         # pragma acc enter data copyin(U_pas[0:model.nPointsB])
@@ -155,7 +157,7 @@ int main (int argc, char**argv)
             {
                 progressMessage(timeStep,nt,dt,shotId,sx,sy,sz);
                 
-                applyWavelet(U_pre,wavelet,timeStep,nsrc,sId);
+                applyWavelet(U_pre,wavelet,timeStep,sId);
 
                 pml_wavePropagation(V,U_pas,U_pre,U_fut,damp1D,damp2D,damp3D,model.nb,model.nxx,model.nyy,model.nzz,model.dx,model.dy,model.dz,dt);
 
@@ -164,7 +166,7 @@ int main (int argc, char**argv)
                 buildSeismogram(U_fut,model.nxx,model.nyy,model.nzz,seismogram,timeStep,nt,rx,ry,rz,geometry.nodes.all);
             }
         }
-        # pragma acc exit data delete(wavelet[0:nsrc])
+        # pragma acc exit data delete(wavelet[0:nt])
         # pragma acc exit data delete(damp1D[0:model.nb])
         # pragma acc exit data delete(V[0:model.nPointsB])
         # pragma acc exit data delete(U_pas[0:model.nPointsB])
