@@ -17,62 +17,7 @@ def readBinaryVolume(n1,n2,n3,filename):
     data = np.fromfile(filename, dtype = np.float32, count = n1*n2*n3)    
     return np.reshape(data, [n1,n2,n3], order='F')
 
-def rickerGenerator(fmax,nsrc,dt):    
-    ricker = np.zeros(nsrc)
-    fc = fmax/(3*np.sqrt(np.pi))
-    
-    s = int(nsrc/2)
-    for i in range(-s,s):
-        aux1 = 1 - 2 * np.pi * pow(i*dt,2)*pow(fc,2)*pow(np.pi,2)
-        aux2 = np.exp(-np.pi * pow(i*dt,2)*pow(fc,2)*pow(np.pi,2))
-        ricker[i + s] = aux1 * aux2 
-
-    return ricker
-
-def zplane(z,p,k,subplot):
-
-    ax = plt.subplot(subplot)
-    uc = patches.Circle((0,0), radius=1, fill=False, color='black', ls='dashed')
-    ax.add_patch(uc)
-    
-    # Plot the zeros and set marker properties    
-    t1 = plt.plot(z.real, z.imag, 'go', ms=10)
-    plt.setp( t1, markersize=10.0, markeredgewidth=1.0, markeredgecolor='k', markerfacecolor='g')
-
-    # Plot the poles and set marker properties
-    t2 = plt.plot(p.real, p.imag, 'rx', ms=10)
-    plt.setp( t2, markersize=12.0, markeredgewidth=3.0, markeredgecolor='r', markerfacecolor='r')
-
-    ax.spines['left'].set_position('center')
-    ax.spines['bottom'].set_position('center')
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    
-    ax.set_title("Diagrama de polos e zeros")
-    
-    # set the ticks
-    r = 1.5; plt.axis('scaled'); plt.axis([-r, r, -r, r])
-    ticks = [-1, -.5, .5, 1]; plt.xticks(ticks); plt.yticks(ticks)
-
-def fourierInterpolation(signal, dt, new_dt):
-
-    ns = len(signal)
-
-    periods = int(dt / new_dt)
-
-    freqs = np.fft.fftfreq(ns, dt)
-    fft_signal = np.fft.fft(signal)
-
-    new_fft_signal = np.insert(fft_signal, int(ns / 2), np.zeros(periods * ns)) 
-
-    new_ns = periods * ns + ns
-
-    scale_factor = new_ns / ns
-    output_signal = scale_factor * np.real(np.fft.ifft(new_fft_signal))
-    
-    return output_signal
-
-def analiticalRefraction(v,z,x):
+def analyticalRefraction(v,z,x):
 
     t_direct = x/v[0]
     
@@ -129,7 +74,7 @@ def boxPlot(model, dh, shots, nodes, slices, xzRay, eikonal, colorbarFix = 1.5):
     ax1.plot(np.ones(axis[2])*slices[1], np.arange(axis[2]), "--m", alpha = 0.3)
 
     ax1.scatter(shots[0]/dh[0], shots[1]/dh[1])
-    ax1.scatter(nodes[0]/dh[0], nodes[1]/dh[1])
+    ax1.scatter(nodes[:,0]/dh[0], nodes[:,1]/dh[1])
 
     ax1.set_xticks(xloc)
     ax1.set_yticks(yloc[1:])
@@ -154,7 +99,7 @@ def boxPlot(model, dh, shots, nodes, slices, xzRay, eikonal, colorbarFix = 1.5):
     ax2.plot(np.ones(axis[2])*slices[0], np.arange(axis[2]), "--r", alpha = 0.3)
 
     ax2.scatter(shots[2]/dh[2], shots[1]/dh[1])
-    ax2.scatter(nodes[2]/dh[2], nodes[1]/dh[1])
+    ax2.scatter(nodes[:,2]/dh[2], nodes[:,1]/dh[1])
 
     ax2.set_yticks(yloc)
 
@@ -172,7 +117,7 @@ def boxPlot(model, dh, shots, nodes, slices, xzRay, eikonal, colorbarFix = 1.5):
     ax3.plot(np.ones(axis[0])*slices[1], np.arange(axis[0]), "--m", alpha = 0.3)
 
     ax3.scatter(shots[0]/dh[0], shots[2]/dh[2])
-    ax3.scatter(nodes[0]/dh[0], nodes[2]/dh[2])
+    ax3.scatter(nodes[:,0]/dh[0], nodes[:,2]/dh[2])
 
     ax3.scatter(xzRay[0,:]/dh[0], xzRay[1,:]/dh[2], s = 0.1, c = "green")
 

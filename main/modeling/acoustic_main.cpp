@@ -92,6 +92,12 @@ int main (int argc, char**argv)
 
     geometry.setGridGeometry(geometry.nodes);
 
+    if (geometry.saveGeometry) 
+        geometry.exportPositions();
+
+    if (geometry.reciprocity)
+        geometry.setReciprocity();
+
     // Boundaries compensation on integer geometry grid points
 
     int * rx = new int[geometry.nodes.all];
