@@ -143,6 +143,6 @@ def boxPlot(model, dh, shots, nodes, slices, xzRay, eikonal, colorbarFix = 1.5):
     cax = divider.append_axes("bottom", size="10%", pad=0)
     cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(vmin*1e-3, vmax*1e-3, 5), orientation = "horizontal")
     cbar.ax.set_xticklabels(np.around(np.linspace(vmin*1e-3, vmax*1e-3, 5), decimals = 1))
-    cbar.set_label("P wave velocity [km/s]")
+    cbar.set_label("Velocidade P [km/s]")
     
     return None
