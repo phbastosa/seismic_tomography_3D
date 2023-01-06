@@ -24,8 +24,8 @@ nodesPath = "../../inputs/geometry/nodes.txt"   # Full path of shots position <s
 
 # Grid SHOTS geometry                        
 
-xShotNumber = 89         # Number of sources in x direction <int>
-yShotNumber = 89         # Number of sources in y direction <int>
+xShotNumber = 177         # Number of sources in x direction <int>
+yShotNumber = 177         # Number of sources in y direction <int>
 shotSW = [100, 100]       # NW       # (x,y) [m] <float>    
 shotNW = [100, 8900]      #  |       # (x,y) [m] <float>    
 shotSE = [8900, 100]      # SW -- SE # (x,y) [m] <float>   
@@ -51,12 +51,12 @@ nodesTopographyPath = "../../inputs/geometry/nodesTopography.bin"   #
 #-------------------------------------------------------------------------------------------------
 
 nb = 50          # Total samples in boundary <int>
-factor = 20      # Attenuation factor to apply in PML <float>
+factor = 30      # Attenuation factor to apply in PML <float>
 
 nt = 5001        # Total samples in time domain <int>
 dt = 0.001       # Sample spacing in time domain [s] <float>
 
-fmax = 30.0      # Max frequency in source [Hz] <float>
+fmax = 45.0      # Max frequency in source [Hz] <float>
 delay = 0.15     # Delay of source - anti causal [s] <float>
 
 seismFolder = "../../inputs/seismograms/"    # Folder to write seismograms <string>

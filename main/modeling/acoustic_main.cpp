@@ -155,7 +155,7 @@ int main (int argc, char**argv)
     // std::cout<<model.nPointsB<<std::endl;    
     // std::cout<<nt*geometry.nodes.all<<std::endl;    
     
-    for (int shotId = 0; shotId < 1; shotId++)
+    for (int shotId = 0; shotId < geometry.shots.all; shotId++)
     {
         float sx = geometry.shots.x[shotId];
         float sy = geometry.shots.y[shotId];
