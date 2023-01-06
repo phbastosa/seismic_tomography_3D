@@ -61,6 +61,9 @@ int main (int argc, char**argv)
     geometry.shots.n_xline = std::stoi(utils.catchParameter("xShotNumber", parameters));
     geometry.shots.n_yline = std::stoi(utils.catchParameter("yShotNumber", parameters));
     
+    geometry.shotsPath = utils.catchParameter("shotsPath", parameters);
+    geometry.nodesPath = utils.catchParameter("nodesPath", parameters);
+
     bool shotsTopography = utils.str2bool(utils.catchParameter("shotsTopography", parameters));
     bool nodesTopography = utils.str2bool(utils.catchParameter("nodesTopography", parameters));
 

@@ -62,8 +62,8 @@ node_x, node_y = np.meshgrid(node_x, node_y)
 node_x = np.reshape(node_x, [node_all])
 node_y = np.reshape(node_y, [node_all])
 
-shot_xline = 177
-shot_yline = 177
+shot_xline = 89
+shot_yline = 89
 shot_all = shot_xline * shot_yline
 
 shot_x = np.linspace(100, 8900, shot_xline)
