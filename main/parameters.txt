@@ -10,41 +10,41 @@ dx = 12.5  # x sample spacing of model [m] <float>
 dy = 12.5  # y sample spacing of model [m] <float> 
 dz = 12.5  # z sample spacing of model [m] <float>  
 
-modelPath = "../../inputs/models/memCheckModel_161x721x721_12.5m.bin"   # Velocity model location <string>
+modelPath = "../../inputs/models/trueModel_161x721x721_12.5m.bin"   # Velocity model location <string>
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
 reciprocity = True   # Shots become nodes and nodes become shots <bool>  
-saveGeometry = False   # To save shots and nodes position in a .txt file <bool>
+saveGeometry = True   # To save shots and nodes position in a .txt file <bool>
 
-shotsPath = "../../outputs/geometry/shots.txt"   # Full path of receivers position <string>     
-nodesPath = "../../outputs/geometry/nodes.txt"   # Full path of shots position <string>   
+shotsPath = "../../inputs/geometry/shots.txt"   # Full path of receivers position <string>     
+nodesPath = "../../inputs/geometry/nodes.txt"   # Full path of shots position <string>   
 
 # Grid SHOTS geometry                        
 
-xShotNumber = 361     # Number of sources in x direction <int>
-yShotNumber = 361     # Number of sources in y direction <int>
-shotSW = [500, 500]   # NW       # (x,y) [m] <float>    
-shotNW = [500, 8500]   #  |       # (x,y) [m] <float>    
-shotSE = [8500, 500]   # SW -- SE # (x,y) [m] <float>   
+xShotNumber = 177         # Number of sources in x direction <int>
+yShotNumber = 177         # Number of sources in y direction <int>
+shotSW = [100, 100]       # NW       # (x,y) [m] <float>    
+shotNW = [100, 8900]      #  |       # (x,y) [m] <float>    
+shotSE = [8900, 100]      # SW -- SE # (x,y) [m] <float>   
 
-shotsElevation = 25.0  # Sources elevation [m] - flat surface <float>             
-shotsTopography = False  #
-shotsTopographyPath = "../../"
+shotsElevation = 25.0     # Sources elevation [m] - flat surface <float>             
+shotsTopography = False   #
+shotsTopographyPath = "../../inputs/geometry/"   # 
 
 # Grid NODES geometry                        
 
-xNodeNumber = 8       # Number of sources in x direction <int>
-yNodeNumber = 8        # Number of sources in y direction
-nodeSW = [1000, 1000]   # NW       # (x,y) <float>     
-nodeNW = [1000, 8000]   #  |       # (x,y) <float>   
-nodeSE = [8000, 1000]   # SW -- SE # (x,y) <float>   
+xNodeNumber = 8          # Number of sources in x direction <int>
+yNodeNumber = 8          # Number of sources in y direction
+nodeSW = [1000, 1000]    # NW       # (x,y) <float>     
+nodeNW = [1000, 8000]    #  |       # (x,y) <float>   
+nodeSE = [8000, 1000]    # SW -- SE # (x,y) <float>   
 
-nodesElevation = 0     # Receivers elevation - flat surface [m] <float>
-nodesTopography = False  #
-nodesTopographyPath = "../../"
+nodesElevation = 0       # Receivers elevation - flat surface [m] <float>
+nodesTopography = True   #
+nodesTopographyPath = "../../inputs/geometry/nodesTopography_64.bin"   # 
 
 #-------------------------------------------------------------------------------------------------
 # Seismic modeling parameters --------------------------------------------------------------------
@@ -53,13 +53,13 @@ nodesTopographyPath = "../../"
 nb = 50          # Total samples in boundary <int>
 factor = 45      # Attenuation factor to apply in PML <float>
 
-nt = 2001        # Total samples in time domain <int>
+nt = 5001        # Total samples in time domain <int>
 dt = 0.001       # Sample spacing in time domain [s] <float>
 
 fmax = 30.0      # Max frequency in source [Hz] <float>
 delay = 0.15     # Delay of source - anti causal [s] <float>
 
-seismFolder = "../../inputs/seismograms/memCheck_"    # Folder to write seismograms <string>
+seismFolder = "../../inputs/seismograms/"    # Folder to write seismograms <string>
 waveletFolder = "../../inputs/wavelets/"     # Folder to write wavelets <string>
 
 #-------------------------------------------------------------------------------------------------

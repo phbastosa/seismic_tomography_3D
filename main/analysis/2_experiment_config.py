@@ -56,14 +56,14 @@ for i in range(node_yline):
     for j in range(node_xline):
         node_z[i + node_yline*j] = dz*waterBottom[int(node_y[i]/dy),int(node_x[j]/dx)]
 
-node_z.astype("float32", order = "F").tofile(f"../../outputs/geometry/nodesTopography_{node_all}.bin")
+node_z.astype("float32", order = "F").tofile(f"../../inputs/geometry/nodesTopography_{node_all}.bin")
 
 node_x, node_y = np.meshgrid(node_x, node_y)
 node_x = np.reshape(node_x, [node_all])
 node_y = np.reshape(node_y, [node_all])
 
-shot_xline = 353
-shot_yline = 353
+shot_xline = 177
+shot_yline = 177
 shot_all = shot_xline * shot_yline
 
 shot_x = np.linspace(100, 8900, shot_xline)

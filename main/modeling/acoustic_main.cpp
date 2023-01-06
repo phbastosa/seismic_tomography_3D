@@ -61,6 +61,9 @@ int main (int argc, char**argv)
     geometry.shots.n_xline = std::stoi(utils.catchParameter("xShotNumber", parameters));
     geometry.shots.n_yline = std::stoi(utils.catchParameter("yShotNumber", parameters));
     
+    bool shotsTopography = utils.str2bool(utils.catchParameter("shotsTopography", parameters));
+    bool nodesTopography = utils.str2bool(utils.catchParameter("nodesTopography", parameters));
+
     std::vector<std::string> splitted;
 
     // Setting grid shots
@@ -75,6 +78,12 @@ int main (int argc, char**argv)
     geometry.set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
 
     geometry.setGridGeometry(geometry.shots);
+
+    if (shotsTopography) 
+    {
+        std::string shotsTopographyPath = utils.catchParameter("shotsTopographyPath", parameters);
+        geometry.shots.z = utils.readBinaryFloat(shotsTopographyPath, geometry.shots.all);
+    }
 
     // Setting grid nodes
 
@@ -91,6 +100,12 @@ int main (int argc, char**argv)
     geometry.set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
 
     geometry.setGridGeometry(geometry.nodes);
+
+    if (nodesTopography) 
+    {
+        std::string nodesTopographyPath = utils.catchParameter("nodesTopographyPath", parameters);
+        geometry.nodes.z = utils.readBinaryFloat(nodesTopographyPath, geometry.nodes.all);
+    }
 
     if (geometry.saveGeometry) 
         geometry.exportPositions();
@@ -127,9 +142,17 @@ int main (int argc, char**argv)
 
     float * seismogram = new float[nt * geometry.nodes.all]();
 
-    // Shots loop
-
-    for (int shotId = 0; shotId < geometry.shots.all; shotId++)
+    // std::cout<<nt<<std::endl;    
+    // std::cout<<model.nb<<std::endl;    
+    // std::cout<<model.nb*model.nb<<std::endl;    
+    // std::cout<<model.nb*model.nb*model.nb<<std::endl;    
+    // std::cout<<model.nPointsB<<std::endl;    
+    // std::cout<<model.nPointsB<<std::endl;    
+    // std::cout<<model.nPointsB<<std::endl;    
+    // std::cout<<model.nPointsB<<std::endl;    
+    // std::cout<<nt*geometry.nodes.all<<std::endl;    
+    
+    for (int shotId = 0; shotId < 1; shotId++)
     {
         float sx = geometry.shots.x[shotId];
         float sy = geometry.shots.y[shotId];
