@@ -72,8 +72,8 @@ waveletFolder = "../../inputs/wavelets/"     # Folder to write wavelets <string>
 
 eikonalType = 2    # Eikonal Type flag <int>          
 
-exportRayPosition = True     # Ray position flag <bool>
-exportTravelTimes = True     # Travel times volume flag <bool> 
+exportRayPosition = False     # Ray position flag <bool>
+exportTravelTimes = False     # Travel times volume flag <bool> 
 exportIllumination = False   # Illumination matrix flag <bool>
 exportFirstArrivals = True   # First arrivals flag <bool> 
 
@@ -100,7 +100,7 @@ zMask = [200, 0]     # Mask of [up, bottom] z axis sides [m] <float>
 
 # Inversion parameters 
 
-regOrder = 1       # Tikhonov regularization order <int>
+regOrder = 2       # Tikhonov regularization order <int>
 regParam = 1e3     # Regularization parameter <float>
 maxIteration = 7   # Tomography max iteration <int>                   
 

@@ -2424,8 +2424,8 @@ void Eikonal::eikonalComputing()
         nobleFSM();
         break;
     }
-
-    rayTracing();
+    
+    if (exportRayPosition) rayTracing();
 
     writeTravelTimes();
     writeFirstArrivals();
