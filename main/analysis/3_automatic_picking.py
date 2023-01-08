@@ -11,57 +11,56 @@ from scipy.ndimage import gaussian_filter
 start = timeit.default_timer()
 
 nt = 5001
-dt = 1e-3
-tlag = 0.15
-tcut = 4.50
-
-sline = 177
-shots_all = 31329
+traces = 177
 nodes_all = 64 
+shots_all = 31329
 
-node = 1
+dt = 1e-3
 
-seismic_all = readBinaryMatrix(nt, shots_all, f"../../inputs/seismograms/seismogram_{nt}x{shots_all}_shot_{node}.bin")
+for node in range(nodes_all):
 
-times = slice(int(tlag/dt), int((tcut+tlag)/dt + 1))
+    seismic_all = readBinaryMatrix(nt, shots_all, f"../../inputs/seismograms/seismogram_{nt}x{shots_all}_shot_{node+1}.bin")
+    rawPicks_all = readBinaryArray(shots_all, f"../../inputs/picks/rawPicks_shot_{node+1}_{shots_all}_samples.bin")
+    output_picks = np.zeros(shots_all)
 
-window = 0.100
-iw = int(window/dt)
+    for line in range(traces):
 
-firstBreak = readBinaryArray(sline, "firstBreak.bin")
+        window = slice(int(line*shots_all/traces),int((line+1)*shots_all/traces))
 
-scale = 0.5*np.std(seismic_all[times,:177])
+        rawPicks = rawPicks_all[window]
 
-plt.imshow(seismic_all[times,:177], aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
-plt.plot(firstBreak/dt)
-plt.show()
+        output_picks[window] = savgol_filter(rawPicks, 15, 2)
 
-# picks_gauss = gaussian_filter(picks, 1.5)
-# picks_savgol = savgol_filter(picks, 15, 2)
-# picks_mean = (picks_gauss + picks_savgol) / 2
-# picks_mean[0] = picks_savgol[0]
-# picks_mean[-1] = picks_savgol[-1]
-
-# node_pick[traces] = picks_mean * dt
-
+    print(f"File ../../inputs/picks/obsData_{shots_all}_samples_shot_{node+1}.bin was written successfully.")
+    output_picks.astype("float32", order = "F").tofile(f"../../inputs/picks/obsData_{shots_all}_samples_shot_{node+1}.bin")
 
 stop = timeit.default_timer()
 print('Run time: ', stop - start)  
 
-# tloc = np.linspace(0, len(seismic)-1, 11, dtype = int)
-# tlab = np.around(np.linspace(0, len(seismic)-1, 11) * dt, decimals = 1)
+# Quality control image
 
-# xloc = np.linspace(0, sline-1, 11, dtype = int)
-# xlab = np.linspace(0, sline, 11, dtype = int)
+# tlag = 0.15
+# tcut = 4.50
 
-# scale = 0.9 * np.std(seismic)
+# updated_nt = 4501
+
+# times = slice(int(tlag/dt), int((tlag+tcut)/dt))
+# trace = slice(int(line*shots_all/traces),int((line+1)*shots_all/traces))
+
+# seismic = seismic_all[times, trace]
+
+# tloc = np.linspace(0, updated_nt-1, 11, dtype = int)
+# tlab = np.around(np.linspace(0, updated_nt-1, 11) * dt, decimals = 1)
+
+# xloc = np.linspace(0, traces-1, 11, dtype = int)
+# xlab = np.linspace(0, traces, 11, dtype = int)
+
+# scale = 0.9 * np.std(seismic_all)
 
 # plt.figure(1, figsize = (10, 7))
 # plt.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
-# plt.plot(picks, label = "Original pick")
-# plt.plot(picks_gauss, label = "Gaussian smoothing")
-# plt.plot(picks_savgol, label = "Savgol smoothing")
-# plt.plot(picks_mean, label = "Mean using smoothed picks")
+# plt.plot(rawPicks_all[trace]/dt, label = "Original picks")
+# plt.plot(output_picks[trace]/dt, label = "Output picks")
 
 # plt.xlabel("Traces", fontsize = 15)
 # plt.ylabel("Time [s]", fontsize = 15)
