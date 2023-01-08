@@ -55,7 +55,7 @@ void Utils::writeBinaryFloat(std::string path, float *array, int n)
         throw std::invalid_argument("Error: file could not be opened!");
     }
 
-    std::cout<<"Binary file was written with name " + path<<std::endl;
+    std::cout<<"Binary file " + path + " was successfully written."<<std::endl;
 
     file.close();
 }

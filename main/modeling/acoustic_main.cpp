@@ -209,7 +209,7 @@ int main (int argc, char**argv)
 
     std::chrono::duration<double> elapsed_seconds = tf - ti;
 
-    std::cout << "Run time: " << elapsed_seconds.count() << "s\n";
+    std::cout << "Run time: " << elapsed_seconds.count() << " s\n";
 
     return 0;
 }
