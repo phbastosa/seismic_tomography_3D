@@ -29,8 +29,16 @@ for node in range(nodes_all):
 
         rawPicks = rawPicks_all[window]
 
-        output_picks[window] = savgol_filter(rawPicks, 15, 2)
+        dpicks = rawPicks[1:] - rawPicks[:-1]
 
+        badPicks = np.where(np.abs(dpicks) > 0.1)[0]
+
+        for badPick in badPicks:
+            rawPicks[badPick] = rawPicks[badPick-1] + dpicks[badPick-1]        
+            dpicks[badPick] = dpicks[badPick-1]
+
+        output_picks[window] = savgol_filter(rawPicks, 15, 2)    
+        
     print(f"File ../../inputs/picks/obsData_{shots_all}_samples_shot_{node+1}.bin was written successfully.")
     output_picks.astype("float32", order = "F").tofile(f"../../inputs/picks/obsData_{shots_all}_samples_shot_{node+1}.bin")
 
