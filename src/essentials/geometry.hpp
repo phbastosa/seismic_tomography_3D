@@ -53,6 +53,12 @@ public:
     int shotsGeometryType;           // 0 - circular shots | 1 - grid shots
     int nodesGeometryType;           // 0 - circular nodes | 1 - grid nodes
 
+    bool shotsTopography;            // To set if shots have specific topography
+    bool nodesTopography;            // To set if nodes have specific topography
+
+    std::string shotsTopographyPath; // Binary file of shots z position
+    std::string nodesTopographyPath; // Binary file of nodes z position
+
     bool reciprocity;                // To set reciprocity 
     bool saveGeometry;               // To save geometry
 

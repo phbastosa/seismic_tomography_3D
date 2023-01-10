@@ -2425,88 +2425,38 @@ void Eikonal::eikonalComputing()
         break;
     }
     
-    if (exportRayPosition) rayTracing();
-
+    rayTracing();
     writeTravelTimes();
     writeFirstArrivals();
 }
 
 void Eikonal::rayTracing()
 {
-    int sIdz = (int)(shots.z[shotId] / dz) + nb;
-    int sIdx = (int)(shots.x[shotId] / dx) + nb;
-    int sIdy = (int)(shots.y[shotId] / dy) + nb;
-
-    int sId = sIdz + sIdx*nzz + sIdy*nxx*nzz;     
-    
-    std::vector<float> xRay, yRay, zRay, iRay;
-
-    int im, jm, km, rId;
-
-    float rayStep = 0.2f * (dx + dy + dz) / 3.0f;
-
-    for (int rayId = 0; rayId < nodes.all; rayId++)
+    if (exportRayPosition || exportIllumination)
     {
-        float zi = nodes.z[rayId];
-        float xi = nodes.x[rayId];
-        float yi = nodes.y[rayId];
+        int sIdz = (int)(shots.z[shotId] / dz) + nb;
+        int sIdx = (int)(shots.x[shotId] / dx) + nb;
+        int sIdy = (int)(shots.y[shotId] / dy) + nb;
 
-        im = (int)(zi / dz) + nb; 
-        jm = (int)(xi / dx) + nb; 
-        km = (int)(yi / dy) + nb; 
+        int sId = sIdz + sIdx*nzz + sIdy*nxx*nzz;     
+        
+        std::vector<float> xRay, yRay, zRay, iRay;
 
-        rId = im + jm*nzz + km*nxx*nzz;
+        int im, jm, km, rId;
 
-        if (exportIllumination) illumination[rId] += rayStep;
+        float rayStep = 0.2f * (dx + dy + dz) / 3.0f;
 
-        if (exportRayPosition)
+        for (int rayId = 0; rayId < nodes.all; rayId++)
         {
-            xRay.push_back(xi);
-            yRay.push_back(yi);
-            zRay.push_back(zi);
-            iRay.push_back((float) rayId);
-        }
-
-        while (true)
-        {
-            int i = (int)(zi / dz) + nb;
-            int j = (int)(xi / dx) + nb;
-            int k = (int)(yi / dy) + nb;
-
-            float dTz = (T[(i+1) + j*nzz + k*nxx*nzz] - T[(i-1) + j*nzz + k*nxx*nzz]) / (2.0f*dz);    
-            float dTx = (T[i + (j+1)*nzz + k*nxx*nzz] - T[i + (j-1)*nzz + k*nxx*nzz]) / (2.0f*dx);    
-            float dTy = (T[i + j*nzz + (k+1)*nxx*nzz] - T[i + j*nzz + (k-1)*nxx*nzz]) / (2.0f*dy);
-
-            float norm = sqrtf(dTx*dTx + dTy*dTy + dTz*dTz);
-
-            zi -= rayStep*dTz / norm; // z ray position update   
-            xi -= rayStep*dTx / norm; // x ray position update   
-            yi -= rayStep*dTy / norm; // y ray position update   
+            float zi = nodes.z[rayId];
+            float xi = nodes.x[rayId];
+            float yi = nodes.y[rayId];
 
             im = (int)(zi / dz) + nb; 
             jm = (int)(xi / dx) + nb; 
             km = (int)(yi / dy) + nb; 
 
             rId = im + jm*nzz + km*nxx*nzz;
-
-            if (rId == sId)
-            {
-                if (exportRayPosition)
-                {
-                    xRay.push_back(shots.x[shotId]);
-                    yRay.push_back(shots.y[shotId]);
-                    zRay.push_back(shots.z[shotId]);
-                    iRay.push_back((float) rayId);
-                }
-            
-                if (exportIllumination)
-                {
-                    float finalDist = sqrtf(powf(shots.x[shotId] - xi, 2.0f) + powf(shots.y[shotId] - yi, 2.0f) + powf(shots.z[shotId] - zi, 2.0f));        
-                    illumination[rId] += finalDist;                
-                }            
-
-                break;
-            }
 
             if (exportIllumination) illumination[rId] += rayStep;
 
@@ -2517,44 +2467,96 @@ void Eikonal::rayTracing()
                 zRay.push_back(zi);
                 iRay.push_back((float) rayId);
             }
+
+            while (true)
+            {
+                int i = (int)(zi / dz) + nb;
+                int j = (int)(xi / dx) + nb;
+                int k = (int)(yi / dy) + nb;
+
+                float dTz = (T[(i+1) + j*nzz + k*nxx*nzz] - T[(i-1) + j*nzz + k*nxx*nzz]) / (2.0f*dz);    
+                float dTx = (T[i + (j+1)*nzz + k*nxx*nzz] - T[i + (j-1)*nzz + k*nxx*nzz]) / (2.0f*dx);    
+                float dTy = (T[i + j*nzz + (k+1)*nxx*nzz] - T[i + j*nzz + (k-1)*nxx*nzz]) / (2.0f*dy);
+
+                float norm = sqrtf(dTx*dTx + dTy*dTy + dTz*dTz);
+
+                zi -= rayStep*dTz / norm; // z ray position update   
+                xi -= rayStep*dTx / norm; // x ray position update   
+                yi -= rayStep*dTy / norm; // y ray position update   
+
+                im = (int)(zi / dz) + nb; 
+                jm = (int)(xi / dx) + nb; 
+                km = (int)(yi / dy) + nb; 
+
+                rId = im + jm*nzz + km*nxx*nzz;
+
+                if (rId == sId)
+                {
+                    if (exportRayPosition)
+                    {
+                        xRay.push_back(shots.x[shotId]);
+                        yRay.push_back(shots.y[shotId]);
+                        zRay.push_back(shots.z[shotId]);
+                        iRay.push_back((float) rayId);
+                    }
+                
+                    if (exportIllumination)
+                    {
+                        float finalDist = sqrtf(powf(shots.x[shotId] - xi, 2.0f) + powf(shots.y[shotId] - yi, 2.0f) + powf(shots.z[shotId] - zi, 2.0f));        
+                        illumination[rId] += finalDist;                
+                    }            
+
+                    break;
+                }
+
+                if (exportIllumination) illumination[rId] += rayStep;
+
+                if (exportRayPosition)
+                {
+                    xRay.push_back(xi);
+                    yRay.push_back(yi);
+                    zRay.push_back(zi);
+                    iRay.push_back((float) rayId);
+                }
+            }
         }
+
+        if (exportRayPosition)
+        {
+            std::ofstream fout;
+
+            size_t allRayPoints = iRay.size();
+
+            std::string xRayPath = raysFolder + "xRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
+            std::string yRayPath = raysFolder + "yRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
+            std::string zRayPath = raysFolder + "zRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
+            std::string iRayPath = raysFolder + "iRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
+
+            fout.open(xRayPath, std::ios::out);
+            fout.write((char*)&xRay[0], xRay.size() * sizeof(xRay));
+            std::cout<<"Ray x position file was written with name " + xRayPath<<std::endl;  
+            fout.close();
+
+            fout.open(yRayPath, std::ios::out);
+            fout.write((char*)&yRay[0], yRay.size() * sizeof(yRay));
+            std::cout<<"Ray y position file was written with name " + yRayPath<<std::endl;  
+            fout.close();
+
+            fout.open(zRayPath, std::ios::out);
+            fout.write((char*)&zRay[0], zRay.size() * sizeof(zRay));
+            std::cout<<"Ray z position file was written with name " + zRayPath<<std::endl;  
+            fout.close();
+
+            fout.open(iRayPath, std::ios::out);
+            fout.write((char*)&iRay[0], iRay.size() * sizeof(iRay));
+            std::cout<<"Ray node index file was written with name " + iRayPath<<std::endl;  
+            fout.close();
+        }
+
+        std::vector<float>().swap(iRay);
+        std::vector<float>().swap(xRay);
+        std::vector<float>().swap(yRay);
+        std::vector<float>().swap(zRay);
     }
-
-    if (exportRayPosition)
-    {
-        std::ofstream fout;
-
-        size_t allRayPoints = iRay.size();
-
-        std::string xRayPath = raysFolder + "xRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
-        std::string yRayPath = raysFolder + "yRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
-        std::string zRayPath = raysFolder + "zRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
-        std::string iRayPath = raysFolder + "iRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
-
-        fout.open(xRayPath, std::ios::out);
-        fout.write((char*)&xRay[0], xRay.size() * sizeof(xRay));
-        std::cout<<"Ray x position file was written with name " + xRayPath<<std::endl;  
-        fout.close();
-
-        fout.open(yRayPath, std::ios::out);
-        fout.write((char*)&yRay[0], yRay.size() * sizeof(yRay));
-        std::cout<<"Ray y position file was written with name " + yRayPath<<std::endl;  
-        fout.close();
-
-        fout.open(zRayPath, std::ios::out);
-        fout.write((char*)&zRay[0], zRay.size() * sizeof(zRay));
-        std::cout<<"Ray z position file was written with name " + zRayPath<<std::endl;  
-        fout.close();
-
-        fout.open(iRayPath, std::ios::out);
-        fout.write((char*)&iRay[0], iRay.size() * sizeof(iRay));
-        std::cout<<"Ray node index file was written with name " + iRayPath<<std::endl;  
-        fout.close();
-    }
-
-    std::vector<float>().swap(iRay);
-    std::vector<float>().swap(xRay);
-    std::vector<float>().swap(yRay);
-    std::vector<float>().swap(zRay);
 }
 

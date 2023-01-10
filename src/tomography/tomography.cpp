@@ -12,10 +12,6 @@ Tomography::Tomography() { }
 
 void Tomography::setParameters(char * parameters)
 {
-    eikonalType = std::stoi(catchParameter("eikonalType", parameters));    
-    exportTimesVolume = str2bool(catchParameter("exportTravelTimes", parameters));
-    exportFirstArrivals = str2bool(catchParameter("exportFirstArrivals", parameters));
-
     nb = 2;
     nx = std::stoi(catchParameter("nx", parameters));
     ny = std::stoi(catchParameter("ny", parameters));
@@ -26,97 +22,76 @@ void Tomography::setParameters(char * parameters)
     dx = std::stof(catchParameter("dx", parameters));
     dy = std::stof(catchParameter("dy", parameters));
     dz = std::stof(catchParameter("dz", parameters));
-    
-    shotsGeometryType = std::stoi(catchParameter("shotsGeometryType", parameters));
-    nodesGeometryType = std::stoi(catchParameter("nodesGeometryType", parameters));
 
-    reciprocity = str2bool(catchParameter("reciprocity", parameters));
-    saveGeometry = str2bool(catchParameter("saveGeometry", parameters));
+    V = expand(readBinaryFloat(catchParameter("modelPath", parameters), nPoints));
+
+    shotsPath = catchParameter("shotsPath", parameters);
+    nodesPath = catchParameter("nodesPath", parameters);
 
     std::vector<std::string> splitted;
 
     shots.elevation = std::stof(catchParameter("shotsElevation", parameters));
     nodes.elevation = std::stof(catchParameter("nodesElevation", parameters));
 
-    if (shotsGeometryType) // Grid shots aqcuisition
+    shots.n_xline = std::stoi(catchParameter("xShotNumber", parameters));
+    shots.n_yline = std::stoi(catchParameter("yShotNumber", parameters));
+    
+    splitted = split(catchParameter("shotSW", parameters),',');
+    set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    splitted = split(catchParameter("shotNW", parameters),',');
+    set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    splitted = split(catchParameter("shotSE", parameters),',');
+    set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    setGridGeometry(shots);
+
+    nodes.n_xline = std::stoi(catchParameter("xNodeNumber", parameters));
+    nodes.n_yline = std::stoi(catchParameter("yNodeNumber", parameters));
+    
+    splitted = split(catchParameter("nodeSW", parameters),',');
+    set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    splitted = split(catchParameter("nodeNW", parameters),',');
+    set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    splitted = split(catchParameter("nodeSE", parameters),',');
+    set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
+
+    setGridGeometry(nodes);
+
+    reciprocity = str2bool(catchParameter("reciprocity", parameters));
+    saveGeometry = str2bool(catchParameter("saveGeometry", parameters));
+
+    shotsTopography = str2bool(catchParameter("shotsTopography", parameters));    
+    nodesTopography = str2bool(catchParameter("nodesTopography", parameters));    
+
+    if (shotsTopography) 
     {
-        shots.n_xline = std::stoi(catchParameter("xShotNumber", parameters));
-        shots.n_yline = std::stoi(catchParameter("yShotNumber", parameters));
-        
-        splitted = split(catchParameter("shotSW", parameters),',');
-        set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-        splitted = split(catchParameter("shotNW", parameters),',');
-        set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-        splitted = split(catchParameter("shotSE", parameters),',');
-        set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
-
-        setGridGeometry(shots);
-    }
-    else                   // Circular shots aqcuisition
-    {   
-        shots.xcenter = std::stoi(catchParameter("xShotCenter", parameters));
-        shots.ycenter = std::stoi(catchParameter("yShotCenter", parameters));
-        shots.circle_spacing = std::stof(catchParameter("shotSpacing", parameters));
-        
-        splitted = split(catchParameter("sOffsets", parameters),',');
-
-        for (auto offset : splitted) 
-            shots.offsets.push_back(std::stof(offset));
-
-        setCircularGeometry(shots);
+        shotsTopographyPath = catchParameter("shotsTopographyPath", parameters);
+        shots.z = readBinaryFloat(shotsTopographyPath, shots.all);
     }
 
-    if (nodesGeometryType)           // Grid nodes aqcuisition
+    if (nodesTopography)
     {
-        nodes.n_xline = std::stoi(catchParameter("xNodeNumber", parameters));
-        nodes.n_yline = std::stoi(catchParameter("yNodeNumber", parameters));
-        
-        splitted = split(catchParameter("nodeSW", parameters),',');
-        set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-        splitted = split(catchParameter("nodeNW", parameters),',');
-        set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-        splitted = split(catchParameter("nodeSE", parameters),',');
-        set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
-
-        setGridGeometry(nodes);
+        nodesTopographyPath = catchParameter("nodesTopographyPath", parameters);
+        nodes.z = readBinaryFloat(nodesTopographyPath, nodes.all);
     }
-    else                        // Circular nodes aqcuisition
-    {
-        nodes.xcenter = std::stoi(catchParameter("xNodeCenter", parameters));
-        nodes.ycenter = std::stoi(catchParameter("yNodeCenter", parameters));
-        nodes.circle_spacing = std::stof(catchParameter("nodeSpacing", parameters));
-
-        splitted = split(catchParameter("nodeOffsets", parameters),',');
-
-        for (auto offset : splitted) 
-            nodes.offsets.push_back(std::stof(offset));
-
-        setCircularGeometry(nodes);
-    }
-
-    shotsPath = catchParameter("shotsPositionPath", parameters);
-    nodesPath = catchParameter("nodesPositionPath", parameters);
-
-    eikonalFolder = catchParameter("eikonalVolumeFolder", parameters);
 
     if (saveGeometry) exportPositions();
     if (reciprocity) setReciprocity();
 
-    dobsPath = catchParameter("dobsPath", parameters);
-    dcalPath = catchParameter("dcalPath", parameters);
+    eikonalType = std::stoi(catchParameter("eikonalType", parameters));    
+    exportRayPosition = str2bool(catchParameter("exportRayPosition", parameters));
+    exportTimesVolume = str2bool(catchParameter("exportTravelTimes", parameters));
+    exportIllumination = str2bool(catchParameter("exportIllumination", parameters));
+    exportFirstArrivals = str2bool(catchParameter("exportFirstArrivals", parameters));
 
-    lambda = std::stof(catchParameter("regParam", parameters));
-    tkOrder = std::stof(catchParameter("regOrder", parameters));
-    maxIteration = std::stoi(catchParameter("maxIteration", parameters));
-
-    smooth = str2bool(catchParameter("smooth", parameters)); 
-    smoothingType = std::stoi(catchParameter("smoothingType", parameters));
-    filterSamples = std::stoi(catchParameter("filterSamples", parameters));
-    standardDeviation = std::stof(catchParameter("standardDeviation",parameters));
+    raysFolder = catchParameter("raysFolder", parameters);
+    eikonalFolder = catchParameter("eikonalFolder", parameters);
+    arrivalFolder = catchParameter("arrivalFolder", parameters);
+    illuminationFolder = catchParameter("illuminationFolder", parameters);
 
     mTomo.nx = std::stoi(catchParameter("nxTomo", parameters));
     mTomo.ny = std::stoi(catchParameter("nyTomo", parameters));
@@ -128,14 +103,22 @@ void Tomography::setParameters(char * parameters)
 
     mTomo.nPoints = mTomo.nx * mTomo.ny * mTomo.nz;
 
-    residuoPath = catchParameter("convergencyFolder", parameters);
-    estimatedPath = catchParameter("estimatedModelsFolder", parameters);
-
     xMask = split(catchParameter("xMask", parameters),',');
     yMask = split(catchParameter("yMask", parameters),',');
     zMask = split(catchParameter("zMask", parameters),',');
 
-    V = expand(readBinaryFloat(catchParameter("modelPath", parameters), nPoints));
+    lambda = std::stof(catchParameter("regParam", parameters));
+    tkOrder = std::stof(catchParameter("regOrder", parameters));
+    maxIteration = std::stoi(catchParameter("maxIteration", parameters));
+
+    smooth = str2bool(catchParameter("smooth", parameters)); 
+    smoothingType = std::stoi(catchParameter("smoothingType", parameters));
+    filterSamples = std::stoi(catchParameter("filterSamples", parameters));
+    standardDeviation = std::stof(catchParameter("standardDeviation",parameters));
+
+    dobsPath = catchParameter("dobsPath", parameters);
+    residuoPath = catchParameter("convergencyFolder", parameters);
+    estimatedPath = catchParameter("estimatedModelsFolder", parameters);
 
     iteration = 0;
 
@@ -143,7 +126,7 @@ void Tomography::setParameters(char * parameters)
 
     dobs = new float[shots.all * nodes.all]();
     dcal = new float[shots.all * nodes.all]();    
-    
+
     model = new float [mTomo.nPoints];
 }
 
@@ -181,28 +164,12 @@ void Tomography::importDobs()
     
     for (int shot = 0; shot < shots.all; shot++)
     {
-        float * data = readBinaryFloat(dobsPath + "times_nr" + std::to_string(nodes.all) + "_shot_" + std::to_string(shot+1) + ".bin", nodes.all);
+        float * data = readBinaryFloat(dobsPath + std::to_string(shot+1) + ".bin", nodes.all);
 
         for (int d = ptr; d < ptr + nodes.all; d++) dobs[d] = data[d - ptr];
 
         ptr += nodes.all;
         
-        delete[] data;
-    }
-}
-
-void Tomography::importDcal()
-{
-    int ptr = 0; 
- 
-    for (int shot = 0; shot < shots.all; shot++)
-    {
-        float * data = readBinaryFloat(dcalPath + "times_nr" + std::to_string(nodes.all) + "_shot_" + std::to_string(shot+1) + ".bin", nodes.all);
-
-        for (int d = ptr; d < ptr + nodes.all; d++) dcal[d] = data[d - ptr];
-
-        ptr += nodes.all;
-     
         delete[] data;
     }
 }
@@ -225,19 +192,33 @@ void Tomography::setInitialModel()
     }
 }
 
+void Tomography::importDcal()
+{
+    int ptr = 0; 
+ 
+    for (int shot = 0; shot < shots.all; shot++)
+    {
+        float * data = readBinaryFloat(arrivalFolder + "times_nr" + std::to_string(nodes.all) + "_shot_" + std::to_string(shot+1) + ".bin", nodes.all);
+
+        for (int d = ptr; d < ptr + nodes.all; d++) dcal[d] = data[d - ptr];
+
+        ptr += nodes.all;
+     
+        delete[] data;
+    }
+}
+
 void Tomography::forwardModeling()
 {
-    arrivalFolder = dcalPath;
-
     T = new float[nPointsB];
 
     for (shotId = 0; shotId < shots.all; shotId++)
     {
+        infoMessage();    
+
         eikonalComputing();
 
         gradientRayTracing();
-    
-        infoMessage();    
     }
 
     delete[] T;

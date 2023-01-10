@@ -2,15 +2,15 @@
 # Model paramenters -------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
  
-nx = 721   # x dimension of model <int>
-ny = 721    # y dimension of model <int>
-nz = 161    # z dimension of model <int>
+nx = 181  # x dimension of model <int>
+ny = 181  # y dimension of model <int>
+nz = 41   # z dimension of model <int>
 
-dx = 12.5  # x sample spacing of model [m] <float>
-dy = 12.5  # y sample spacing of model [m] <float> 
-dz = 12.5  # z sample spacing of model [m] <float>  
+dx = 50   # x sample spacing of model [m] <float>
+dy = 50   # y sample spacing of model [m] <float> 
+dz = 50   # z sample spacing of model [m] <float>  
 
-modelPath = "../../inputs/models/trueModel_161x721x721_12.5m.bin"   # Velocity model location <string>
+modelPath = "../../inputs/models/initModel_41x181x181_50m.bin"   # Velocity model location <string>
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ shotSE = [8900, 100]      # SW -- SE # (x,y) [m] <float>
 
 shotsElevation = 25.0     # Sources elevation [m] - flat surface <float>             
 shotsTopography = False   #
-shotsTopographyPath = "../../inputs/geometry/"   # 
+shotsTopographyPath = "../../inputs/geometry/"    
 
 # Grid NODES geometry                        
 
@@ -44,7 +44,7 @@ nodeSE = [8000, 1000]    # SW -- SE # (x,y) <float>
 
 nodesElevation = 0       # Receivers elevation - flat surface [m] <float>
 nodesTopography = True   #
-nodesTopographyPath = "../../inputs/geometry/nodesTopography.bin"   # 
+nodesTopographyPath = "../../inputs/geometry/nodesTopo\cgraphy.bin"    
 
 #-------------------------------------------------------------------------------------------------
 # Seismic modeling parameters --------------------------------------------------------------------
@@ -70,10 +70,10 @@ waveletFolder = "../../inputs/wavelets/"     # Folder to write wavelets <string>
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonalType = 2    # Eikonal Type flag <int>          
+eikonalType = 0    # Eikonal Type flag <int>          
 
-exportRayPosition = False     # Ray position flag <bool>
-exportTravelTimes = False     # Travel times volume flag <bool> 
+exportRayPosition = False    # Ray position flag <bool>
+exportTravelTimes = False    # Travel times volume flag <bool> 
 exportIllumination = False   # Illumination matrix flag <bool>
 exportFirstArrivals = True   # First arrivals flag <bool> 
 
@@ -86,34 +86,33 @@ illuminationFolder = "../../outputs/illumination/"    # Illumination volume fold
 # Tomography parameters --------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nxTomo = 26   # Resized x sample dimension of model <int>
-nyTomo = 26   # Resized y sample dimension of model <int>
-nzTomo = 11   # Resized z sample dimension of model <int>
+nxTomo = 91   # Resized x sample dimension of model <int>
+nyTomo = 91   # Resized y sample dimension of model <int>
+nzTomo = 41   # Resized z sample dimension of model <int>
 
-dxTomo = 200   # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 200   # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 100   # Resized model sample spacing [m] of z dimension <float>
+dxTomo = 100   # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 100   # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 50   # Resized model sample spacing [m] of z dimension <float>
 
 xMask = [500, 500]   # Mask of [left, right] x axis sides [m] <float>
 yMask = [500, 500]   # Mask of [left, right] y axis sides [m] <float>
-zMask = [200, 0]     # Mask of [up, bottom] z axis sides [m] <float>
+zMask = [400, 300]   # Mask of [up, bottom] z axis sides [m] <float>
 
 # Inversion parameters 
 
 regOrder = 2       # Tikhonov regularization order <int>
-regParam = 1e3     # Regularization parameter <float>
-maxIteration = 7   # Tomography max iteration <int>                   
+regParam = 1e7     # Regularization parameter <float>
+maxIteration = 10   # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
 
-smooth = False            # Flag to smooth or not the model <bool>
+smooth = False            # Flag to smooth recovered model <bool>
 smoothingType = 0         # 0 - gaussian filter; 1 - moving average filter <int>
 filterSamples = 11        # Samples in filter, must to be an odd number! <int>
 standardDeviation = 2.0   # For gaussian filter case to control smoothing <float>
 
 # Folders location
 
-dobsPath = "outputs/dcal_"           # Folder to write calculated data
-dcalPath = "outputs/dcal_"           # Folder to write calculated data
-convergencyFolder = "outputs/"       # Folder to write convergency line to residuous norm
-estimatedModelsFolder = "outputs/"   # Folder to write estimated models per iteration 
+dobsPath = "../../inputs/picks/obsData_31329_samples_shot_"  # Folder to write calculated data
+convergencyFolder = "../../outputs/convergency/"             # Folder to write convergency line to residuous norm
+estimatedModelsFolder = "../../outputs/recoveredModels/"     # Folder to write estimated models per iteration 

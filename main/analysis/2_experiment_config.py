@@ -210,6 +210,7 @@ multiBoxPlot(models, shots, nodes, dh, slices, subplots)
 plt.savefig("../../figures/4_benchmark_models.png")
 plt.show()
 
-initModel.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/initModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
+# Low frequency initial model
+initModel[::4,::4,::4].flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/initModel_{nz/4 + 1:.0f}x{nx/4 + 1:.0f}x{ny/4 + 1:.0f}_{4*dx:.0f}m.bin")
 model.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
 
