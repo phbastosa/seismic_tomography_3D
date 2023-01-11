@@ -130,81 +130,101 @@ bool Utils::str2bool(std::string s)
     return b;
 }
 
-float * Utils::sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol)
+void Utils::sparse_lscg(int * iA, int * jA, float * vA, int n, int m, int nnz, float * B, float * x, int maxIt, float cgTol)
 {    
     float a, b, qTq, rTr, rd;
 
-    float * s = new float[A.n]();
-    float * q = new float[A.n]();
-    float * r = new float[A.m]();
-    float * p = new float[A.m]();
-    float * x = new float[A.m]();    // Linear system solution
+    float * s = new float[n]();
+    float * q = new float[n]();
+    float * r = new float[m]();
+    float * p = new float[m]();
 
-    // s = d - G * x, where d = dobs - dcal and x = slowness variation
-    for (int row = 0; row < A.n; row++) 
+    // s = d - A * x
+    for (int row = 0; row < n; row++) 
         s[row] = B[row]; 
 
-    // r = G' * s    
-    for (int ind = 0; ind < A.nnz; ind++) 
-        r[A.j[ind]] += A.v[ind] * s[A.i[ind]];        
+    // r = A' * s    
+    for (int index = 0; index < nnz; index++) 
+        r[jA[index]] += vA[index] * s[iA[index]];        
 
-    // p = r
-    for (int col = 0; col < A.m; col++) 
+    // x = 0 & p = r 
+    for (int col = 0; col < m; col++) 
+    {
+        x[col] = 0.0f;
         p[col] = r[col]; 
+    }
 
-    // q = G * p
-    for (int ind = 0; ind < A.nnz; ind++) 
-        q[A.i[ind]] += A.v[ind] * p[A.j[ind]];        
+    // q = A * p
+    for (int index = 0; index < nnz; index++) 
+        q[iA[index]] += vA[index] * p[jA[index]];        
+
+    // # pragma acc enter data copyin(s[0:n], q[0:n], B[0:n])
+    // # pragma acc enter data copyin(r[0:m], p[0:m], x[0:m])
+    // # pragma acc enter data copyin(iA[0:nnz],jA[0:nnz],vA[0:nnz])
 
     for (int iteration = 0; iteration < maxIt; iteration++)
     {
         qTq = 0.0f;
-        for (int row = 0; row < A.n; row++)          // q inner product
-            qTq += q[row] * q[row];                  // qTq = q' * q
+        // # pragma acc parallel loop reduction(+:qTq) present(q[0:n])
+        for (int row = 0; row < n; row++)                // q inner product
+            qTq += q[row] * q[row];                      // qTq = q' * q
 
         rTr = 0.0f;
-        for (int col = 0; col < A.m; col++)          // r inner product
-            rTr += r[col] * r[col];                  // rTr = r' * r 
+        // # pragma acc parallel loop reduction(+:rTr) present(r[0:m])
+        for (int col = 0; col < m; col++)                // r inner product
+            rTr += r[col] * r[col];                      // rTr = r' * r 
 
-        a = rTr / qTq;                               // a = (r' * r) / (q' * q)                    
+        a = rTr / qTq;                                   // a = (r' * r) / (q' * q)                    
 
-        for (int col = 0; col < A.m; col++)          // model atualization
-            x[col] += a * p[col];                    // x = x + a * p
+        // # pragma acc parallel loop present(x[0:m], p[0:m])
+        for (int col = 0; col < m; col++)                // model atualization
+            x[col] += a * p[col];                        // x = x + a * p
 
-        for (int row = 0; row < A.n; row++)          // s atualization  
-            s[row] -= a * q[row];                    // s = s - a * q 
+        // # pragma acc parallel loop present(s[0:n], q[0:n])
+        for (int row = 0; row < n; row++)                // s atualization  
+            s[row] -= a * q[row];                        // s = s - a * q 
 
         rd = 0.0f;
-        for (int col = 0; col < A.m; col++)          // r inner product for division 
-            rd += r[col] * r[col];                   // rd = r' * r
+        // # pragma acc parallel loop reduction(+:rd) present(r[0:m])
+        for (int col = 0; col < m; col++)                // r inner product for division 
+            rd += r[col] * r[col];                       // rd = r' * r
 
-        for (int col = 0; col < A.m; col++)          // Zeroing r 
-            r[col] = 0.0f;                           // r = 0, for multiplication
+        // # pragma acc parallel loop present(r[0:m])
+        for (int col = 0; col < m; col++)                // Zeroing r 
+            r[col] = 0.0f;                               // r = 0, for multiplication
+
+        // # pragma acc parallel loop present(iA[0:nnz],jA[0:nnz],vA[0:nnz],r[0:m],s[0:n])    
+        for (int index = 0; index < nnz; index++)        // r atualization 
+            r[jA[index]] += vA[index] * s[iA[index]];    // r = G' * s    
         
-        for (int ind = 0; ind < A.nnz; ind++)        // r atualization 
-            r[A.j[ind]] += A.v[ind] * s[A.i[ind]];   // r = G' * s    
+        rTr = 0.0f;    
+        // # pragma acc parallel loop reduction(+:rTr) present(r[0:m])        
+        for (int col = 0; col < m; col++)                // r inner product
+            rTr += r[col] * r[col];                      // rTr = r' * r
 
-        rTr = 0.0f;            
-        for (int col = 0; col < A.m; col++)          // r inner product
-            rTr += r[col] * r[col];                  // rTr = r' * r
-
-        if (sqrtf(rd) < cgTol) break;                // Convergence condition
+        if (sqrtf(rd) < cgTol) break;                    // Convergence condition
         
-        b = rTr / rd;                                // b = (r' * r) / rd
+        b = rTr / rd;                                    // b = (r' * r) / rd
 
-        for (int col = 0; col < A.m; col++)          
-            p[col] = r[col] + b * p[col];            // p = r + b * p 
+        // # pragma acc parallel loop present(p[0:m],r[0:m]) 
+        for (int col = 0; col < m; col++)          
+            p[col] = r[col] + b * p[col];                // p = r + b * p 
 
-        for (int row = 0; row < A.n; row++) 
-            q[row] = 0.0f;                           // q = 0, for multiplication
+        // # pragma acc parallel loop present(q[0:n])
+        for (int row = 0; row < n; row++) 
+            q[row] = 0.0f;                               // q = 0, for multiplication
 
-        for (int ind = 0; ind < A.nnz; ind++) 
-            q[A.i[ind]] += A.v[ind] * p[A.j[ind]];   // q = G * p   
+        // # pragma acc parallel loop present(iA[0:nnz],jA[0:nnz],vA[0:nnz],q[0:n],p[0:m])
+        for (int index = 0; index < nnz; index++) 
+            q[iA[index]] += vA[index] * p[jA[index]];    // q = G * p           
     }
     
-    delete[] s; delete[] q; delete[] r; delete[] p;
-    
-    return x;
+    // # pragma acc exit data delete(r[0:m], p[0:m])
+    // # pragma acc exit data delete(s[0:n], q[0:n], B[0:n])
+    // # pragma acc exit data delete(iA[0:nnz],jA[0:nnz],vA[0:nnz])
+    // # pragma acc exit data copyout(x[0:m])
+
+    delete[] s; delete[] q; delete[] r; delete[] p; 
 }
 
 Utils::sparseMatrix Utils::getDerivativeMatrix(int n, int degree)

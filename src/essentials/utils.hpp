@@ -90,7 +90,7 @@ public:
         maxIt - max iterations 
         cgTol - tolerance 
     */
-    float * sparse_lscg(sparseMatrix A, float * B, int maxIt, float cgTol);
+    void sparse_lscg(int * iA, int * jA, float * vA, int n, int m, int nnz, float * B, float * x, int maxIt, float cgTol);
 
     /* */
     float * movingAverageSmoothing(float * volume, int nx, int ny, int nz, int samples); 

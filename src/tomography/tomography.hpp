@@ -44,6 +44,9 @@ private:
     std::vector< int > jM;          // To store initially the cols of sparse G matrix
     std::vector<float> vM;          // To store initially the values of sparse G matrix
 
+    float * B;                      // Data difference (dobs - dcal) with regularization     
+    sparseMatrix A;                 // Regularized matrix to solve linear system (A dm = dT)  
+
     std::vector<float> residuo;     // To store the convergency at each iteration
 
     std::vector<std::string> xMask; // Mask to avoid boundary outliers in x direction 
@@ -58,25 +61,25 @@ private:
     void gradientRayTracing();
 
     /* 
-        Construct the G matrix in form of sparse matrix deleting iM, jM and vM 
+        Construct the A matrix (G + L) in form of sparse matrix deleting iM, jM and vM 
     */
-    sparseMatrix buildForwardModelingMatrix();
-   
-    /*  
-        Construct the A matrix with the regularization matrix concatenation 
-        L is a derivative matrix to apply Tikhonov regularization
+    void buildRegularizedMatrix();   
+
+    /*
+    
     */
-    sparseMatrix applyTkRegularization(sparseMatrix G, sparseMatrix L);
+    void buildRegularizedData();
 
 public:    
-    
+
     std::string dobsPath;           // Observed data location with its preamble
+    std::string parameters;         // 
 
     /* Tomograpy class constructor */
     Tomography();
 
     /* Importing from file and setting all tomography parameters */
-    void setParameters(char * parametersFile);
+    void setParameters();
 
     /* 
         It informs:

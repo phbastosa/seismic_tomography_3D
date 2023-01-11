@@ -10,7 +10,7 @@
 
 Tomography::Tomography() { } 
 
-void Tomography::setParameters(char * parameters)
+void Tomography::setParameters()
 {
     nb = 2;
     nx = std::stoi(catchParameter("nx", parameters));
@@ -128,6 +128,8 @@ void Tomography::setParameters(char * parameters)
     dcal = new float[shots.all * nodes.all]();    
 
     model = new float [mTomo.nPoints];
+
+    dm = new float [mTomo.nPoints];
 }
 
 void Tomography::infoMessage()
@@ -330,86 +332,58 @@ bool Tomography::converged()
     }
 }
 
-Utils::sparseMatrix Tomography::buildForwardModelingMatrix()
+void Tomography::buildRegularizedMatrix()
 {
-    sparseMatrix G;
+    sparseMatrix L = Utils::getDerivativeMatrix(mTomo.nPoints, tkOrder);
+    
+    A.n = shots.all*nodes.all + L.n; // Data dimension
+    A.m = mTomo.nPoints;             // Model dimension
+    A.nnz = vM.size() + L.nnz;       // Non zero elements
 
-    G.nnz = vM.size();           // Non zero elements 
-    G.m = mTomo.nPoints;         // Model dimension
-    G.n = shots.all*nodes.all;   // Data dimension
-
-    G.init();
+    A.init();
 
     for (int index = 0; index < vM.size(); index++)
     {
-        G.i[index] = iM[index];
-        G.j[index] = jM[index];
-        G.v[index] = vM[index];
+        A.i[index] = iM[index];
+        A.j[index] = jM[index];
+        A.v[index] = vM[index];
     }
 
     std::vector<  int  >().swap(iM);
     std::vector<  int  >().swap(jM);
     std::vector< float >().swap(vM);
 
-    return G;
-}
-
-Utils::sparseMatrix Tomography::applyTkRegularization(sparseMatrix G, sparseMatrix L)
-{
-    sparseMatrix A;
-
-    A.nnz = G.nnz + L.nnz;
-    A.n = G.n + L.n;
-    A.m = G.m;  
-
-    A.init();
-
-    for (int index = 0; index < A.nnz; index++) 
+    for (int index = A.nnz - L.nnz; index < A.nnz; index++) 
     {
-        if (index < G.nnz)
-        {
-            A.i[index] = G.i[index];
-            A.j[index] = G.j[index];
-            A.v[index] = G.v[index];
-        }
-        else
-        {
-            A.i[index] = G.n + L.i[index - G.nnz];
-            A.j[index] = L.j[index - G.nnz];
-            A.v[index] = lambda * L.v[index - G.nnz];        
-        }
+        A.i[index] = shots.all*nodes.all + L.i[index - (A.nnz - L.nnz)];
+        A.j[index] = L.j[index - (A.nnz - L.nnz)];
+        A.v[index] = lambda * L.v[index - (A.nnz - L.nnz)];        
     }
 
-    return A;
+    L.erase();
+}
+
+void Tomography::buildRegularizedData()
+{
+    B = new float[A.n]();
+
+    for (int index = 0; index < nodes.all*shots.all; index++) 
+        B[index] = dobs[index] - dcal[index];
 }
 
 void Tomography::optimization()
 {
     std::cout<<"Solving linear system using Tikhonov regularization with order "+ std::to_string(tkOrder) + "\n\n";
 
-    sparseMatrix G = buildForwardModelingMatrix();
-
-    sparseMatrix L = getDerivativeMatrix(G.m, tkOrder);
-
-    sparseMatrix A = applyTkRegularization(G, L);
-
-    G.erase(); L.erase();
-
-    // Filling the data difference array
-
-    float * B = new float[A.n]();
-
-    for (int index = 0; index < nodes.all*shots.all; index++) 
-        B[index] = dobs[index] - dcal[index];
-
-    // Sparse least squares conjugate gradient
+    buildRegularizedMatrix();
+    buildRegularizedData();
 
     int maxIt = 1000;
-    int cgTol = 1e-6;
+    float cgTol = 1e-6f;
 
-    dm = sparse_lscg(A, B, maxIt, cgTol);
+    sparse_lscg(A.i, A.j, A.v, A.n, A.m, A.nnz, B, dm, maxIt, cgTol);
 
-    A.erase(); delete[] B; 
+    A.erase(); delete[] B;
 }
 
 void Tomography::modelUpdate()

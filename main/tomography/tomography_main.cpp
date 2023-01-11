@@ -10,7 +10,9 @@ int main(int argc, char **argv)
     
     auto ti = std::chrono::system_clock::now();
     
-    tomo.setParameters(argv[1]);
+    tomo.parameters = std::string(argv[1]);
+
+    tomo.setParameters();
 
     tomo.importDobs();
     tomo.setInitialModel();

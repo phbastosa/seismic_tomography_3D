@@ -44,7 +44,7 @@ nodeSE = [8000, 1000]    # SW -- SE # (x,y) <float>
 
 nodesElevation = 0       # Receivers elevation - flat surface [m] <float>
 nodesTopography = True   #
-nodesTopographyPath = "../../inputs/geometry/nodesTopo\cgraphy.bin"    
+nodesTopographyPath = "../../inputs/geometry/nodesTopography.bin"    
 
 #-------------------------------------------------------------------------------------------------
 # Seismic modeling parameters --------------------------------------------------------------------
@@ -86,22 +86,22 @@ illuminationFolder = "../../outputs/illumination/"    # Illumination volume fold
 # Tomography parameters --------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nxTomo = 91   # Resized x sample dimension of model <int>
-nyTomo = 91   # Resized y sample dimension of model <int>
-nzTomo = 41   # Resized z sample dimension of model <int>
+nxTomo = 46   # Resized x sample dimension of model <int>
+nyTomo = 46   # Resized y sample dimension of model <int>
+nzTomo = 21   # Resized z sample dimension of model <int>
 
-dxTomo = 100   # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 100   # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 50   # Resized model sample spacing [m] of z dimension <float>
+dxTomo = 200   # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 200   # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 100   # Resized model sample spacing [m] of z dimension <float>
 
 xMask = [500, 500]   # Mask of [left, right] x axis sides [m] <float>
 yMask = [500, 500]   # Mask of [left, right] y axis sides [m] <float>
-zMask = [400, 300]   # Mask of [up, bottom] z axis sides [m] <float>
+zMask = [450, 200]   # Mask of [up, bottom] z axis sides [m] <float>
 
 # Inversion parameters 
 
 regOrder = 2       # Tikhonov regularization order <int>
-regParam = 1e7     # Regularization parameter <float>
+regParam = 5e6     # Regularization parameter <float>
 maxIteration = 10   # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
