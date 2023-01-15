@@ -2,15 +2,15 @@
 # Model paramenters -------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
  
-nx = 181  # x dimension of model <int>
-ny = 181  # y dimension of model <int>
-nz = 41   # z dimension of model <int>
+nx = 721   # x dimension of model <int>
+ny = 721   # y dimension of model <int>
+nz = 161   # z dimension of model <int>
 
-dx = 50   # x sample spacing of model [m] <float>
-dy = 50   # y sample spacing of model [m] <float> 
-dz = 50   # z sample spacing of model [m] <float>  
+dx = 12.5   # x sample spacing of model [m] <float>
+dy = 12.5   # y sample spacing of model [m] <float> 
+dz = 12.5   # z sample spacing of model [m] <float>  
 
-modelPath = "../../inputs/models/initModel_41x181x181_50m.bin"   # Velocity model location <string>
+modelPath = "../../inputs/models/trueModel_161x721x721_12.5m.bin"   # Velocity model location <string>
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
@@ -36,8 +36,8 @@ shotsTopographyPath = "../../inputs/geometry/"
 
 # Grid NODES geometry                        
 
-xNodeNumber = 8          # Number of sources in x direction <int>
-yNodeNumber = 8          # Number of sources in y direction
+xNodeNumber = 15         # Number of sources in x direction <int>
+yNodeNumber = 15         # Number of sources in y direction
 nodeSW = [1000, 1000]    # NW       # (x,y) <float>     
 nodeNW = [1000, 8000]    #  |       # (x,y) <float>   
 nodeSE = [8000, 1000]    # SW -- SE # (x,y) <float>   
@@ -56,7 +56,7 @@ factor = 30      # Attenuation factor to apply in PML <float>
 nt = 5001        # Total samples in time domain <int>
 dt = 0.001       # Sample spacing in time domain [s] <float>
 
-fmax = 45.0      # Max frequency in source [Hz] <float>
+fmax = 30.0      # Max frequency in source [Hz] <float>
 delay = 0.15     # Delay of source - anti causal [s] <float>
 
 seismFolder = "../../inputs/seismograms/"    # Folder to write seismograms <string>
