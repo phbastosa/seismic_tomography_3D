@@ -158,47 +158,35 @@ void Utils::sparse_lscg(int * iA, int * jA, float * vA, int n, int m, int nnz, f
     for (int index = 0; index < nnz; index++) 
         q[iA[index]] += vA[index] * p[jA[index]];        
 
-    // # pragma acc enter data copyin(s[0:n], q[0:n], B[0:n])
-    // # pragma acc enter data copyin(r[0:m], p[0:m], x[0:m])
-    // # pragma acc enter data copyin(iA[0:nnz],jA[0:nnz],vA[0:nnz])
-
     for (int iteration = 0; iteration < maxIt; iteration++)
     {
         qTq = 0.0f;
-        // # pragma acc parallel loop reduction(+:qTq) present(q[0:n])
         for (int row = 0; row < n; row++)                // q inner product
             qTq += q[row] * q[row];                      // qTq = q' * q
 
         rTr = 0.0f;
-        // # pragma acc parallel loop reduction(+:rTr) present(r[0:m])
         for (int col = 0; col < m; col++)                // r inner product
             rTr += r[col] * r[col];                      // rTr = r' * r 
 
         a = rTr / qTq;                                   // a = (r' * r) / (q' * q)                    
 
-        // # pragma acc parallel loop present(x[0:m], p[0:m])
         for (int col = 0; col < m; col++)                // model atualization
             x[col] += a * p[col];                        // x = x + a * p
 
-        // # pragma acc parallel loop present(s[0:n], q[0:n])
         for (int row = 0; row < n; row++)                // s atualization  
             s[row] -= a * q[row];                        // s = s - a * q 
 
         rd = 0.0f;
-        // # pragma acc parallel loop reduction(+:rd) present(r[0:m])
         for (int col = 0; col < m; col++)                // r inner product for division 
             rd += r[col] * r[col];                       // rd = r' * r
 
-        // # pragma acc parallel loop present(r[0:m])
         for (int col = 0; col < m; col++)                // Zeroing r 
             r[col] = 0.0f;                               // r = 0, for multiplication
 
-        // # pragma acc parallel loop present(iA[0:nnz],jA[0:nnz],vA[0:nnz],r[0:m],s[0:n])    
         for (int index = 0; index < nnz; index++)        // r atualization 
             r[jA[index]] += vA[index] * s[iA[index]];    // r = G' * s    
         
         rTr = 0.0f;    
-        // # pragma acc parallel loop reduction(+:rTr) present(r[0:m])        
         for (int col = 0; col < m; col++)                // r inner product
             rTr += r[col] * r[col];                      // rTr = r' * r
 
@@ -206,24 +194,16 @@ void Utils::sparse_lscg(int * iA, int * jA, float * vA, int n, int m, int nnz, f
         
         b = rTr / rd;                                    // b = (r' * r) / rd
 
-        // # pragma acc parallel loop present(p[0:m],r[0:m]) 
         for (int col = 0; col < m; col++)          
             p[col] = r[col] + b * p[col];                // p = r + b * p 
 
-        // # pragma acc parallel loop present(q[0:n])
         for (int row = 0; row < n; row++) 
             q[row] = 0.0f;                               // q = 0, for multiplication
 
-        // # pragma acc parallel loop present(iA[0:nnz],jA[0:nnz],vA[0:nnz],q[0:n],p[0:m])
         for (int index = 0; index < nnz; index++) 
             q[iA[index]] += vA[index] * p[jA[index]];    // q = G * p           
     }
     
-    // # pragma acc exit data delete(r[0:m], p[0:m])
-    // # pragma acc exit data delete(s[0:n], q[0:n], B[0:n])
-    // # pragma acc exit data delete(iA[0:nnz],jA[0:nnz],vA[0:nnz])
-    // # pragma acc exit data copyout(x[0:m])
-
     delete[] s; delete[] q; delete[] r; delete[] p; 
 }
 
