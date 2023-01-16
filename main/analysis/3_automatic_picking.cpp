@@ -15,7 +15,7 @@ int main()
 
     int nt = 5001;
     int traces = 177;
-    int nodes_all = 64; 
+    int nodes_all = 225; 
     int shots_all = 31329;
 
     float dt = 1e-3f;
@@ -70,9 +70,9 @@ int main()
             {
                 S[k] *= 1.0f / ampMax;
                 
-                if (S[k] > 0.005f)
+                if (S[k] > 0.001f)
                 {
-                    picks_all[trace] = (k + 4*iw/3) * dt;            
+                    picks_all[trace] = (k + 6*iw/4) * dt;            
                     break;
                 }
             }    

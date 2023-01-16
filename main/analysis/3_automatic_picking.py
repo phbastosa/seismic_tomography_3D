@@ -12,7 +12,7 @@ start = timeit.default_timer()
 
 nt = 5001
 traces = 177
-nodes_all = 64 
+nodes_all = 225 
 shots_all = 31329
 
 dt = 1e-3
