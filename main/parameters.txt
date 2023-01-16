@@ -2,15 +2,15 @@
 # Model paramenters -------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
  
-nx = 721   # x dimension of model <int>
-ny = 721   # y dimension of model <int>
-nz = 161   # z dimension of model <int>
+nx = 181   # x dimension of model <int>
+ny = 181   # y dimension of model <int>
+nz = 41   # z dimension of model <int>
 
-dx = 12.5   # x sample spacing of model [m] <float>
-dy = 12.5   # y sample spacing of model [m] <float> 
-dz = 12.5   # z sample spacing of model [m] <float>  
+dx = 50   # x sample spacing of model [m] <float>
+dy = 50   # y sample spacing of model [m] <float> 
+dz = 50   # z sample spacing of model [m] <float>  
 
-modelPath = "../../inputs/models/trueModel_161x721x721_12.5m.bin"   # Velocity model location <string>
+modelPath = "../../inputs/models/initModel_41x181x181_50m.bin"   # Velocity model location <string>
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
@@ -102,7 +102,7 @@ zMask = [450, 200]   # Mask of [up, bottom] z axis sides [m] <float>
 
 regOrder = 2       # Tikhonov regularization order <int>
 regParam = 5e6     # Regularization parameter <float>
-maxIteration = 10   # Tomography max iteration <int>                   
+maxIteration = 1   # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
 
