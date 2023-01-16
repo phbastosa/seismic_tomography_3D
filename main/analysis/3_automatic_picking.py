@@ -47,36 +47,47 @@ print('Run time: ', stop - start)
 
 # Quality control image
 
-# tlag = 0.15
-# tcut = 4.50
+tlag = 0.15
+tcut = 4.50
 
-# updated_nt = 4501
+updated_nt = 4501
 
-# times = slice(int(tlag/dt), int((tlag+tcut)/dt))
-# trace = slice(int(line*shots_all/traces),int((line+1)*shots_all/traces))
+times = slice(int(tlag/dt), int((tlag+tcut)/dt))
 
-# seismic = seismic_all[times, trace]
+tloc = np.linspace(0, updated_nt-1, 11, dtype = int)
+tlab = np.around(np.linspace(0, updated_nt-1, 11) * dt, decimals = 1)
 
-# tloc = np.linspace(0, updated_nt-1, 11, dtype = int)
-# tlab = np.around(np.linspace(0, updated_nt-1, 11) * dt, decimals = 1)
+xloc = np.linspace(0, traces-1, 11, dtype = int)
+xlab = np.linspace(0, traces, 11, dtype = int)
 
-# xloc = np.linspace(0, traces-1, 11, dtype = int)
-# xlab = np.linspace(0, traces, 11, dtype = int)
+for node in range(nodes_all):
 
-# scale = 0.9 * np.std(seismic_all)
+    seismic_all = readBinaryMatrix(nt, shots_all, f"../../inputs/seismograms/seismogram_{nt}x{shots_all}_shot_{node+1}.bin")
+    rawPicks_all = readBinaryArray(shots_all, f"../../inputs/picks/rawPicks_shot_{node+1}_{shots_all}_samples.bin")
+    output_picks = readBinaryArray(shots_all, f"../../inputs/picks/obsData_{shots_all}_samples_shot_{node+1}.bin")
 
-# plt.figure(1, figsize = (10, 7))
-# plt.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
-# plt.plot(rawPicks_all[trace]/dt, label = "Original picks")
-# plt.plot(output_picks[trace]/dt, label = "Output picks")
+    scale = 0.9 * np.std(seismic_all)
+    
+    for line in range(traces):
+        
+        trace = slice(int(line*shots_all/traces),int((line+1)*shots_all/traces))
 
-# plt.xlabel("Traces", fontsize = 15)
-# plt.ylabel("Time [s]", fontsize = 15)
+        seismic = seismic_all[times, trace]
 
-# plt.legend(loc = "upper right", fontsize = 12)
+        plt.figure(1, figsize = (10, 7))
 
-# plt.yticks(tloc, tlab)
-# plt.xticks(xloc, xlab)
+        plt.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
+        plt.plot(rawPicks_all[trace]/dt, label = "Original picks")
+        plt.plot(output_picks[trace]/dt, label = "Output picks")
 
-# plt.tight_layout()
-# plt.show()
+        plt.xlabel("Traces", fontsize = 15)
+        plt.ylabel("Time [s]", fontsize = 15)
+        plt.title(f"Receiver gather {node+1} offset {line}", fontsize = 18)
+
+        plt.legend(loc = "upper right", fontsize = 12)
+
+        plt.yticks(tloc, tlab)
+        plt.xticks(xloc, xlab)
+
+        plt.tight_layout()
+        plt.show()
