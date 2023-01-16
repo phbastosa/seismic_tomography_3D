@@ -173,6 +173,8 @@ dv = 17.0   # m/s
 v = np.array([1500,2000,3500])
 z = np.array([500,base,nz*dz])
 
+initModel = buildModel3D(nx,ny,nz,v,z//dz)
+
 for j in range(nx):
     for k in range(ny):
         nGradient = int(surface[k,j]) - int(waterBottom[k,j])
@@ -182,8 +184,11 @@ for j in range(nx):
         model[:int(waterBottom[k,j]), j, k] = v[0]
         model[gradient, j, k] = v0 + dv*np.arange(nGradient)
 
+        initModel[int(base/dz):,j,k] = v[-1]
+        initModel[:int(500/dz), j, k] = v[0]
+        initModel[int(500/dz):int(base/dz), j, k] = v0 + dv*np.arange((int(base/dz)-int(500/dz)))
+        
 #----------------------------------------------------------------------------
-initModel = buildModel3D(nx,ny,nz,v,z//dz)
 
 models = np.zeros((2,nz,nx,ny))
 
