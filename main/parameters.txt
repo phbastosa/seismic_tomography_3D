@@ -101,8 +101,8 @@ zMask = [450, 200]   # Mask of [up, bottom] z axis sides [m] <float>
 # Inversion parameters 
 
 regOrder = 2       # Tikhonov regularization order <int>
-regParam = 5e6     # Regularization parameter <float>
-maxIteration = 1   # Tomography max iteration <int>                   
+regParam = 1e7     # Regularization parameter <float>
+maxIteration = 10   # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
 

@@ -2,8 +2,10 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-from matplotlib import patches
+from math import erf
+from scipy.linalg import inv, solve, norm
 
+from matplotlib import patches
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def readBinaryArray(n,filename):
@@ -310,3 +312,55 @@ def multiBoxPlot(models:np.ndarray, shots:np.ndarray, nodes:np.ndarray, dh:np.nd
                        ax.invert_yaxis()
     
     return None
+
+def irls(A, b, tolr, tolx, p, maxiter):
+    ''' 
+    Solve for the 1-norm solution
+
+        Input Parameters:
+            A       - Matrix of the system of equations.
+            b       - Right hand side of the system of equations.
+            tolr    - Tolerance below which residuals are ignored.
+            tolx    - Stopping tolerance.  Stop when (norm(newx-x)/(1+norm(x)) < tolx)
+            p       - Specifies which p-norm to use (most often, p=1.)
+            maxiter - Limit on number of iterations of IRLS
+
+        Output Parameters:
+            x - Approximate L_p solution.
+    '''
+
+    # Find the size of the matrix A.
+    [m,n] = np.shape(A)
+
+    # Start the first iteration with R=I, and x=A\b (the least squares solution)
+    R = np.eye(m)
+    x = solve(A.T @ A, A.T @ b)
+
+    #  Now loop up to maxiter iterations
+    iter = 1
+    while iter <= maxiter:
+        
+        iter += 1
+
+        # compute the current residual 
+        r = A @ x - b
+
+        # for each row adjust the weighting factor r based on the residual
+        for i in range(m):
+            if np.abs(r[i] < tolr):
+                r[i] = np.abs(tolr)**(p - 2)
+            else:
+                r[i] = np.abs(r[i])**(p - 2)
+
+        # insert the weighting factors into R
+        R = np.diag(r)
+
+        # find the solution to the weighted problem
+        newx = solve(A.T @ R @ A, A.T @ R @ b)
+
+        # check for convergence
+        if norm(newx - x) / (1 + norm(x)) < tolx:
+            x = newx
+            return x
+        else:
+            x = newx

@@ -70,9 +70,9 @@ int main()
             {
                 S[k] *= 1.0f / ampMax;
                 
-                if (S[k] > 0.001f)
+                if (S[k] > 0.0f)
                 {
-                    picks_all[trace] = (k + 6*iw/4) * dt;            
+                    picks_all[trace] = (k + 2*iw) * dt;            
                     break;
                 }
             }    
