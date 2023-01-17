@@ -31,7 +31,7 @@ int main()
     int ftime = (int)((tcut+tlag)/dt + 1);
 
     // loop of receiver gathers
-    for (int node = 0; node < nodes_all; node++)
+    for (int node = 0; node < 1; node++)
     {
         float * picks_all = new float[shots_all]();    
         float * seismic_all = utils.readBinaryFloat("../../inputs/seismograms/seismogram_" + std::to_string(nt) + "x" + std::to_string(shots_all) + "_shot_" + std::to_string(node+1) + ".bin", shots_all*nt);
@@ -70,9 +70,9 @@ int main()
             {
                 S[k] *= 1.0f / ampMax;
                 
-                if (S[k] > 0.0f)
+                if (S[k] > 0.00001f)
                 {
-                    picks_all[trace] = (k + 2*iw) * dt;            
+                    picks_all[trace] = (k + iw + iw/2) * dt;            
                     break;
                 }
             }    
