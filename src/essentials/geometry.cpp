@@ -3,6 +3,7 @@
 # include <string>
 # include <fstream>
 
+# include "utils.hpp"
 # include "geometry.hpp"
 
 std::vector<float> Geometry::linspace(float xi, float xf, int n)
@@ -103,8 +104,11 @@ void Geometry::setReciprocity()
 
 void Geometry::exportPositions()
 {
-    std::ofstream shotsFile(shotsPath);        
-    std::ofstream nodesFile(nodesPath);
+    std::string shots_txt = geometryFolder + "shots.txt";
+    std::string nodes_txt = geometryFolder + "nodes.txt";
+
+    std::ofstream shotsFile(shots_txt);        
+    std::ofstream nodesFile(nodes_txt);
 
     for (int node = 0; node < nodes.all; node++)        
     {   
@@ -118,4 +122,22 @@ void Geometry::exportPositions()
 
     shotsFile.close();
     nodesFile.close();
+}
+
+void Geometry::importPositions()
+{
+    auto utils = Utils();
+
+    shots.all = shots.n_xline * shots.n_yline;
+    nodes.all = nodes.n_xline * nodes.n_yline;
+
+    shots.x = utils.readBinaryFloat(geometryFolder + "x_shots_" + std::to_string(shots.all) + "_positions.bin", shots.all);
+    shots.y = utils.readBinaryFloat(geometryFolder + "y_shots_" + std::to_string(shots.all) + "_positions.bin", shots.all);
+    shots.z = utils.readBinaryFloat(geometryFolder + "z_shots_" + std::to_string(shots.all) + "_positions.bin", shots.all);
+
+    nodes.x = utils.readBinaryFloat(geometryFolder + "x_nodes_" + std::to_string(nodes.all) + "_positions.bin", nodes.all);
+    nodes.y = utils.readBinaryFloat(geometryFolder + "y_nodes_" + std::to_string(nodes.all) + "_positions.bin", nodes.all);
+    nodes.z = utils.readBinaryFloat(geometryFolder + "z_nodes_" + std::to_string(nodes.all) + "_positions.bin", nodes.all);
+    
+    if (reciprocity) setReciprocity();
 }

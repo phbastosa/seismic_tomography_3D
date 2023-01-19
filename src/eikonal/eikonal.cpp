@@ -7,7 +7,7 @@
 
 float Eikonal::min(float v1, float v2) { return !(v1 > v2) ? v1 : v2; }
 
-void Eikonal::setEikonalParameters(char * parameters)
+void Eikonal::setEikonalParameters()
 {
     eikonalType = std::stoi(catchParameter("eikonalType", parameters));    
     
@@ -21,6 +21,18 @@ void Eikonal::setEikonalParameters(char * parameters)
     arrivalFolder = catchParameter("arrivalFolder", parameters);
     illuminationFolder = catchParameter("illuminationFolder", parameters);
 
+    shots.n_xline = std::stoi(catchParameter("xShotNumber", parameters));
+    shots.n_yline = std::stoi(catchParameter("yShotNumber", parameters));
+
+    nodes.n_xline = std::stoi(catchParameter("xNodeNumber", parameters));
+    nodes.n_yline = std::stoi(catchParameter("yNodeNumber", parameters));
+
+    geometryFolder = catchParameter("geometryFolder", parameters);
+
+    reciprocity = str2bool(catchParameter("reciprocity", parameters));
+    
+    importPositions();
+
     nb = 1;
     nx = std::stoi(catchParameter("nx", parameters));
     ny = std::stoi(catchParameter("ny", parameters));
@@ -31,53 +43,11 @@ void Eikonal::setEikonalParameters(char * parameters)
     dx = std::stof(catchParameter("dx", parameters));
     dy = std::stof(catchParameter("dy", parameters));
     dz = std::stof(catchParameter("dz", parameters));
-    
-    reciprocity = str2bool(catchParameter("reciprocity", parameters));
-    saveGeometry = str2bool(catchParameter("saveGeometry", parameters));
-
-    std::vector<std::string> splitted;
-
-    shots.elevation = std::stof(catchParameter("shotsElevation", parameters));
-    nodes.elevation = std::stof(catchParameter("nodesElevation", parameters));
-
-    shots.n_xline = std::stoi(catchParameter("xShotNumber", parameters));
-    shots.n_yline = std::stoi(catchParameter("yShotNumber", parameters));
-    
-    splitted = split(catchParameter("shotSW", parameters),',');
-    set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = split(catchParameter("shotNW", parameters),',');
-    set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = split(catchParameter("shotSE", parameters),',');
-    set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    setGridGeometry(shots);
-
-    nodes.n_xline = std::stoi(catchParameter("xNodeNumber", parameters));
-    nodes.n_yline = std::stoi(catchParameter("yNodeNumber", parameters));
-    
-    splitted = split(catchParameter("nodeSW", parameters),',');
-    set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = split(catchParameter("nodeNW", parameters),',');
-    set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = split(catchParameter("nodeSE", parameters),',');
-    set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    setGridGeometry(nodes);
-
-    shotsPath = catchParameter("shotsPath", parameters);
-    nodesPath = catchParameter("nodesPath", parameters);
-
-    if (saveGeometry) exportPositions();
-    if (reciprocity) setReciprocity();
-    
+        
     V = expand(readBinaryFloat(catchParameter("modelPath", parameters), nPoints));
-
-    T = new float[nPointsB]();
-    illumination = new float[nPointsB]();
+    
+    if (exportIllumination) 
+        illumination = new float[nPointsB]();
 }
 
 void Eikonal::writeTravelTimes()

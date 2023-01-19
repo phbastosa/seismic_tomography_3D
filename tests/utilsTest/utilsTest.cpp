@@ -62,55 +62,6 @@ int main(int argc, char**argv)
     std::cout<<"parameter4 = "<<p4f[0]<<", "<<p4f[1]<<", "<<p4f[2]<<std::endl;
     std::cout<<"parameter5 = "<<p5<<"\n"<<std::endl;
 
-    // Testing sparse matrix ------------------------------------------------------------
-    std::cout<<"Testing sparse matrix\n"<<std::endl;
-
-    std::cout<<"Objective: Solve the linear system below"<<std::endl;
-    std::cout<<"A =         x =     b ="<<std::endl;
-    std::cout<<"    2 1 3       1        6"<<std::endl;
-    std::cout<<"    5 4 2       1       11"<<std::endl;
-    std::cout<<"    4 2 1       1        7"<<std::endl;
-    std::cout<<"Target functions:"<<std::endl;
-    std::cout<<"    - Struct sparseMatrix"<<std::endl;
-    std::cout<<"    - sparse_lscg()"<<std::endl;
-    std::cout<<"\nSolution: [1, 1, 1]\n"<<std::endl;
-
-    Utils::sparseMatrix A;
-
-    A.n = 3;
-    A.m = 3;
-    A.nnz = 9;
-
-    A.i = new int[A.nnz]();
-    A.j = new int[A.nnz]();
-    A.v = new float[A.nnz]();
-
-    std::vector<float> values = {2.0f, 1.0f, 3.0f, 5.0f, 4.0f, 2.0f, 4.0f, 2.0f, 1.0f};
-
-    int index = 0;
-
-    for (int i = 0; i < 3; i++)
-    {    
-        for(int j = 0; j < 3; j++)
-        {
-            A.i[index] = i;
-            A.j[index] = j;        
-            A.v[index] = values[index];
-
-            std::cout<<"A row = "<<i<<", A col = "<<j<<", A value = "<<values[index]<<"\n";
-
-            index += 1;    
-        }
-    }
-
-    float * B = new float[A.n];
-
-    B[0] = 6.0f; B[1] = 11.0f; B[2] = 7.0f;
-
-    float * xp = utils.sparse_lscg(A, B, 10, 1e-10);
-
-    std::cout<<"\nx = "<<xp[0]<<", "<<xp[1]<<", "<<xp[2]<<std::endl;
-
     // Testing derivative matrix generator ---------------------------------------------------------------------
 
     std::cout<<"\nTesting derivative matrix generator"<<std::endl;

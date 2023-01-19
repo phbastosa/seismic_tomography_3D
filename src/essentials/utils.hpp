@@ -44,6 +44,8 @@ public:
 
     } sparseMatrix;
 
+    std::string parameters;
+
     /* Reads and returns a binary float */
     float * readBinaryFloat(std::string path, int n);
 
@@ -79,18 +81,6 @@ public:
 
     /* Function to separete values with a delimiter */
     std::vector<std::string> split(std::string s, char delimiter);
-
-    /* Function to compute a sparse matrix least square conjugate gradient 
-    
-    Solution of A'A x = A'B without generate A'A 
-
-    inputs:
-        A - sparse matrix 
-        B - second member of linear system  
-        maxIt - max iterations 
-        cgTol - tolerance 
-    */
-    void sparse_lscg(int * iA, int * jA, float * vA, int n, int m, int nnz, float * B, float * x, int maxIt, float cgTol);
 
     /* */
     float * movingAverageSmoothing(float * volume, int nx, int ny, int nz, int samples); 

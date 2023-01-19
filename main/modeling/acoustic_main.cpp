@@ -1,7 +1,7 @@
 # include <chrono>
 # include <iostream>
 
-# include "../../src/essentials/wave.hpp"
+# include "../../src/wave/wave.hpp"
 # include "../../src/essentials/model.hpp"
 # include "../../src/essentials/utils.hpp"
 # include "../../src/essentials/geometry.hpp"
@@ -52,69 +52,16 @@ int main (int argc, char**argv)
 
     // Geometry
 
-    geometry.reciprocity = utils.str2bool(utils.catchParameter("reciprocity", parameters));
-    geometry.saveGeometry = utils.str2bool(utils.catchParameter("saveGeometry", parameters));
-
-    geometry.shots.elevation = std::stof(utils.catchParameter("shotsElevation", parameters));
-    geometry.nodes.elevation = std::stof(utils.catchParameter("nodesElevation", parameters));
-
     geometry.shots.n_xline = std::stoi(utils.catchParameter("xShotNumber", parameters));
     geometry.shots.n_yline = std::stoi(utils.catchParameter("yShotNumber", parameters));
-    
-    geometry.shotsPath = utils.catchParameter("shotsPath", parameters);
-    geometry.nodesPath = utils.catchParameter("nodesPath", parameters);
-
-    bool shotsTopography = utils.str2bool(utils.catchParameter("shotsTopography", parameters));
-    bool nodesTopography = utils.str2bool(utils.catchParameter("nodesTopography", parameters));
-
-    std::vector<std::string> splitted;
-
-    // Setting grid shots
-    
-    splitted = utils.split(utils.catchParameter("shotSW", parameters),',');
-    geometry.set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = utils.split(utils.catchParameter("shotNW", parameters),',');
-    geometry.set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = utils.split(utils.catchParameter("shotSE", parameters),',');
-    geometry.set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    geometry.setGridGeometry(geometry.shots);
-
-    if (shotsTopography) 
-    {
-        std::string shotsTopographyPath = utils.catchParameter("shotsTopographyPath", parameters);
-        geometry.shots.z = utils.readBinaryFloat(shotsTopographyPath, geometry.shots.all);
-    }
-
-    // Setting grid nodes
-
     geometry.nodes.n_xline = std::stoi(utils.catchParameter("xNodeNumber", parameters));
     geometry.nodes.n_yline = std::stoi(utils.catchParameter("yNodeNumber", parameters));
 
-    splitted = utils.split(utils.catchParameter("nodeSW", parameters),',');
-    geometry.set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
+    geometry.geometryFolder = utils.catchParameter("geometryFolder", parameters);
+    
+    geometry.reciprocity = utils.str2bool(utils.catchParameter("reciprocity", parameters));
 
-    splitted = utils.split(utils.catchParameter("nodeNW", parameters),',');
-    geometry.set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = utils.split(utils.catchParameter("nodeSE", parameters),',');
-    geometry.set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    geometry.setGridGeometry(geometry.nodes);
-
-    if (nodesTopography) 
-    {
-        std::string nodesTopographyPath = utils.catchParameter("nodesTopographyPath", parameters);
-        geometry.nodes.z = utils.readBinaryFloat(nodesTopographyPath, geometry.nodes.all);
-    }
-
-    if (geometry.saveGeometry) 
-        geometry.exportPositions();
-
-    if (geometry.reciprocity)
-        geometry.setReciprocity();
+    geometry.importPositions();
 
     // Boundaries compensation on integer geometry grid points
 
@@ -144,16 +91,6 @@ int main (int argc, char**argv)
     utils.writeBinaryFloat(waveletFolder + "ricker_" + std::to_string((int)fmax) + "Hz_" + std::to_string(nt) + ".bin", wavelet, nt);
 
     float * seismogram = new float[nt * geometry.nodes.all]();
-
-    // std::cout<<nt<<std::endl;    
-    // std::cout<<model.nb<<std::endl;    
-    // std::cout<<model.nb*model.nb<<std::endl;    
-    // std::cout<<model.nb*model.nb*model.nb<<std::endl;    
-    // std::cout<<model.nPointsB<<std::endl;    
-    // std::cout<<model.nPointsB<<std::endl;    
-    // std::cout<<model.nPointsB<<std::endl;    
-    // std::cout<<model.nPointsB<<std::endl;    
-    // std::cout<<nt*geometry.nodes.all<<std::endl;    
     
     for (int shotId = 0; shotId < geometry.shots.all; shotId++)
     {

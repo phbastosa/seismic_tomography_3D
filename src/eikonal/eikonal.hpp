@@ -91,7 +91,7 @@ public:
     void writeIllumination();
     
     /* */
-    void setEikonalParameters(char * parameters);
+    void setEikonalParameters();
 };
 
 # endif

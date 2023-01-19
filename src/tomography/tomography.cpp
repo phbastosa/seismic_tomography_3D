@@ -7,91 +7,13 @@
 # include <algorithm>
 
 # include "tomography.hpp"
+# include "../cgls/cgls.cuh"
 
 Tomography::Tomography() { } 
 
 void Tomography::setParameters()
 {
-    nb = 2;
-    nx = std::stoi(catchParameter("nx", parameters));
-    ny = std::stoi(catchParameter("ny", parameters));
-    nz = std::stoi(catchParameter("nz", parameters));
-    
-    initialize();
-
-    dx = std::stof(catchParameter("dx", parameters));
-    dy = std::stof(catchParameter("dy", parameters));
-    dz = std::stof(catchParameter("dz", parameters));
-
-    V = expand(readBinaryFloat(catchParameter("modelPath", parameters), nPoints));
-
-    shotsPath = catchParameter("shotsPath", parameters);
-    nodesPath = catchParameter("nodesPath", parameters);
-
-    std::vector<std::string> splitted;
-
-    shots.elevation = std::stof(catchParameter("shotsElevation", parameters));
-    nodes.elevation = std::stof(catchParameter("nodesElevation", parameters));
-
-    shots.n_xline = std::stoi(catchParameter("xShotNumber", parameters));
-    shots.n_yline = std::stoi(catchParameter("yShotNumber", parameters));
-    
-    splitted = split(catchParameter("shotSW", parameters),',');
-    set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = split(catchParameter("shotNW", parameters),',');
-    set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = split(catchParameter("shotSE", parameters),',');
-    set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    setGridGeometry(shots);
-
-    nodes.n_xline = std::stoi(catchParameter("xNodeNumber", parameters));
-    nodes.n_yline = std::stoi(catchParameter("yNodeNumber", parameters));
-    
-    splitted = split(catchParameter("nodeSW", parameters),',');
-    set_SW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = split(catchParameter("nodeNW", parameters),',');
-    set_NW(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    splitted = split(catchParameter("nodeSE", parameters),',');
-    set_SE(std::stof(splitted[0]), std::stof(splitted[1]));
-
-    setGridGeometry(nodes);
-
-    reciprocity = str2bool(catchParameter("reciprocity", parameters));
-    saveGeometry = str2bool(catchParameter("saveGeometry", parameters));
-
-    shotsTopography = str2bool(catchParameter("shotsTopography", parameters));    
-    nodesTopography = str2bool(catchParameter("nodesTopography", parameters));    
-
-    if (shotsTopography) 
-    {
-        shotsTopographyPath = catchParameter("shotsTopographyPath", parameters);
-        shots.z = readBinaryFloat(shotsTopographyPath, shots.all);
-    }
-
-    if (nodesTopography)
-    {
-        nodesTopographyPath = catchParameter("nodesTopographyPath", parameters);
-        nodes.z = readBinaryFloat(nodesTopographyPath, nodes.all);
-    }
-
-    if (saveGeometry) exportPositions();
-    if (reciprocity) setReciprocity();
-
-    eikonalType = std::stoi(catchParameter("eikonalType", parameters));    
-    exportRayPosition = str2bool(catchParameter("exportRayPosition", parameters));
-    exportTimesVolume = str2bool(catchParameter("exportTravelTimes", parameters));
-    exportIllumination = str2bool(catchParameter("exportIllumination", parameters));
-    exportFirstArrivals = str2bool(catchParameter("exportFirstArrivals", parameters));
-
-    raysFolder = catchParameter("raysFolder", parameters);
-    eikonalFolder = catchParameter("eikonalFolder", parameters);
-    arrivalFolder = catchParameter("arrivalFolder", parameters);
-    illuminationFolder = catchParameter("illuminationFolder", parameters);
+    setEikonalParameters();
 
     mTomo.nx = std::stoi(catchParameter("nxTomo", parameters));
     mTomo.ny = std::stoi(catchParameter("nyTomo", parameters));
@@ -378,10 +300,14 @@ void Tomography::optimization()
     buildRegularizedMatrix();
     buildRegularizedData();
 
+    std::cout<<A.n<<std::endl;
+    std::cout<<A.m<<std::endl;
+    std::cout<<A.nnz<<std::endl;
+
     int maxIt = 1000;
     float cgTol = 1e-6f;
 
-    sparse_lscg(A.i, A.j, A.v, A.n, A.m, A.nnz, B, dm, maxIt, cgTol);
+    sparse_cgls_cpu(A.i, A.j, A.v, B, dm, A.n, A.m, A.nnz, maxIt, cgTol);
 
     A.erase(); delete[] B;
 }

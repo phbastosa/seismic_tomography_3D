@@ -4,7 +4,7 @@
  
 nx = 181   # x dimension of model <int>
 ny = 181   # y dimension of model <int>
-nz = 41   # z dimension of model <int>
+nz = 41    # z dimension of model <int>
 
 dx = 50   # x sample spacing of model [m] <float>
 dy = 50   # y sample spacing of model [m] <float> 
@@ -17,10 +17,8 @@ modelPath = "../../inputs/models/initModel_41x181x181_50m.bin"   # Velocity mode
 #-------------------------------------------------------------------------------------------------
 
 reciprocity = True   # Shots become nodes and nodes become shots <bool>  
-saveGeometry = True   # To save shots and nodes position in a .txt file <bool>
 
-shotsPath = "../../inputs/geometry/shots.txt"   # Full path of receivers position <string>     
-nodesPath = "../../inputs/geometry/nodes.txt"   # Full path of shots position <string>   
+geometryFolder = "../../inputs/geometry/"   # Folder to manage geometry files <string>     
 
 # Grid SHOTS geometry                        
 
@@ -32,7 +30,7 @@ shotSE = [8900, 100]      # SW -- SE # (x,y) [m] <float>
 
 shotsElevation = 25.0     # Sources elevation [m] - flat surface <float>             
 shotsTopography = False   #
-shotsTopographyPath = "../../inputs/geometry/"    
+shotsTopographyPath = "shotsTopography.bin"   #   
 
 # Grid NODES geometry                        
 
@@ -44,7 +42,7 @@ nodeSE = [8000, 1000]    # SW -- SE # (x,y) <float>
 
 nodesElevation = 0       # Receivers elevation - flat surface [m] <float>
 nodesTopography = True   #
-nodesTopographyPath = "../../inputs/geometry/nodesTopography.bin"    
+nodesTopographyPath = "nodesTopography.bin"   #    
 
 #-------------------------------------------------------------------------------------------------
 # Seismic modeling parameters --------------------------------------------------------------------
@@ -100,9 +98,9 @@ zMask = [450, 200]   # Mask of [up, bottom] z axis sides [m] <float>
 
 # Inversion parameters 
 
-regOrder = 2       # Tikhonov regularization order <int>
-regParam = 1e7     # Regularization parameter <float>
-maxIteration = 10   # Tomography max iteration <int>                   
+regOrder = 0       # Tikhonov regularization order <int>
+regParam = 3e5     # Regularization parameter <float>
+maxIteration = 1   # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
 

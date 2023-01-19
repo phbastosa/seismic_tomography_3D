@@ -47,8 +47,7 @@ public:
     Position shots;                  // Struct to storage x,y,z coordinates of shots
     Position nodes;                  // Struct to storage x,y,z coordinates of nodes
 
-    std::string shotsPath;           // Location to export shots position in .txt file
-    std::string nodesPath;           // Location to export nodes position in .txt file
+    std::string geometryFolder;      // Location to export shots and nodes position in .txt and .bin file
 
     int shotsGeometryType;           // 0 - circular shots | 1 - grid shots
     int nodesGeometryType;           // 0 - circular nodes | 1 - grid nodes
@@ -60,30 +59,23 @@ public:
     std::string nodesTopographyPath; // Binary file of nodes z position
 
     bool reciprocity;                // To set reciprocity 
-    bool saveGeometry;               // To save geometry
 
-    /* Function to calculate a linear spaced position */
     std::vector<float> linspace(float xi, float xf, int n);        
 
-    /* South-western element in geometry */
     void set_SW(float x, float y);
 
-    /* North-western element in geometry */
     void set_NW(float x, float y);
     
-    /* South-estern element in geometry */
     void set_SE(float x, float y);
 
-    /* Method to set shots positions giving three points in grid */
     void setGridGeometry(Position &obj);
     
-    /* Method to set nodes positions giving three points in grid */
     void setCircularGeometry(Position &obj);
 
-    /* Switch the nodes position to shots position */
     void setReciprocity();
+    
+    void importPositions();
 
-    /* Method to save geometry in hard drive */
     void exportPositions();
 };
 
