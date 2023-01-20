@@ -34,8 +34,7 @@ int main(int argc, char**argv)
 
     G.setGridGeometry(G.nodes);    
 
-    G.shotsPath = "outputs/pointShot.txt";
-    G.nodesPath = "outputs/pointNode.txt";
+    G.geometryFolder ="outputs/point_"; 
 
     G.exportPositions();
 
@@ -67,8 +66,7 @@ int main(int argc, char**argv)
 
     G.setGridGeometry(G.nodes);    
 
-    G.shotsPath = "outputs/xLineShots.txt";
-    G.nodesPath = "outputs/xLineNodes.txt";
+    G.geometryFolder ="outputs/xLine_"; 
 
     G.exportPositions();
 
@@ -100,8 +98,7 @@ int main(int argc, char**argv)
 
     G.setGridGeometry(G.nodes);    
 
-    G.shotsPath = "outputs/yLineShots.txt";
-    G.nodesPath = "outputs/yLineNodes.txt";
+    G.geometryFolder ="outputs/yLine_"; 
 
     G.exportPositions();
 
@@ -133,8 +130,7 @@ int main(int argc, char**argv)
 
     G.setGridGeometry(G.nodes);    
 
-    G.shotsPath = "outputs/carpetShots.txt";
-    G.nodesPath = "outputs/carpetNodes.txt";
+    G.geometryFolder ="outputs/carpet_"; 
 
     G.exportPositions();
 
@@ -144,8 +140,7 @@ int main(int argc, char**argv)
     
     G.setReciprocity();
 
-    G.shotsPath = "outputs/carpetShotsReciprocity.txt";
-    G.nodesPath = "outputs/carpetNodesReciprocity.txt";
+    G.geometryFolder ="outputs/reciprocity_carpet_"; 
 
     G.exportPositions();
 
@@ -173,8 +168,7 @@ int main(int argc, char**argv)
 
     G.setCircularGeometry(G.nodes);
 
-    G.shotsPath = "outputs/circularShots.txt";
-    G.nodesPath = "outputs/circularNodes.txt";
+    G.geometryFolder ="outputs/circular_"; 
 
     G.exportPositions();
 

@@ -1,9 +1,10 @@
 #!/bin/bash
 
+utils="../../src/essentials/utils.cpp"
 geometry="../../src/essentials/geometry.cpp"
 flags="-acc -fast -ta=tesla,cc60 -std=c++11 -g -lm"
 
-pgc++ $geometry geometryTest.cpp $flags -o geometryTest.exe
+pgc++ $geometry $utils geometryTest.cpp $flags -o geometryTest.exe
 
 ./geometryTest.exe
 
