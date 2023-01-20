@@ -44,9 +44,6 @@ private:
     std::vector< int > jM;          // To store initially the cols of sparse G matrix
     std::vector<float> vM;          // To store initially the values of sparse G matrix
 
-    float * B;                      // Data difference (dobs - dcal) with regularization     
-    sparseMatrix A;                 // Regularized matrix to solve linear system (A dm = dT)  
-
     std::vector<float> residuo;     // To store the convergency at each iteration
 
     std::vector<std::string> xMask; // Mask to avoid boundary outliers in x direction 
@@ -54,10 +51,6 @@ private:
     std::vector<std::string> zMask; // Mask to avoid boundary outliers in z direction
 
     void gradientRayTracing();
-
-    void buildRegularizedMatrix();   
-
-    void buildRegularizedData();
 
 public:    
 

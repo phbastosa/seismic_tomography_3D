@@ -144,9 +144,6 @@ void sparse_cgls_gpu(int * iA, int * jA, float * vA, float * B, float * x, int N
     cusparseCreateDnVec(&Dn_r, M, d_r, CUDA_R_32F);
     cusparseCreateDnVec(&Dn_s, N, d_s, CUDA_R_32F);
 
-    alpha = 1.0f;
-    beta = 0.0f;
-
     cusparseSpMV_bufferSize(cusparseHandle, CUSPARSE_OPERATION_TRANSPOSE, &alpha, Sp_matA, Dn_s, &beta, Dn_r, CUDA_R_32F, CUSPARSE_SPMV_CSR_ALG1, &bsize);
     cudaMalloc(&buffer, bsize);
 

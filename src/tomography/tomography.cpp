@@ -47,9 +47,9 @@ void Tomography::setParameters()
     dobs = new float[shots.all * nodes.all]();
     dcal = new float[shots.all * nodes.all]();    
 
-    model = new float [mTomo.nPoints];
+    model = new float [mTomo.nPoints]();
 
-    dm = new float [mTomo.nPoints];
+    dm = new float [mTomo.nPoints]();
 }
 
 void Tomography::infoMessage()
@@ -252,58 +252,54 @@ bool Tomography::converged()
     }
 }
 
-void Tomography::buildRegularizedMatrix()
-{
-    sparseMatrix L = Utils::getDerivativeMatrix(mTomo.nPoints, tkOrder);
-    
-    A.n = shots.all*nodes.all + L.n; // Data dimension
-    A.m = mTomo.nPoints;             // Model dimension
-    A.nnz = vM.size() + L.nnz;       // Non zero elements
-
-    A.init();
-
-    for (int index = 0; index < vM.size(); index++)
-    {
-        A.i[index] = iM[index];
-        A.j[index] = jM[index];
-        A.v[index] = vM[index];
-    }
-
-    std::vector<  int  >().swap(iM);
-    std::vector<  int  >().swap(jM);
-    std::vector< float >().swap(vM);
-
-    for (int index = A.nnz - L.nnz; index < A.nnz; index++) 
-    {
-        A.i[index] = shots.all*nodes.all + L.i[index - (A.nnz - L.nnz)];
-        A.j[index] = L.j[index - (A.nnz - L.nnz)];
-        A.v[index] = lambda * L.v[index - (A.nnz - L.nnz)];        
-    }
-
-    L.erase();
-}
-
-void Tomography::buildRegularizedData()
-{
-    B = new float[A.n]();
-
-    for (int index = 0; index < nodes.all*shots.all; index++) 
-        B[index] = dobs[index] - dcal[index];
-}
-
 void Tomography::optimization()
 {
     std::cout<<"Solving linear system using Tikhonov regularization with order "+ std::to_string(tkOrder) + "\n\n";
 
-    buildRegularizedMatrix();
-    buildRegularizedData();
+    sparseMatrix L = Utils::getDerivativeMatrix(mTomo.nPoints, tkOrder);
+    
+    int N = shots.all*nodes.all + L.n; // Data dimension
+    int M = mTomo.nPoints;             // Model dimension
+    int NNZ = vM.size() + L.nnz;       // Non zero elements
 
-    int maxIt = 1000;
-    float cgTol = 1e-6f;
+    int * iA = new int[NNZ]();
+    int * jA = new int[NNZ]();
+    float * vA = new float[NNZ]();
 
-    sparse_cgls_gpu(A.i, A.j, A.v, B, dm, A.n, A.m, A.nnz, maxIt, cgTol);
+    for (int index = 0; index < vM.size(); index++)
+    {
+        iA[index] = iM[index];
+        jA[index] = jM[index];
+        vA[index] = vM[index];
+    }
 
-    A.erase(); delete[] B;
+    for (int index = NNZ - L.nnz; index < NNZ; index++) 
+    {
+        iA[index] = shots.all*nodes.all + L.i[index - (NNZ - L.nnz)];
+        jA[index] = L.j[index - (NNZ - L.nnz)];
+        vA[index] = lambda * L.v[index - (NNZ - L.nnz)];        
+    }
+
+    L.erase();
+    std::vector<  int  >().swap(iM);
+    std::vector<  int  >().swap(jM);
+    std::vector< float >().swap(vM);
+
+    float * x = new float[M]();
+    float * B = new float[N]();
+
+    for (int index = 0; index < nodes.all*shots.all; index++) 
+        B[index] = dobs[index] - dcal[index];
+
+    sparse_cgls_cpu(iA, jA, vA, B, x, N, M, NNZ, 10, 1e-6f);
+
+    std::swap(dm,x);
+
+    delete[] x;
+    delete[] B;
+    delete[] iA;
+    delete[] jA;
+    delete[] vA;
 }
 
 void Tomography::modelUpdate()
