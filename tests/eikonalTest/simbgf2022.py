@@ -50,8 +50,8 @@ else:
     model = readBinaryVolume(nz[n],nx[n],ny[n],"outputs/refractiveModel_45x881x881_25m.bin")
     times = readBinaryVolume(nz[n],nx[n],ny[n],"outputs/pod_25m_eikonal_nz45_nx881_ny881_shot_5.bin")
 
-    rx, ry, rz = np.loadtxt("outputs/nodesPosition.txt", delimiter = ",", unpack = True)
-    sx, sy, sz = np.loadtxt("outputs/shotsPosition.txt", delimiter = ",", unpack = True)
+    rx, ry, rz = np.loadtxt("outputs/nodes.txt", delimiter = ",", unpack = True)
+    sx, sy, sz = np.loadtxt("outputs/shots.txt", delimiter = ",", unpack = True)
 
     nsrc = len(sx)
     nrec = len(rx)

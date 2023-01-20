@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     
     std::vector<float> dh_all {100.0f, 50.0f, 25.0f};
 
-    eikonal.nb = 2;
+    eikonal.nb = 1;
 
     // Set fixed circular geometry
 
@@ -55,8 +55,7 @@ int main(int argc, char **argv)
         eikonal.shots.z[k] = 0.0f;
     }
 
-    eikonal.nodesPath = "outputs/nodesPosition.txt";
-    eikonal.shotsPath = "outputs/shotsPosition.txt";
+    eikonal.geometryFolder = "outputs/";
 
     eikonal.exportPositions();
 

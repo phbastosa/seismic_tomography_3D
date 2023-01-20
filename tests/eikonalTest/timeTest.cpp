@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 {
     auto eikonal = Eikonal();
 
-    eikonal.nb = 2;
+    eikonal.nb = 1;
 
     eikonal.nx = 401;
     eikonal.ny = 401;    
