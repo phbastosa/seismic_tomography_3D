@@ -84,9 +84,9 @@ illuminationFolder = "../../outputs/illumination/"    # Illumination volume fold
 # Tomography parameters --------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nxTomo = 46   # Resized x sample dimension of model <int>
-nyTomo = 46   # Resized y sample dimension of model <int>
-nzTomo = 21   # Resized z sample dimension of model <int>
+nxTomo = 46    # Resized x sample dimension of model <int>
+nyTomo = 46    # Resized y sample dimension of model <int>
+nzTomo = 21    # Resized z sample dimension of model <int>
 
 dxTomo = 200   # Resized model sample spacing [m] of x dimension <float> 
 dyTomo = 200   # Resized model sample spacing [m] of y dimension <float>
@@ -98,16 +98,16 @@ zMask = [450, 200]   # Mask of [up, bottom] z axis sides [m] <float>
 
 # Inversion parameters 
 
-regOrder = 0       # Tikhonov regularization order <int>
-regParam = 3e5     # Regularization parameter <float>
-maxIteration = 1   # Tomography max iteration <int>                   
+regOrder = 2       # Tikhonov regularization order <int>
+regParam = 1e5     # Regularization parameter <float>
+maxIteration = 5  # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
 
-smooth = False            # Flag to smooth recovered model <bool>
+smooth = True             # Flag to smooth recovered model <bool>
 smoothingType = 0         # 0 - gaussian filter; 1 - moving average filter <int>
-filterSamples = 11        # Samples in filter, must to be an odd number! <int>
-standardDeviation = 2.0   # For gaussian filter case to control smoothing <float>
+filterSamples = 5         # Samples in filter, must to be an odd number! <int>
+standardDeviation = 1.5   # For gaussian filter case to control smoothing <float>
 
 # Folders location
 
