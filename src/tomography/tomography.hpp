@@ -53,70 +53,34 @@ private:
     std::vector<std::string> yMask; // Mask to avoid boundary outliers in y direction
     std::vector<std::string> zMask; // Mask to avoid boundary outliers in z direction
 
-    /*  
-        Ray tracing using travel times as a function
-        Stepest descent gradient used to compute the steps of ray path
-        Indexes organized to store iM,jM, and vM to build inversion matrix
-    */
     void gradientRayTracing();
 
-    /* 
-        Construct the A matrix (G + L) in form of sparse matrix deleting iM, jM and vM 
-    */
     void buildRegularizedMatrix();   
 
-    /*
-    
-    */
     void buildRegularizedData();
 
 public:    
 
     std::string dobsPath;           // Observed data location with its preamble
-    std::string parameters;         // 
 
-    /* Tomograpy class constructor */
-    Tomography();
-
-    /* Importing from file and setting all tomography parameters */
     void setParameters();
 
-    /* 
-        It informs:
-        What is the current iteration 
-        The shot position 
-        The previous resuduo at each iteration 
-    */
     void infoMessage();
 
-    /* 
-        To import observed data 
-        Each shot in different binary file 
-    */
     void importDobs();
 
-    /* 
-        To import calculated data 
-        Each shot in different binary file 
-    */
     void importDcal();
     
-    /* To reduce velocity model to update inversion */
     void setInitialModel();
 
-    /* */
     void forwardModeling();
 
-    /* */
     bool converged();
 
-    /* */
     void optimization();
 
-    /* */
     void modelUpdate();    
     
-    /* */
     void exportConvergency();
 };
 

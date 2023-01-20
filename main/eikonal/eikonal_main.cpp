@@ -12,12 +12,18 @@ int main(int argc, char **argv)
 
     auto eikonal = Eikonal();
 
-    eikonal.setEikonalParameters(argv[1]);
+    eikonal.parameters = std::string(argv[1]);
+
+    eikonal.setEikonalParameters();
+
+    eikonal.T = new float[eikonal.nPointsB];
 
     for (eikonal.shotId = 0; eikonal.shotId < eikonal.shots.all; eikonal.shotId++)
     {
         eikonal.eikonalComputing();
     }
+
+    delete[] eikonal.T;
 
     eikonal.writeIllumination();
 

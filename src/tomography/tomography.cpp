@@ -9,8 +9,6 @@
 # include "tomography.hpp"
 # include "../cgls/cgls.cuh"
 
-Tomography::Tomography() { } 
-
 void Tomography::setParameters()
 {
     setEikonalParameters();
@@ -300,14 +298,10 @@ void Tomography::optimization()
     buildRegularizedMatrix();
     buildRegularizedData();
 
-    std::cout<<A.n<<std::endl;
-    std::cout<<A.m<<std::endl;
-    std::cout<<A.nnz<<std::endl;
-
     int maxIt = 1000;
     float cgTol = 1e-6f;
 
-    sparse_cgls_cpu(A.i, A.j, A.v, B, dm, A.n, A.m, A.nnz, maxIt, cgTol);
+    sparse_cgls_gpu(A.i, A.j, A.v, B, dm, A.n, A.m, A.nnz, maxIt, cgTol);
 
     A.erase(); delete[] B;
 }
