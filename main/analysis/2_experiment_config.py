@@ -12,27 +12,22 @@ dx = 12.5
 dy = 12.5
 dz = 12.5
 
-nx = 721
-ny = 721
-nz = 161
-
-# testing GPU 4Gb memory using an homogeneous model
-
-# memCheckModel = np.ones((nz, nx, ny)) * 1500
-# memCheckModel.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/memCheckModel_{nz}x{nx}x{ny}_{dz:.1f}m.bin")
+nx = 401
+ny = 401
+nz = 101
 
 #----------------------------------------------------------------------------
 
 waterBottom = np.zeros((ny,nx))
 
-top = 450      
-base = 550
+top = 200      
+base = 300
 
-A = np.array([50, 80, -150])
-xc = np.array([1000, 7000, 4500])
-yc = np.array([7000, 7000, 4550])
-sigx = np.array([6000, 6000, 3000])
-sigy = np.array([4000, 6000, 6000])
+A = np.array([10, 50, 100])
+xc = np.array([1000, 2500, 4500])
+yc = np.array([1000, 2500, 4500])
+sigx = np.array([1000, 1000, 1000])
+sigy = np.array([1000, 1000, 6000])
 
 for k in range(len(A)):
     waterBottom += createGaussianSurface(nx,ny,dx,dy,A[k],xc[k],yc[k],sigx[k],sigy[k])
@@ -44,12 +39,12 @@ waterBottom[i,j] = base/dz
 
 # Defining geometry with topography
 
-node_xline = 15
-node_yline = 15
+node_xline = 11
+node_yline = 11
 node_all = node_xline * node_yline
 
-node_x = np.linspace(1000, 8000, node_xline)
-node_y = np.linspace(1000, 8000, node_yline)
+node_x = np.linspace(500, 4500, node_xline)
+node_y = np.linspace(500, 4500, node_yline)
 node_z = np.zeros(node_all)
 
 for i in range(node_yline):
@@ -62,12 +57,12 @@ node_x, node_y = np.meshgrid(node_x, node_y)
 node_x = np.reshape(node_x, [node_all])
 node_y = np.reshape(node_y, [node_all])
 
-shot_xline = 177
-shot_yline = 177
+shot_xline = 100
+shot_yline = 100
 shot_all = shot_xline * shot_yline
 
-shot_x = np.linspace(100, 8900, shot_xline)
-shot_y = np.linspace(100, 8900, shot_yline)
+shot_x = np.linspace(25, 4975, shot_xline)
+shot_y = np.linspace(25, 4975, shot_yline)
 shot_z = np.ones(shot_all) * 25.0
 
 shot_x, shot_y = np.meshgrid(shot_x, shot_y)
@@ -112,18 +107,18 @@ plt.show()
 
 #----------------------------------------------------------------------------
 
-top = 800
-base = 1800
+top = 500
+base = 1000
 
 model = np.zeros((nz,nx,ny))
 
 surface = np.zeros((ny, nx))
 
-A = np.array([1000, 900, -850, 1000, 1100])
-xc = np.array([3000, 3000, 4500, 6000, 6000])
-yc = np.array([2875, 5875, 4375, 2875, 5875])
-sigx = np.array([2000, 1500, 1000, 1500, 2000])
-sigy = np.array([2000, 1500, 1000, 1500, 2000])
+A = np.array([500, 400, -300, 400, 500])
+xc = np.array([2000, 3000, 2500, 2000, 3000])
+yc = np.array([2000, 2000, 2500, 3000, 3000])
+sigx = np.array([500, 400, 400, 500, 400])
+sigy = np.array([400, 500, 400, 400, 500])
 
 for k in range(len(A)):
     surface += createGaussianSurface(nx,ny,dx,dy,A[k],xc[k],yc[k],sigx[k],sigy[k])
@@ -142,6 +137,8 @@ smax = np.max(-dz*surface)
 
 ax.contour(-dz*surface, levels = 10)
 ax.imshow(-dz*surface, aspect = "auto", cmap=cmap)
+ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Posição dos nodes")
+ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.01, label = "Posição dos tiros")
 
 ax.set_xticks(np.linspace(0,nx-1,9, dtype = int))
 ax.set_xticklabels(np.around(np.linspace(0,nx-1,9)*dx, decimals = 1))
@@ -161,6 +158,7 @@ cax = divider.append_axes("bottom", size="5%", pad=0.6)
 cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(smin, smax, 5), orientation = "horizontal")
 cbar.ax.set_xticklabels(np.around(np.linspace(smin, smax, 5), decimals = 1))
 cbar.set_label("Profundidade [m]", fontsize = 15)
+ax.legend(loc = "upper right", fontsize = 12)
 
 plt.tight_layout()
 plt.savefig("../../figures/3_anomalySurface.png", dpi = 200)
@@ -168,10 +166,12 @@ plt.show()
 
 #----------------------------------------------------------------------------
 v0 = 1550.0 # m/s
-dv = 17.0   # m/s
+dv = 25.0   # m/s
+
+wb = 250
 
 v = np.array([1500,2000,3500])
-z = np.array([500,base,nz*dz])
+z = np.array([wb,base,nz*dz])
 
 initModel = buildModel3D(nx,ny,nz,v,z//dz)
 
@@ -185,8 +185,8 @@ for j in range(nx):
         model[gradient, j, k] = v0 + dv*np.arange(nGradient)
 
         initModel[int(base/dz):,j,k] = v[-1]
-        initModel[:int(500/dz), j, k] = v[0]
-        initModel[int(500/dz):int(base/dz), j, k] = v0 + dv*np.arange((int(base/dz)-int(500/dz)))
+        initModel[:int(wb/dz), j, k] = v[0]
+        initModel[int(wb/dz):int(base/dz), j, k] = v0 + dv*np.arange((int(base/dz)-int(wb/dz)))
         
 #----------------------------------------------------------------------------
 
@@ -216,6 +216,6 @@ plt.savefig("../../figures/4_benchmark_models.png")
 plt.show()
 
 # Low frequency initial model
-initModel[::4,::4,::4].flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/initModel_{nz/4 + 1:.0f}x{nx/4 + 1:.0f}x{ny/4 + 1:.0f}_{4*dx:.0f}m.bin")
+initModel.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/initModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
 model.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
 

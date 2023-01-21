@@ -190,7 +190,7 @@ def multiBoxPlot(models:np.ndarray, shots:np.ndarray, nodes:np.ndarray, dh:np.nd
         vmax = np.max(models[0])
 
     nz, nx, ny = modelShape
-    [z, x, y] = 3.0 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
+    [z, x, y] = 2.0 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
 
     px = 1/plt.rcParams['figure.dpi']  
     ticks = np.array([3,7,7], dtype = int)

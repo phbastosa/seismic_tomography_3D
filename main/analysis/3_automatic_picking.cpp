@@ -13,18 +13,18 @@ int main()
 
     auto ti = std::chrono::system_clock::now();
 
-    int nt = 5001;
-    int traces = 177;
-    int nodes_all = 225; 
-    int shots_all = 31329;
+    int nt = 3001;
+    int traces = 100;
+    int nodes_all = 121; 
+    int shots_all = 10000;
 
     float dt = 1e-3f;
-    float tlag = 0.15f;
-    float tcut = 4.50f;
+    float tlag = 0.10f;
+    float tcut = 2.80f;
 
     int updated_nt = (int)(tcut/dt);
 
-    float window = 0.100;
+    float window = 0.060f;
     int iw = (int)(window/dt);
 
     int itime = (int)(tlag/dt);
@@ -72,7 +72,7 @@ int main()
                 
                 if (S[k] > 1e-5f)
                 {
-                    picks_all[trace] = (k + iw + iw/2) * dt;            
+                    picks_all[trace] = (k + iw) * dt;            
                     break;
                 }
             }    

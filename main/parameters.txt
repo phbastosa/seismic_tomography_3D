@@ -2,15 +2,15 @@
 # Model paramenters -------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
  
-nx = 181   # x dimension of model <int>
-ny = 181   # y dimension of model <int>
-nz = 41    # z dimension of model <int>
+nx = 401   # x dimension of model <int>
+ny = 401   # y dimension of model <int>
+nz = 101   # z dimension of model <int>
 
-dx = 50   # x sample spacing of model [m] <float>
-dy = 50   # y sample spacing of model [m] <float> 
-dz = 50   # z sample spacing of model [m] <float>  
+dx = 12.5  # x sample spacing of model [m] <float>
+dy = 12.5  # y sample spacing of model [m] <float> 
+dz = 12.5  # z sample spacing of model [m] <float>  
 
-modelPath = "../../inputs/models/initModel_41x181x181_50m.bin"   # Velocity model location <string>
+modelPath = "../../inputs/models/initModel_101x401x401_12.5m.bin"   # Velocity model location <string>
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
@@ -22,11 +22,11 @@ geometryFolder = "../../inputs/geometry/"   # Folder to manage geometry files <s
 
 # Grid SHOTS geometry                        
 
-xShotNumber = 177         # Number of sources in x direction <int>
-yShotNumber = 177         # Number of sources in y direction <int>
-shotSW = [100, 100]       # NW       # (x,y) [m] <float>    
-shotNW = [100, 8900]      #  |       # (x,y) [m] <float>    
-shotSE = [8900, 100]      # SW -- SE # (x,y) [m] <float>   
+xShotNumber = 100         # Number of sources in x direction <int>
+yShotNumber = 100         # Number of sources in y direction <int>
+shotSW = [25, 25]         # NW       # (x,y) [m] <float>    
+shotNW = [25, 4975]       #  |       # (x,y) [m] <float>    
+shotSE = [4975, 25]       # SW -- SE # (x,y) [m] <float>   
 
 shotsElevation = 25.0     # Sources elevation [m] - flat surface <float>             
 shotsTopography = False   #
@@ -34,11 +34,11 @@ shotsTopographyPath = "shotsTopography.bin"   #
 
 # Grid NODES geometry                        
 
-xNodeNumber = 15         # Number of sources in x direction <int>
-yNodeNumber = 15         # Number of sources in y direction
-nodeSW = [1000, 1000]    # NW       # (x,y) <float>     
-nodeNW = [1000, 8000]    #  |       # (x,y) <float>   
-nodeSE = [8000, 1000]    # SW -- SE # (x,y) <float>   
+xNodeNumber = 11         # Number of sources in x direction <int>
+yNodeNumber = 11         # Number of sources in y direction
+nodeSW = [500, 500]    # NW       # (x,y) <float>     
+nodeNW = [500, 4500]    #  |       # (x,y) <float>   
+nodeSE = [4500, 500]    # SW -- SE # (x,y) <float>   
 
 nodesElevation = 0       # Receivers elevation - flat surface [m] <float>
 nodesTopography = True   #
@@ -48,14 +48,14 @@ nodesTopographyPath = "nodesTopography.bin"   #
 # Seismic modeling parameters --------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nb = 50          # Total samples in boundary <int>
-factor = 30      # Attenuation factor to apply in PML <float>
+nb = 50         # Total samples in boundary <int>
+factor = 40     # Attenuation factor to apply in PML <float>
 
-nt = 5001        # Total samples in time domain <int>
+nt = 3001        # Total samples in time domain <int>
 dt = 0.001       # Sample spacing in time domain [s] <float>
 
-fmax = 30.0      # Max frequency in source [Hz] <float>
-delay = 0.15     # Delay of source - anti causal [s] <float>
+fmax = 40.0      # Max frequency in source [Hz] <float>
+delay = 0.10     # Delay of source - anti causal [s] <float>
 
 seismFolder = "../../inputs/seismograms/"    # Folder to write seismograms <string>
 waveletFolder = "../../inputs/wavelets/"     # Folder to write wavelets <string>
@@ -84,33 +84,33 @@ illuminationFolder = "../../outputs/illumination/"    # Illumination volume fold
 # Tomography parameters --------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nxTomo = 46    # Resized x sample dimension of model <int>
-nyTomo = 46    # Resized y sample dimension of model <int>
-nzTomo = 21    # Resized z sample dimension of model <int>
+nxTomo = 101   # Resized x sample dimension of model <int>
+nyTomo = 101   # Resized y sample dimension of model <int>
+nzTomo = 26    # Resized z sample dimension of model <int>
 
-dxTomo = 200   # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 200   # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 100   # Resized model sample spacing [m] of z dimension <float>
+dxTomo = 50   # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 50   # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 25   # Resized model sample spacing [m] of z dimension <float>
 
-xMask = [500, 500]   # Mask of [left, right] x axis sides [m] <float>
-yMask = [500, 500]   # Mask of [left, right] y axis sides [m] <float>
-zMask = [450, 200]   # Mask of [up, bottom] z axis sides [m] <float>
+xMask = [200, 200]   # Mask of [left, right] x axis sides [m] <float>
+yMask = [200, 200]   # Mask of [left, right] y axis sides [m] <float>
+zMask = [200, 200]   # Mask of [up, bottom] z axis sides [m] <float>
 
 # Inversion parameters 
 
 regOrder = 2       # Tikhonov regularization order <int>
 regParam = 1e5     # Regularization parameter <float>
-maxIteration = 5  # Tomography max iteration <int>                   
+maxIteration = 1  # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
 
-smooth = True             # Flag to smooth recovered model <bool>
+smooth = False            # Flag to smooth recovered model <bool>
 smoothingType = 0         # 0 - gaussian filter; 1 - moving average filter <int>
 filterSamples = 5         # Samples in filter, must to be an odd number! <int>
 standardDeviation = 1.5   # For gaussian filter case to control smoothing <float>
 
 # Folders location
 
-dobsPath = "../../inputs/picks/obsData_31329_samples_shot_"  # Folder to write calculated data
+dobsPath = "../../inputs/picks/obsData_10000_samples_shot_"  # Folder to write calculated data
 convergencyFolder = "../../outputs/convergency/"             # Folder to write convergency line to residuous norm
 estimatedModelsFolder = "../../outputs/recoveredModels/"     # Folder to write estimated models per iteration 
