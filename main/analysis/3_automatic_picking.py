@@ -12,7 +12,7 @@ start = timeit.default_timer()
 
 nt = 3001
 traces = 100
-nodes_all = 121 
+nodes_all = 441 
 shots_all = 10000
 
 dt = 1e-3
@@ -30,7 +30,7 @@ for node in range(nodes_all):
 
         rawPicks = rawPicks_all[window].copy()    
 
-        rawPicks[int(fw/2):-int(fw/2)] = median_filter(rawPicks[int(fw/2):-int(fw/2)], fw)
+        rawPicks[int(fw):-int(fw)] = median_filter(rawPicks[int(fw):-int(fw)], fw)
 
         output_picks[window] = savgol_filter(rawPicks, fw, 2)     
 
@@ -42,10 +42,10 @@ print('Run time: ', stop - start)
 
 # Quality control 
 
-tlag = 0.15
-tcut = 4.50
+tlag = 0.10
+tcut = 2.80
 
-updated_nt = 4501
+updated_nt = 2.80
 
 times = slice(int(tlag/dt), int((tlag+tcut)/dt))
 

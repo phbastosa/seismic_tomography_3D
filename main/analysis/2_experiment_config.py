@@ -39,8 +39,8 @@ waterBottom[i,j] = base/dz
 
 # Defining geometry with topography
 
-node_xline = 11
-node_yline = 11
+node_xline = 21
+node_yline = 21
 node_all = node_xline * node_yline
 
 node_x = np.linspace(500, 4500, node_xline)
@@ -216,6 +216,6 @@ plt.savefig("../../figures/4_benchmark_models.png")
 plt.show()
 
 # Low frequency initial model
-initModel.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/initModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
+initModel[::2,::2,::2].flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/initModel_{int(nz//2+1)}x{int(nx//2+1)}x{int(ny//2+1)}_{2*dx:.0f}m.bin")
 model.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
 

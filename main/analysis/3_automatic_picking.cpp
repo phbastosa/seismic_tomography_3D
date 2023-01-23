@@ -15,7 +15,7 @@ int main()
 
     int nt = 3001;
     int traces = 100;
-    int nodes_all = 121; 
+    int nodes_all = 441; 
     int shots_all = 10000;
 
     float dt = 1e-3f;
@@ -24,7 +24,7 @@ int main()
 
     int updated_nt = (int)(tcut/dt);
 
-    float window = 0.060f;
+    float window = 0.080f;
     int iw = (int)(window/dt);
 
     int itime = (int)(tlag/dt);
@@ -70,9 +70,9 @@ int main()
             {
                 S[k] *= 1.0f / ampMax;
                 
-                if (S[k] > 1e-5f)
+                if (S[k] > 1e-4f)
                 {
-                    picks_all[trace] = (k + iw) * dt;            
+                    picks_all[trace] = (k + iw + iw/2) * dt;            
                     break;
                 }
             }    

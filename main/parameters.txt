@@ -2,15 +2,15 @@
 # Model paramenters -------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
  
-nx = 401   # x dimension of model <int>
-ny = 401   # y dimension of model <int>
-nz = 101   # z dimension of model <int>
+nx = 201   # x dimension of model <int>
+ny = 201   # y dimension of model <int>
+nz = 51   # z dimension of model <int>
 
-dx = 12.5  # x sample spacing of model [m] <float>
-dy = 12.5  # y sample spacing of model [m] <float> 
-dz = 12.5  # z sample spacing of model [m] <float>  
+dx = 25  # x sample spacing of model [m] <float>
+dy = 25  # y sample spacing of model [m] <float> 
+dz = 25  # z sample spacing of model [m] <float>  
 
-modelPath = "../../inputs/models/initModel_101x401x401_12.5m.bin"   # Velocity model location <string>
+modelPath = "../../inputs/models/initModel_51x201x201_25m.bin"   # Velocity model location <string>
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
@@ -34,8 +34,8 @@ shotsTopographyPath = "shotsTopography.bin"   #
 
 # Grid NODES geometry                        
 
-xNodeNumber = 11         # Number of sources in x direction <int>
-yNodeNumber = 11         # Number of sources in y direction
+xNodeNumber = 21         # Number of sources in x direction <int>
+yNodeNumber = 21         # Number of sources in y direction
 nodeSW = [500, 500]    # NW       # (x,y) <float>     
 nodeNW = [500, 4500]    #  |       # (x,y) <float>   
 nodeSE = [4500, 500]    # SW -- SE # (x,y) <float>   
@@ -68,7 +68,7 @@ waveletFolder = "../../inputs/wavelets/"     # Folder to write wavelets <string>
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonalType = 0    # Eikonal Type flag <int>          
+eikonalType = 2    # Eikonal Type flag <int>          
 
 exportRayPosition = False    # Ray position flag <bool>
 exportTravelTimes = False    # Travel times volume flag <bool> 
@@ -84,22 +84,22 @@ illuminationFolder = "../../outputs/illumination/"    # Illumination volume fold
 # Tomography parameters --------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nxTomo = 101   # Resized x sample dimension of model <int>
-nyTomo = 101   # Resized y sample dimension of model <int>
+nxTomo = 51   # Resized x sample dimension of model <int>
+nyTomo = 51   # Resized y sample dimension of model <int>
 nzTomo = 26    # Resized z sample dimension of model <int>
 
-dxTomo = 50   # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 50   # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 25   # Resized model sample spacing [m] of z dimension <float>
+dxTomo = 100   # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 100   # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 50   # Resized model sample spacing [m] of z dimension <float>
 
-xMask = [200, 200]   # Mask of [left, right] x axis sides [m] <float>
-yMask = [200, 200]   # Mask of [left, right] y axis sides [m] <float>
+xMask = [500, 500]   # Mask of [left, right] x axis sides [m] <float>
+yMask = [500, 500]   # Mask of [left, right] y axis sides [m] <float>
 zMask = [200, 200]   # Mask of [up, bottom] z axis sides [m] <float>
 
 # Inversion parameters 
 
 regOrder = 2       # Tikhonov regularization order <int>
-regParam = 1e5     # Regularization parameter <float>
+regParam = 1e4     # Regularization parameter <float>
 maxIteration = 1  # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
