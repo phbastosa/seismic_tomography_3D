@@ -23,10 +23,6 @@ void Tomography::setParameters()
 
     mTomo.nPoints = mTomo.nx * mTomo.ny * mTomo.nz;
 
-    xMask = split(catchParameter("xMask", parameters),',');
-    yMask = split(catchParameter("yMask", parameters),',');
-    zMask = split(catchParameter("zMask", parameters),',');
-
     lambda = std::stof(catchParameter("regParam", parameters));
     tkOrder = std::stof(catchParameter("regOrder", parameters));
     maxIteration = std::stoi(catchParameter("maxIteration", parameters));
@@ -304,13 +300,6 @@ void Tomography::optimization()
 
 void Tomography::modelUpdate()
 {    
-    int xlCut = (int)(std::stof(xMask[0]) / mTomo.dx); // x left cut 
-    int xrCut = (int)(std::stof(xMask[1]) / mTomo.dx); // x right cut
-    int ylCut = (int)(std::stof(yMask[0]) / mTomo.dy); // y left cut 
-    int yrCut = (int)(std::stof(yMask[1]) / mTomo.dy); // y right cut
-    int zuCut = (int)(std::stof(zMask[0]) / mTomo.dz); // z up cut  
-    int zdCut = (int)(std::stof(zMask[1]) / mTomo.dz); // z down cut
-
     // Tomography slowness update    
     for (int index = 0; index < mTomo.nPoints; index++) 
     {
@@ -318,7 +307,7 @@ void Tomography::modelUpdate()
         int j = (int) (index - k*mTomo.nx*mTomo.nz) / mTomo.nz;    // x direction
         int i = (int) (index - j*mTomo.nz - k*mTomo.nx*mTomo.nz);  // z direction        
 
-        if ((i >= zuCut) && (i < mTomo.nz - zdCut) && (j >= xlCut) && (j < mTomo.nx - xrCut - 1) && (k >= ylCut) && (k < mTomo.ny - yrCut - 1))
+        if ((i >= 0) && (i < mTomo.nz) && (j >= 0) && (j < mTomo.nx) && (k >= 0) && (k < mTomo.ny))
         { 
             model[index] += dm[index];
         }

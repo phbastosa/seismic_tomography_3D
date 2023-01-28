@@ -4,13 +4,13 @@
  
 nx = 201   # x dimension of model <int>
 ny = 201   # y dimension of model <int>
-nz = 51   # z dimension of model <int>
+nz = 53   # z dimension of model <int>
 
 dx = 25  # x sample spacing of model [m] <float>
 dy = 25  # y sample spacing of model [m] <float> 
 dz = 25  # z sample spacing of model [m] <float>  
 
-modelPath = "../../inputs/models/initModel_51x201x201_25m.bin"   # Velocity model location <string>
+modelPath = "../../inputs/models/initModel_53x201x201_25m.bin"   # Velocity model location <string>
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
@@ -84,33 +84,29 @@ illuminationFolder = "../../outputs/illumination/"    # Illumination volume fold
 # Tomography parameters --------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nxTomo = 51   # Resized x sample dimension of model <int>
-nyTomo = 51   # Resized y sample dimension of model <int>
-nzTomo = 26    # Resized z sample dimension of model <int>
+nxTomo = 26     # Resized x sample dimension of model <int>
+nyTomo = 26     # Resized y sample dimension of model <int>
+nzTomo = 14     # Resized z sample dimension of model <int>
 
-dxTomo = 100   # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 100   # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 50   # Resized model sample spacing [m] of z dimension <float>
-
-xMask = [500, 500]   # Mask of [left, right] x axis sides [m] <float>
-yMask = [500, 500]   # Mask of [left, right] y axis sides [m] <float>
-zMask = [200, 200]   # Mask of [up, bottom] z axis sides [m] <float>
+dxTomo = 200    # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 200    # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 100    # Resized model sample spacing [m] of z dimension <float>
 
 # Inversion parameters 
 
 regOrder = 2       # Tikhonov regularization order <int>
-regParam = 1e4     # Regularization parameter <float>
-maxIteration = 1  # Tomography max iteration <int>                   
+regParam = 1e5     # Regularization parameter <float>
+maxIteration = 10  # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
 
-smooth = False            # Flag to smooth recovered model <bool>
+smooth = True             # Flag to smooth recovered model <bool>
 smoothingType = 0         # 0 - gaussian filter; 1 - moving average filter <int>
-filterSamples = 5         # Samples in filter, must to be an odd number! <int>
-standardDeviation = 1.5   # For gaussian filter case to control smoothing <float>
+filterSamples = 11        # Samples in filter, must to be an odd number! <int>
+standardDeviation = 3.0   # For gaussian filter case to control smoothing <float>
 
 # Folders location
 
 dobsPath = "../../inputs/picks/obsData_10000_samples_shot_"  # Folder to write calculated data
-convergencyFolder = "../../outputs/convergency/"             # Folder to write convergency line to residuous norm
-estimatedModelsFolder = "../../outputs/recoveredModels/"     # Folder to write estimated models per iteration 
+convergencyFolder = "../../outputs/convergency/fsm_"             # Folder to write convergency line to residuous norm
+estimatedModelsFolder = "../../outputs/recoveredModels/fsm_"     # Folder to write estimated models per iteration 
