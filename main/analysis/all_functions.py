@@ -171,7 +171,7 @@ def createGaussianSurface(nx,ny,dx,dy,A,xc,yc,sigx,sigy):
 
     return surface
 
-def multiBoxPlot(models:np.ndarray, shots:np.ndarray, nodes:np.ndarray, dh:np.ndarray, slices:np.ndarray, subplots:np.ndarray) -> None:
+def multiBoxPlot(models:np.ndarray, shots:np.ndarray, nodes:np.ndarray, dh:float, slices:np.ndarray, subplots:np.ndarray) -> None:
 
     if np.sum(subplots) == 2:
         modelShape = np.array(np.shape(models))
@@ -195,6 +195,27 @@ def multiBoxPlot(models:np.ndarray, shots:np.ndarray, nodes:np.ndarray, dh:np.nd
     px = 1/plt.rcParams['figure.dpi']  
     ticks = np.array([3,7,7], dtype = int)
 
+    line_shot = int(np.sqrt(len(shots[:,0])))
+    line_node = int(np.sqrt(len(nodes[:,0])))
+
+    x_nodes = np.reshape(nodes[:,0], [line_node,line_node], order = "F") 
+    y_nodes = np.reshape(nodes[:,1], [line_node,line_node], order = "F") 
+    z_nodes = np.reshape(nodes[:,2], [line_node,line_node], order = "F")
+
+    for k, line in enumerate(x_nodes[:,0]):
+        if slices[2]*dh < line:
+            x_target = k
+            break
+
+        x_target = line_node-1
+
+    for k, line in enumerate(y_nodes[0,:]):
+        if slices[1]*dh < line:
+            y_target = k
+            break
+
+        y_target = line_node-1
+
     fig = plt.figure(1, figsize=(700*px*subplots[1], 600*px*subplots[0]))
 
     xloc = np.linspace(0,nx-1,ticks[1], dtype = int)
@@ -203,14 +224,14 @@ def multiBoxPlot(models:np.ndarray, shots:np.ndarray, nodes:np.ndarray, dh:np.nd
 
     m2km = 1e-3
 
-    xlab = np.around(xloc * dh[0] * m2km, decimals = 1)
-    ylab = np.around(yloc * dh[1] * m2km, decimals = 1)
-    zlab = np.around(zloc * dh[2] * m2km, decimals = 1)
+    xlab = np.around(xloc * dh * m2km, decimals = 1)
+    ylab = np.around(yloc * dh * m2km, decimals = 1)
+    zlab = np.around(zloc * dh * m2km, decimals = 1)
 
     axes = np.array([[0.75 - x, 0.98 - y      , x, y], 
                      [    0.75, 0.98 - y      , z, y],
                      [0.75 - x, 0.98 - y - z  , x, z],
-                     [0.75 - x, 0.98 - y - 2.5*z, x, z]])
+                     [0.75 - x, 0.98 - y - 1.8*z, x, z]])
 
     xTickDirection = ['out', 'out', 'out']
     yTickDirection = ['out', 'in', 'out']
@@ -248,11 +269,11 @@ def multiBoxPlot(models:np.ndarray, shots:np.ndarray, nodes:np.ndarray, dh:np.nd
             else:
                 ims = [models[ind, slices[0],:,:].T, models[ind,:,slices[2],:].T, models[ind,:,:,slices[1]]]
 
-            xshot = [shots[:,0]/dh[0], shots[:,2]/dh[2], shots[:,0]/dh[0]]
-            yshot = [shots[:,1]/dh[1], shots[:,1]/dh[1], shots[:,2]/dh[2]]
+            xshot = [shots[:,0]/dh, shots[:,2]/dh, shots[:,0]/dh]
+            yshot = [shots[:,1]/dh, shots[:,1]/dh, shots[:,2]/dh]
 
-            xnode = [nodes[:,0]/dh[0], nodes[:,2]/dh[2], nodes[:,0]/dh[0]]
-            ynode = [nodes[:,1]/dh[1], nodes[:,1]/dh[1], nodes[:,2]/dh[2]]
+            xnode = [nodes[:,0]/dh, z_nodes[y_target,:]/dh, x_nodes[:,x_target]/dh]
+            ynode = [nodes[:,1]/dh, y_nodes[y_target,:]/dh, z_nodes[:,x_target]/dh]
 
             for k, axs in enumerate(axes):
 
@@ -283,15 +304,15 @@ def multiBoxPlot(models:np.ndarray, shots:np.ndarray, nodes:np.ndarray, dh:np.nd
                     cax = divider.append_axes("bottom", size="10%", pad=0)
                     cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(vmin*1e-3, vmax*1e-3, 5), orientation = "horizontal")
                     cbar.ax.set_xticklabels(np.around(np.linspace(vmin*1e-3, vmax*1e-3, 5), decimals = 1))
-                    cbar.set_label("Velocidade [km/s]")
+                    cbar.set_label("Velocity [km/s]")
                 
                 # plotting model slices 
                 else:
                     
                     ax.imshow(ims[k], aspect = 'auto', cmap = "Greys", vmin = vmin, vmax = vmax)    
                     
-                    ax.scatter(xshot[k], yshot[k], s = 0.01)
-                    ax.scatter(xnode[k], ynode[k], s = 5.0)
+                    # ax.scatter(xshot[k], yshot[k], s = 0.1)
+                    # ax.scatter(xnode[k], ynode[k], s = 5.0)
 
                     ax.tick_params(direction = xTickDirection[k], axis='x') 
                     ax.tick_params(direction = yTickDirection[k], axis='y') 
@@ -312,55 +333,3 @@ def multiBoxPlot(models:np.ndarray, shots:np.ndarray, nodes:np.ndarray, dh:np.nd
                        ax.invert_yaxis()
     
     return None
-
-def irls(A, b, tolr, tolx, p, maxiter):
-    ''' 
-    Solve for the 1-norm solution
-
-        Input Parameters:
-            A       - Matrix of the system of equations.
-            b       - Right hand side of the system of equations.
-            tolr    - Tolerance below which residuals are ignored.
-            tolx    - Stopping tolerance.  Stop when (norm(newx-x)/(1+norm(x)) < tolx)
-            p       - Specifies which p-norm to use (most often, p=1.)
-            maxiter - Limit on number of iterations of IRLS
-
-        Output Parameters:
-            x - Approximate L_p solution.
-    '''
-
-    # Find the size of the matrix A.
-    [m,n] = np.shape(A)
-
-    # Start the first iteration with R=I, and x=A\b (the least squares solution)
-    R = np.eye(m)
-    x = solve(A.T @ A, A.T @ b)
-
-    #  Now loop up to maxiter iterations
-    iter = 1
-    while iter <= maxiter:
-        
-        iter += 1
-
-        # compute the current residual 
-        r = A @ x - b
-
-        # for each row adjust the weighting factor r based on the residual
-        for i in range(m):
-            if np.abs(r[i] < tolr):
-                r[i] = np.abs(tolr)**(p - 2)
-            else:
-                r[i] = np.abs(r[i])**(p - 2)
-
-        # insert the weighting factors into R
-        R = np.diag(r)
-
-        # find the solution to the weighted problem
-        newx = solve(A.T @ R @ A, A.T @ R @ b)
-
-        # check for convergence
-        if norm(newx - x) / (1 + norm(x)) < tolx:
-            x = newx
-            return x
-        else:
-            x = newx

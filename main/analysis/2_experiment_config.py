@@ -78,10 +78,10 @@ smax = np.max(-dz*waterBottom)
 
 ax.contour(-dz*waterBottom, levels = 10)
 ax.imshow(-dz*waterBottom, aspect = "auto", cmap=cmap)
-ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Posição dos nodes")
-ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.01, label = "Posição dos tiros")
+ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Nodes position")
+ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.1, label = "Shots position")
 
-ax.set_title("Topografia do fundo marinho", fontsize = 18)
+ax.set_title("Water bottom topography", fontsize = 18)
 ax.set_xlabel("X [m]", fontsize = 15)
 ax.set_ylabel("Y [m]", fontsize = 15)
 ax.invert_yaxis()
@@ -97,7 +97,7 @@ divider = make_axes_locatable(ax)
 cax = divider.append_axes("bottom", size="5%", pad=0.6)
 cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(smin, smax, 5), orientation = "horizontal")
 cbar.ax.set_xticklabels(np.around(np.linspace(smin, smax, 5), decimals = 1))
-cbar.set_label("Profundidade [m]", fontsize = 15)
+cbar.set_label("Depth [m]", fontsize = 15)
 
 ax.legend(loc = "upper right", fontsize = 12)
 
@@ -137,8 +137,8 @@ smax = np.max(-dz*surface)
 
 ax.contour(-dz*surface, levels = 10)
 ax.imshow(-dz*surface, aspect = "auto", cmap=cmap)
-ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Posição dos nodes")
-ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.01, label = "Posição dos tiros")
+ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Nodes position")
+ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.1, label = "Shots position")
 
 ax.set_xticks(np.linspace(0,nx-1,9, dtype = int))
 ax.set_xticklabels(np.around(np.linspace(0,nx-1,9)*dx, decimals = 1))
@@ -148,7 +148,7 @@ ax.set_yticklabels(np.around(np.linspace(0,ny-1,9)*dy, decimals = 1))
 
 ax.invert_yaxis()
 
-ax.set_title("Topografia da anomalia", fontsize = 18)
+ax.set_title("Target surface topography", fontsize = 18)
 ax.set_xlabel("X [m]", fontsize = 15)
 ax.set_ylabel("Y [m]", fontsize = 15)
 
@@ -157,7 +157,7 @@ divider = make_axes_locatable(ax)
 cax = divider.append_axes("bottom", size="5%", pad=0.6)
 cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(smin, smax, 5), orientation = "horizontal")
 cbar.ax.set_xticklabels(np.around(np.linspace(smin, smax, 5), decimals = 1))
-cbar.set_label("Profundidade [m]", fontsize = 15)
+cbar.set_label("Depth [m]", fontsize = 15)
 ax.legend(loc = "upper right", fontsize = 12)
 
 plt.tight_layout()
@@ -195,7 +195,7 @@ models = np.zeros((2,nz,nx,ny))
 models[0,:,:,:] = model
 models[1,:,:,:] = initModel
 
-dh = np.array([dx, dy, dz])
+dh = dx
 
 shots = np.zeros((shot_all, 3))
 nodes = np.zeros((node_all, 3))
@@ -208,7 +208,7 @@ nodes[:, 0] = node_x
 nodes[:, 1] = node_y
 nodes[:, 2] = node_z
 
-slices = np.array([int(nz / 2), int(ny / 2), int(nx / 2)], dtype = int) # [xy, zx, zy]
+slices = np.array([int(3*nz / 5), int(ny / 2), int(nx / 2)], dtype = int) # [xy, zx, zy]
 subplots = np.array([1, 2], dtype = int)
 
 multiBoxPlot(models, shots, nodes, dh, slices, subplots)

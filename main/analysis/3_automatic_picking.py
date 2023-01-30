@@ -2,7 +2,7 @@ import timeit
 import numpy as np
 import matplotlib.pyplot as plt
 
-from all_functions import readBinaryMatrix, readBinaryArray, irls
+from all_functions import readBinaryMatrix, readBinaryArray
 
 from scipy.signal import savgol_filter
 from scipy.ndimage import median_filter
@@ -49,8 +49,8 @@ updated_nt = 2.80
 
 times = slice(int(tlag/dt), int((tlag+tcut)/dt))
 
-tloc = np.linspace(0, updated_nt-1, 11, dtype = int)
-tlab = np.around(np.linspace(0, updated_nt-1, 11) * dt, decimals = 1)
+tloc = np.linspace(0, int(updated_nt/dt)-1, 11, dtype = int)
+tlab = np.around(tloc * dt, decimals = 1)
 
 xloc = np.linspace(0, traces-1, 11, dtype = int)
 xlab = np.linspace(0, traces, 11, dtype = int)
@@ -68,7 +68,10 @@ for node in range(nodes_all):
     plt.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
     plt.plot(rawPicks_all/dt, "o")
     plt.plot(output_picks/dt, "o")
-    plt.title(f"{node+1}")
+    plt.title(f"Picked seismogram for node {node+1}", fontsize= 18)
+    plt.ylabel("Time [s]", fontsize = 15)
+    plt.xlabel("Trace index", fontsize = 15)
+    plt.yticks(tloc,tlab)
     plt.xlim([0, shots_all])
     plt.tight_layout()
     plt.show()

@@ -1851,7 +1851,7 @@ void Eikonal::jeongFIM()
             {
                 if (K[index] == 1.0f)
                 {
-                    int k = (int) (index / (nxx*nzz));             // y direction
+                    int k = (int) (index / (nxx*nzz));         // y direction
                     int j = (int) (index - k*nxx*nzz) / nzz;   // x direction
                     int i = (int) (index - j*nzz - k*nxx*nzz); // z direction
 
@@ -1859,11 +1859,10 @@ void Eikonal::jeongFIM()
                     {
                         float h = dx;
                         float a, b, c, tmp, Tijk;
-                        float tlag = - 0.4f * h * S[sId];
 
-                        a = min(T[index - nzz],T[index + nzz]);                 // Tx min        
+                        a = min(T[index - nzz],T[index + nzz]);         // Tx min        
                         b = min(T[index - nxx*nzz],T[index + nxx*nzz]); // Ty min        
-                        c = min(T[index - 1],T[index + 1]);                             // Tz min        
+                        c = min(T[index - 1],T[index + 1]);             // Tz min        
 
                         // a,b,c <------- sort(Tx,Ty,Tz), where a > b > c
                         if (a < b) {tmp = a; a = b; b = tmp;}
