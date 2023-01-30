@@ -311,8 +311,8 @@ def multiBoxPlot(models:np.ndarray, shots:np.ndarray, nodes:np.ndarray, dh:float
                     
                     ax.imshow(ims[k], aspect = 'auto', cmap = "Greys", vmin = vmin, vmax = vmax)    
                     
-                    # ax.scatter(xshot[k], yshot[k], s = 0.1)
-                    # ax.scatter(xnode[k], ynode[k], s = 5.0)
+                    ax.scatter(xshot[k], yshot[k], s = 0.1)
+                    ax.scatter(xnode[k], ynode[k], s = 5.0)
 
                     ax.tick_params(direction = xTickDirection[k], axis='x') 
                     ax.tick_params(direction = yTickDirection[k], axis='y') 
