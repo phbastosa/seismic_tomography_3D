@@ -6,7 +6,6 @@ from all_functions import *
 from scipy.ndimage import gaussian_filter
 
 # General recovered models plot 
-# Figure with 12 subfigures 
 
 shots = np.loadtxt("../../inputs/geometry/shots.txt", delimiter=",")
 nodes = np.loadtxt("../../inputs/geometry/nodes.txt", delimiter=",")
@@ -20,51 +19,83 @@ ny = 201
 
 dh = 25
 
+mask_z_beg = 200
+mask_z_end = 1000
+
 initModel = readBinaryVolume(nz,nx,ny,f"../../inputs/models/initModel_{nz}x{nx}x{ny}_{dh}m.bin")
 
-pod_models = np.zeros((3,nz,nx,ny))
-pod_models[0,:,:] = initModel
-pod_models[-1,:,:] = trueModel
+pod_model = readBinaryVolume(nz,nx,ny,f"../../outputs/recoveredModels/pod_estimatedModel_iteration_20.bin")
+pod_model[:int(mask_z_beg/dh),:,:] = initModel[:int(mask_z_beg/dh),:,:]
+pod_model[int(mask_z_end/dh):,:,:] = initModel[int(mask_z_end/dh):,:,:]
+pod_model = 1.0 / gaussian_filter(1.0 / pod_model, 4.0)
 
-fim_models =  np.zeros((3,nz,nx,ny))
-fim_models[0,:,:] = initModel
-fim_models[-1,:,:] = trueModel
+fim_model = readBinaryVolume(nz,nx,ny,f"../../outputs/recoveredModels/fim_estimatedModel_iteration_20.bin")
+fim_model[:int(mask_z_beg/dh),:,:] = initModel[:int(mask_z_beg/dh),:,:]
+fim_model[int(mask_z_end/dh):,:,:] = initModel[int(mask_z_end/dh):,:,:]
+fim_model[:,:,:] = 1.0 / gaussian_filter(1.0 / fim_model, 4.0)
 
-fsm_models =  np.zeros((3,nz,nx,ny))
-fsm_models[0,:,:] = initModel
-fsm_models[-1,:,:] = trueModel
-
-pod_models[1,:,:,:] = readBinaryVolume(nz,nx,ny,f"../../outputs/recoveredModels/pod_estimatedModel_iteration_10.bin")
-pod_models[1,:,:,:] = 1.0 / gaussian_filter(1.0 / pod_models[1,:,:,:], 3.0)
- 
-fim_models[1,:,:,:] = readBinaryVolume(nz,nx,ny,f"../../outputs/recoveredModels/fim_estimatedModel_iteration_10.bin")
-fim_models[1,:,:,:] = 1.0 / gaussian_filter(1.0 / fim_models[1,:,:,:], 3.0)
-
-fsm_models[1,:,:,:] = readBinaryVolume(nz,nx,ny,f"../../outputs/recoveredModels/fsm_estimatedModel_iteration_10.bin")
-fsm_models[1,:,:,:] = 1.0 / gaussian_filter(1.0 / fsm_models[1,:,:,:], 3.0)
+fsm_model = readBinaryVolume(nz,nx,ny,f"../../outputs/recoveredModels/fsm_estimatedModel_iteration_20.bin")
+fsm_model[:int(mask_z_beg/dh),:,:] = initModel[:int(mask_z_beg/dh),:,:]
+fsm_model[int(mask_z_end/dh):,:,:] = initModel[int(mask_z_end/dh):,:,:]
+fsm_model[:,:,:] = 1.0 / gaussian_filter(1.0 / fsm_model, 4.0)
 
 slices = np.array([31,100,100]) # XY, ZX, ZY
-subplots = np.array([1,3])
+subplots = np.array([1,1])
 
-multiBoxPlot(pod_models,shots,nodes,dh,slices,subplots)
+multiBoxPlot(pod_model,shots,nodes,dh,slices,subplots)
 plt.savefig("../../figures/podvin_result.png", dpi = 200)
 plt.show()
 
-multiBoxPlot(fim_models,shots,nodes,dh,slices,subplots)
+multiBoxPlot(fim_model,shots,nodes,dh,slices,subplots)
 plt.savefig("../../figures/jeong_result.png", dpi = 200)
 plt.show()
 
-multiBoxPlot(fsm_models,shots,nodes,dh,slices,subplots)
+multiBoxPlot(fsm_model,shots,nodes,dh,slices,subplots)
 plt.savefig("../../figures/noble_result.png", dpi = 200)
 plt.show()
 
 #---------------------------------------------------------------------------------------------
+# Trace analysis
 
+npoints = 5
+ntraces = 5
 
+xc = np.array([2000, 3000, 2500, 2000, 3000]) / dh 
+yc = np.array([2000, 2000, 2500, 3000, 3000]) / dh
 
+depth = np.arange(nz) * dh
+v_logs = np.zeros((npoints, ntraces, nz))
 
+for point in range(npoints):
+    v_logs[point, 0, :] = trueModel[:,int(xc[point]),int(yc[point])]
+    v_logs[point, 1, :] = initModel[:,int(xc[point]),int(yc[point])]
+    v_logs[point, 2, :] = pod_model[:,int(xc[point]),int(yc[point])]
+    v_logs[point, 3, :] = fim_model[:,int(xc[point]),int(yc[point])]
+    v_logs[point, 4, :] = fsm_model[:,int(xc[point]),int(yc[point])]
 
+fig, ax = plt.subplots(1, npoints, figsize = (15,6))
 
+labels = ["Reference", "Initial", "Classical", "Fast Iterative", "Fast Sweeping"]
+
+for i in range(ntraces):
+    for j in range(npoints):
+        ax[i].plot(v_logs[i, j, :], depth, label = labels[j])
+    
+    ax[i].set_title(f"Gaussian {i+1}", fontsize = 18)
+    ax[i].set_xlabel("Velocity [m/s]", fontsize = 15)
+    ax[i].set_ylabel("Depth [m]", fontsize = 15)
+    ax[i].set_xlim([1000,4000])
+    ax[i].set_ylim([0,1300])
+
+    ax[i].set_yticks(np.linspace(0,1300,11))
+    ax[i].set_yticklabels(np.linspace(0,1300,11, dtype = int))
+
+    ax[i].legend()
+    ax[i].invert_yaxis()    
+
+plt.tight_layout()
+plt.savefig("../../figures/traceAnalysis.png", dpi = 200)
+plt.show()
 
 #---------------------------------------------------------------------------------------------
 
@@ -85,7 +116,7 @@ plt.ylim([0,200])
 
 plt.legend(loc = "upper right", fontsize = 15)
 plt.tight_layout()
-plt.savefig("../../figures/convergencia.png", dpi = 200)
+plt.savefig("../../figures/convergency.png", dpi = 200)
 plt.show()
 
 

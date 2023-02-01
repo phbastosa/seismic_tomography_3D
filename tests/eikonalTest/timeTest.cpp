@@ -9,9 +9,9 @@ int main(int argc, char **argv)
 
     eikonal.nb = 1;
 
-    eikonal.nx = 401;
-    eikonal.ny = 401;    
-    eikonal.nz = 401;
+    eikonal.nx = 256;
+    eikonal.ny = 256;    
+    eikonal.nz = 256;
 
     eikonal.dx = 25.0f;
     eikonal.dy = 25.0f;
@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < eikonal.nPointsB; ++i) 
     {
-        eikonal.V[i] = 2000.0f;        
+        eikonal.V[i] = 1500.0f;        
     }
 
     // Generate central shot

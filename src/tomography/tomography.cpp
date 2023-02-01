@@ -287,7 +287,7 @@ void Tomography::optimization()
     for (int index = 0; index < nodes.all*shots.all; index++) 
         B[index] = dobs[index] - dcal[index];
 
-    sparse_cgls_cpu(iA, jA, vA, B, x, N, M, NNZ, 10, 1e-6f);
+    sparse_cgls_gpu(iA, jA, vA, B, x, N, M, NNZ, 10, 1e-6f);
 
     std::swap(dm,x);
 

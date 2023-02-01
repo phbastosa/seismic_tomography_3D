@@ -4,7 +4,7 @@
  
 nx = 201   # x dimension of model <int>
 ny = 201   # y dimension of model <int>
-nz = 53   # z dimension of model <int>
+nz = 53    # z dimension of model <int>
 
 dx = 25  # x sample spacing of model [m] <float>
 dy = 25  # y sample spacing of model [m] <float> 
@@ -96,11 +96,11 @@ dzTomo = 100    # Resized model sample spacing [m] of z dimension <float>
 
 regOrder = 2       # Tikhonov regularization order <int>
 regParam = 1e5     # Regularization parameter <float>
-maxIteration = 10  # Tomography max iteration <int>                   
+maxIteration = 20  # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
 
-smooth = True             # Flag to smooth recovered model <bool>
+smooth = False            # Flag to smooth recovered model <bool>
 smoothingType = 0         # 0 - gaussian filter; 1 - moving average filter <int>
 filterSamples = 11        # Samples in filter, must to be an odd number! <int>
 standardDeviation = 3.0   # For gaussian filter case to control smoothing <float>
