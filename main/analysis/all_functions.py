@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-from matplotlib import patches
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def readBinaryArray(n,filename):
