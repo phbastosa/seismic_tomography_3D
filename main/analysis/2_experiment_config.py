@@ -78,8 +78,9 @@ smax = np.max(-dz*waterBottom)
 
 ax.contour(-dz*waterBottom, levels = 10)
 ax.imshow(-dz*waterBottom, aspect = "auto", cmap=cmap)
-ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Nodes position")
-ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.1, label = "Shots position")
+# ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Nodes position")
+# ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.1, label = "Shots position")
+ax.scatter(xc/dx, yc/dy, c = "black", s = 30, label = "Gausian center")
 
 ax.set_title("Water bottom topography", fontsize = 18)
 ax.set_xlabel("X [m]", fontsize = 15)
@@ -137,8 +138,9 @@ smax = np.max(-dz*surface)
 
 ax.contour(-dz*surface, levels = 10)
 ax.imshow(-dz*surface, aspect = "auto", cmap=cmap)
-ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Nodes position")
-ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.1, label = "Shots position")
+# ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Nodes position")
+# ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.1, label = "Shots position")
+ax.scatter(xc/dx, yc/dy, c = "black", s = 30, label = "Gausian center")
 
 ax.set_xticks(np.linspace(0,nx-1,9, dtype = int))
 ax.set_xticklabels(np.around(np.linspace(0,nx-1,9)*dx, decimals = 1))
