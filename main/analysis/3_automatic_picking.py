@@ -2,15 +2,15 @@ import timeit
 import numpy as np
 import matplotlib.pyplot as plt
 
-from all_functions import readBinaryMatrix, readBinaryArray
-
 from scipy.signal import savgol_filter
 from scipy.ndimage import median_filter
+
+from all_functions import readBinaryMatrix, readBinaryArray
 
 #--------------------------------------------------------------------
 start = timeit.default_timer()
 
-nt = 3001
+nt = 3101
 traces = 100
 nodes_all = 441 
 shots_all = 10000

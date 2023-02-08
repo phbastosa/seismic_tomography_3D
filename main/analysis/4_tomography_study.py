@@ -28,16 +28,19 @@ pod_model = readBinaryVolume(nz,nx,ny,f"../../outputs/recoveredModels/pod_estima
 pod_model[:int(mask_z_beg/dh),:,:] = initModel[:int(mask_z_beg/dh),:,:]
 pod_model[int(mask_z_end/dh):,:,:] = initModel[int(mask_z_end/dh):,:,:]
 pod_model = 1.0 / gaussian_filter(1.0 / pod_model, 4.0)
+pod_model.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/pod_initModel_{nz}x{nx}x{ny}_{dh}m.bin")
 
 fim_model = readBinaryVolume(nz,nx,ny,f"../../outputs/recoveredModels/fim_estimatedModel_iteration_20.bin")
 fim_model[:int(mask_z_beg/dh),:,:] = initModel[:int(mask_z_beg/dh),:,:]
 fim_model[int(mask_z_end/dh):,:,:] = initModel[int(mask_z_end/dh):,:,:]
 fim_model[:,:,:] = 1.0 / gaussian_filter(1.0 / fim_model, 4.0)
+fim_model.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/fim_initModel_{nz}x{nx}x{ny}_{dh}m.bin")
 
 fsm_model = readBinaryVolume(nz,nx,ny,f"../../outputs/recoveredModels/fsm_estimatedModel_iteration_20.bin")
 fsm_model[:int(mask_z_beg/dh),:,:] = initModel[:int(mask_z_beg/dh),:,:]
 fsm_model[int(mask_z_end/dh):,:,:] = initModel[int(mask_z_end/dh):,:,:]
 fsm_model[:,:,:] = 1.0 / gaussian_filter(1.0 / fsm_model, 4.0)
+fsm_model.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/fsm_initModel_{nz}x{nx}x{ny}_{dh}m.bin")
 
 slices = np.array([31,100,100]) # XY, ZX, ZY
 subplots = np.array([1,1])

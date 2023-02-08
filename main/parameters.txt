@@ -10,7 +10,7 @@ dx = 25  # x sample spacing of model [m] <float>
 dy = 25  # y sample spacing of model [m] <float> 
 dz = 25  # z sample spacing of model [m] <float>  
 
-modelPath = "../../inputs/models/initModel_53x201x201_25m.bin"   # Velocity model location <string>
+modelPath = "../../inputs/models/pod_initModel_53x201x201_25m.bin"   # Velocity model location <string>
 
 #-------------------------------------------------------------------------------------------------
 # Geometry parameters ----------------------------------------------------------------------------
@@ -36,9 +36,9 @@ shotsTopographyPath = "shotsTopography.bin"   #
 
 xNodeNumber = 21         # Number of sources in x direction <int>
 yNodeNumber = 21         # Number of sources in y direction
-nodeSW = [500, 500]    # NW       # (x,y) <float>     
-nodeNW = [500, 4500]    #  |       # (x,y) <float>   
-nodeSE = [4500, 500]    # SW -- SE # (x,y) <float>   
+nodeSW = [500, 500]      # NW       # (x,y) <float>     
+nodeNW = [500, 4500]     #  |       # (x,y) <float>   
+nodeSE = [4500, 500]     # SW -- SE # (x,y) <float>   
 
 nodesElevation = 0       # Receivers elevation - flat surface [m] <float>
 nodesTopography = True   #
@@ -48,10 +48,10 @@ nodesTopographyPath = "nodesTopography.bin"   #
 # Seismic modeling parameters --------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nb = 50         # Total samples in boundary <int>
-factor = 40     # Attenuation factor to apply in PML <float>
+nb = 50          # Total samples in boundary <int>
+factor = 25      # Attenuation factor to apply in PML <float>
 
-nt = 3001        # Total samples in time domain <int>
+nt = 3101        # Total samples in time domain <int>
 dt = 0.001       # Sample spacing in time domain [s] <float>
 
 fmax = 40.0      # Max frequency in source [Hz] <float>
@@ -68,7 +68,7 @@ waveletFolder = "../../inputs/wavelets/"     # Folder to write wavelets <string>
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonalType = 2    # Eikonal Type flag <int>          
+eikonalType = 0    # Eikonal Type flag <int>          
 
 exportRayPosition = False    # Ray position flag <bool>
 exportTravelTimes = False    # Travel times volume flag <bool> 
@@ -84,19 +84,19 @@ illuminationFolder = "../../outputs/illumination/"    # Illumination volume fold
 # Tomography parameters --------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nxTomo = 26     # Resized x sample dimension of model <int>
-nyTomo = 26     # Resized y sample dimension of model <int>
-nzTomo = 14     # Resized z sample dimension of model <int>
+nxTomo = 101   # Resized x sample dimension of model <int>
+nyTomo = 101   # Resized y sample dimension of model <int>
+nzTomo = 53    # Resized z sample dimension of model <int>
 
-dxTomo = 200    # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 200    # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 100    # Resized model sample spacing [m] of z dimension <float>
+dxTomo = 50    # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 50    # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 25    # Resized model sample spacing [m] of z dimension <float>
 
 # Inversion parameters 
 
 regOrder = 2       # Tikhonov regularization order <int>
 regParam = 1e5     # Regularization parameter <float>
-maxIteration = 20  # Tomography max iteration <int>                   
+maxIteration = 10  # Tomography max iteration <int>                   
 
 # Smoothing model per iteration 
 
@@ -108,5 +108,5 @@ standardDeviation = 3.0   # For gaussian filter case to control smoothing <float
 # Folders location
 
 dobsPath = "../../inputs/picks/obsData_10000_samples_shot_"  # Folder to write calculated data
-convergencyFolder = "../../outputs/convergency/fsm_"             # Folder to write convergency line to residuous norm
-estimatedModelsFolder = "../../outputs/recoveredModels/fsm_"     # Folder to write estimated models per iteration 
+convergencyFolder = "../../outputs/convergency/pod_new_"             # Folder to write convergency line to residuous norm
+estimatedModelsFolder = "../../outputs/recoveredModels/pod_new_"     # Folder to write estimated models per iteration 
