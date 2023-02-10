@@ -15,7 +15,6 @@ int main(int argc, char **argv)
     tomo.setParameters();
 
     tomo.importDobs();
-    tomo.setInitialModel();
 
     while (true)
     {

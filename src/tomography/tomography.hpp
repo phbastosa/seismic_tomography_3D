@@ -14,14 +14,12 @@ private:
     float lambda;                   // Regularization parameter
 
     bool smooth;                    // Parameter to select model smoothing per iteration
-    int smoothingType;              // 0 - gaussian filter; 1 - moving average filter  
     int filterSamples;              // The amoung of samples in filter
     float standardDeviation;        // Standard deviation for gaussian filter
 
     float * dm;                     // Delta slowness model, used to realize inversion
     float * dobs;                   // Observed data 
     float * dcal;                   // Calculated data
-    float * model;                  // Slowness model
     
     typedef struct                  // To get together the reducecd tomography model dimensions
     {  
@@ -64,8 +62,6 @@ public:
 
     void importDcal();
     
-    void setInitialModel();
-
     void forwardModeling();
 
     bool converged();

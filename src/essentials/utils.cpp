@@ -252,7 +252,7 @@ float * Utils::gaussianFilterSmoothing(float * volume, int nx, int ny, int nz, f
                 {          
                     int index = (z+init) + (x+init)*samples + (y+init)*samples*samples; 
 
-                    kernel[index] = 1.0f / (2.0f*pi*stdv*stdv) * exp(-((x*x + y*y + z*z) / (2.0f*stdv*stdv)));
+                    kernel[index] = 1.0f / (2.0f*pi*stdv*stdv) * expf(-((x*x + y*y + z*z) / (2.0f*stdv*stdv)));
         
                     sum += kernel[index]; 
                 }

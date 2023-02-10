@@ -28,7 +28,6 @@ void Tomography::setParameters()
     maxIteration = std::stoi(catchParameter("maxIteration", parameters));
 
     smooth = str2bool(catchParameter("smooth", parameters)); 
-    smoothingType = std::stoi(catchParameter("smoothingType", parameters));
     filterSamples = std::stoi(catchParameter("filterSamples", parameters));
     standardDeviation = std::stof(catchParameter("standardDeviation",parameters));
 
@@ -42,8 +41,6 @@ void Tomography::setParameters()
 
     dobs = new float[shots.all * nodes.all]();
     dcal = new float[shots.all * nodes.all]();    
-
-    model = new float [mTomo.nPoints]();
 
     dm = new float [mTomo.nPoints]();
 }
@@ -89,24 +86,6 @@ void Tomography::importDobs()
         ptr += nodes.all;
         
         delete[] data;
-    }
-}
-
-void Tomography::setInitialModel()
-{
-    for (int k = 0; k < mTomo.ny; k++)
-    {
-        for (int j = 0; j < mTomo.nx; j++)
-        {
-            for (int i = 0; i < mTomo.nz; i++)
-            {
-                int im = (int) ((float)(i)*mTomo.dz/dz) + nb;
-                int jm = (int) ((float)(j)*mTomo.dx/dx) + nb;
-                int km = (int) ((float)(k)*mTomo.dy/dy) + nb;
-                
-                model[i + j*mTomo.nz + k*mTomo.nx*mTomo.nz] = 1.0f / V[im + jm*nzz + km*nxx*nzz];    
-            }
-        }
     }
 }
 
@@ -300,18 +279,7 @@ void Tomography::optimization()
 
 void Tomography::modelUpdate()
 {    
-    // Tomography slowness update    
-    for (int index = 0; index < mTomo.nPoints; index++) 
-    {
-        int k = (int) (index / (mTomo.nx*mTomo.nz));               // y direction
-        int j = (int) (index - k*mTomo.nx*mTomo.nz) / mTomo.nz;    // x direction
-        int i = (int) (index - j*mTomo.nz - k*mTomo.nx*mTomo.nz);  // z direction        
-
-        if ((i >= 0) && (i < mTomo.nz) && (j >= 0) && (j < mTomo.nx) && (k >= 0) && (k < mTomo.ny))
-        { 
-            model[index] += dm[index];
-        }
-    }    
+    float * dS = new float[nPointsB]();
 
     // Trilinear interpolation - wikipedia
     for (int index = 0; index < nPoints; index++)
@@ -340,37 +308,29 @@ void Tomography::modelUpdate()
 
             int indS = idz + idx*mTomo.nz + idy*mTomo.nx*mTomo.nz;
 
-            float c000 = model[indS];                  
-            float c001 = model[indS + 1];
-            float c100 = model[indS + mTomo.nz];
-            float c101 = model[indS + 1 + mTomo.nz];
-            float c010 = model[indS + mTomo.nx*mTomo.nz];
-            float c011 = model[indS + 1 + mTomo.nx*mTomo.nz];
-            float c110 = model[indS + mTomo.nz + mTomo.nx*mTomo.nz];
-            float c111 = model[indS + 1 + mTomo.nz + mTomo.nx*mTomo.nz];  
+            float c000 = dm[indS];                  
+            float c001 = dm[indS + 1];
+            float c100 = dm[indS + mTomo.nz];
+            float c101 = dm[indS + 1 + mTomo.nz];
+            float c010 = dm[indS + mTomo.nx*mTomo.nz];
+            float c011 = dm[indS + 1 + mTomo.nx*mTomo.nz];
+            float c110 = dm[indS + mTomo.nz + mTomo.nx*mTomo.nz];
+            float c111 = dm[indS + 1 + mTomo.nz + mTomo.nx*mTomo.nz];  
 
-            float s = triLinearInterpolation(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);
+            float ds_ijk = triLinearInterpolation(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);
 
-            V[(i + nb) + (j + nb)*nzz + (k + nb)*nxx*nzz] = 1.0f / s;
+            dS[(i + nb) + (j + nb)*nzz + (k + nb)*nxx*nzz] = ds_ijk;            
         }
     }
 
     if (smooth) 
     {
-        float * auxS = new float[nPointsB];
+        dS = gaussianFilterSmoothing(dS, nxx, nyy, nzz, standardDeviation, filterSamples);
+    }
 
-        // Smoothing the inverse of velocity
-        for (int i = 0; i < nPointsB; i++) auxS[i] = 1.0f / V[i];
-
-        if (smoothingType) 
-            movingAverageSmoothing(auxS, nxx, nyy, nzz, filterSamples);
-        else
-            gaussianFilterSmoothing(auxS, nxx, nyy, nzz, standardDeviation, filterSamples);
-
-        // Coming back to velocity    
-        for (int i = 0; i < nPointsB; i++) V[i] = 1.0f / auxS[i];
-    
-        delete[] auxS;
+    for (int index = 0; index < nPointsB; index++)
+    {
+        V[index] = 1.0f / ((1.0f / V[index]) + dS[index]);
     }
 
     float * mm = reduce(V);
@@ -378,6 +338,7 @@ void Tomography::modelUpdate()
     writeBinaryFloat(estimatedPath + "estimatedModel_iteration_" + std::to_string(iteration) + ".bin", mm, nPoints);    
 
     delete[] mm;
+    delete[] dS;
 }
 
 void Tomography::exportConvergency()
