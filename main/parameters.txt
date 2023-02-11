@@ -107,5 +107,5 @@ standardDeviation = 3.0   # For gaussian filter case to control smoothing <float
 # Folders location
 
 dobsPath = "../../inputs/picks/obsData_10000_samples_shot_"  # Folder to write calculated data
-convergencyFolder = "../../outputs/convergency/pod_"             # Folder to write convergency line to residuous norm
-estimatedModelsFolder = "../../outputs/recoveredModels/pod_"     # Folder to write estimated models per iteration 
+convergencyFolder = "../../outputs/convergency/"             # Folder to write convergency line to residuous norm
+estimatedModelsFolder = "../../outputs/recoveredModels/"     # Folder to write estimated models per iteration 
