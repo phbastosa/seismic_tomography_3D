@@ -13,34 +13,37 @@ int main()
 
     auto ti = std::chrono::system_clock::now();
 
-    int nt = 3101;
-    int traces = 100;
-    int nodes_all = 441; 
-    int shots_all = 10000;
+    int nt = std::stoi(fm.catch_parameter("nt"));
+    int nodes_all = std::stoi(fm.catch_parameter("nodes_all")); 
+    int shots_all = std::stoi(fm.catch_parameter("shots_all"));
 
-    float dt = 1e-3f;
-    float tlag = 0.100f;
-    float tcut = 3.0f;
+    float dt = std::stof(fm.catch_parameter("dt"));
+    float tlag = std::stof(fm.catch_parameter("tlag"));
+    float tcut = std::stof(fm.catch_parameter("tcut"));
+    
+    float window = std::stof(fm.catch_parameter("pick_window"));
+    float amp_cut = std::stof(fm.catch_parameter("amp_cut"));
+    float pick_lag = std::stof(fm.catch_parameter("pick_lag"));
 
-    int updated_nt = (int)(tcut/dt);
+    std::string data_folder = fm.catch_parameter("data_folder");    
+    std::string pick_folder = fm.catch_parameter("pick_folder");
 
-    float window = 0.020f;
-    int iw = (int)(window/dt);
+    int updated_nt = (int)(tcut/dt)+1;
 
-    int itime = (int)(tlag/dt);
-    int ftime = (int)((tcut+tlag)/dt + 1);
+    int iw = (int)(window/dt)+1;
 
-    // loop of receiver gathers
+    int itime = (int)(tlag/dt)+1;
+    int ftime = (int)((tcut+tlag)/dt)+1;
+
     for (int node = 0; node < nodes_all; node++)
     {
         float * picks_all = new float[shots_all]();    
         float * seismic_all = new float[shots_all * nt];
         
-        fm.read_binary_float("../../inputs/seismograms/seismogram_" + std::to_string(nt) + "x" + std::to_string(shots_all) + "_shot_" + std::to_string(node+1) + ".bin", seismic_all, shots_all * nt);
+        fm.read_binary_float(data_folder + "seismogram_" + std::to_string(nt) + "x" + std::to_string(shots_all) + "_shot_" + std::to_string(node+1) + ".bin", seismic_all, shots_all * nt);
         
         std::cout<<"Running node " + std::to_string(node+1) + " of " + std::to_string(nodes_all)<<std::endl;
 
-        // loop of traces
         for (int trace = 0; trace < shots_all; trace++)
         {
             float * A = new float[updated_nt]();
@@ -52,7 +55,6 @@ int main()
                 std::cout<<"    Running trace " + std::to_string(trace) + " of " + std::to_string(shots_all)<<std::endl;
             }
 
-            // loop of time
             for (int time = iw; time < updated_nt - iw; time++)
             {
                 for (int k = 0; k < iw; k++)
@@ -67,14 +69,13 @@ int main()
 
             float ampMax = *std::max_element(S, S+updated_nt);
 
-            // Normalizing and picking the first break
             for (int k = 0; k < updated_nt; k++)
             {
                 S[k] *= 1.0f / ampMax;
                 
-                if (S[k] > 1e-9f)
+                if (S[k] > amp_cut)
                 {
-                    picks_all[trace] = (k + 4*iw) * dt;            
+                    picks_all[trace] = (k + pick_lag*iw) * dt;            
                     break;
                 }
             }    
@@ -84,7 +85,7 @@ int main()
             delete[] S;
         }
 
-        fm.write_binary_float("../../inputs/picks/rawPicks_shot_" + std::to_string(node+1) + "_" + std::to_string(shots_all) + "_samples.bin", picks_all, shots_all);
+        fm.write_binary_float(pick_folder + "rawPicks_shot_" + std::to_string(node+1) + "_" + std::to_string(shots_all) + "_samples.bin", picks_all, shots_all);
 
         delete[] picks_all;
         delete[] seismic_all;

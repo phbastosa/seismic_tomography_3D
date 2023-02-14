@@ -18,10 +18,18 @@ Usage:
 	exit 1 
 }
 
-model="../src/model/model.cpp"
 file_manager="../src/file_manager.cpp"
-gaussian="../src/utils/smoothing/gaussian.cpp"
+
 trilinear="../src/utils/interpolation/trilinear.cpp"
+gaussian="../src/utils/smoothing/gaussian.cpp"
+model="../src/model/model.cpp"
+
+geometry="../src/geometry/geometry.cpp"
+circular="../src/geometry/circular/circular.cpp"
+regular="../src/geometry/regular/regular.cpp"
+
+picking="../src/auto_picking/auto_picking.cpp"
+qc_picks="../src/auto_picking/qc_picking.py"
 
 case "$1" in
 

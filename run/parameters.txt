@@ -64,21 +64,23 @@ nodes_spacing = 50                #
 nodes_offsets = [500, 800]        #
 
 #-------------------------------------------------------------------------------------------------
-# Seismic modeling parameters --------------------------------------------------------------------
+# Data and auto picking parameters ---------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nb = 50          # Total samples in boundary <int>
-factor = 25      # Attenuation factor to apply in PML <float>
+nt = 3101              # Total samples in time domain <int>
+dt = 0.001             # Sample spacing in time domain [s] <float>
+tlag = 0.1             #
+tcut = 3.0             #
 
-nt = 3101        # Total samples in time domain <int>
-dt = 0.001       # Sample spacing in time domain [s] <float>
+amp_cut = 1e-9         #
+pick_lag = 4           # 
+pick_window = 0.02     #
 
-fmax = 40.0      # Max frequency in source [Hz] <float>
-delay = 0.10     # Delay of source - anti causal [s] <float>
+nodes_all = 441        #
+shots_all = 10000      #
 
-seismFolder = "../../inputs/seismograms/"    # Folder to write seismograms <string>
-waveletFolder = "../../inputs/wavelets/"     # Folder to write wavelets <string>
-
+data_folder = "../../inputs/seismograms/"    # Folder to write seismograms <string>
+pick_folder = "../../inputs/picks/"
 #-------------------------------------------------------------------------------------------------
 # Eikonal parameters -----------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------

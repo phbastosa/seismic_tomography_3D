@@ -5,10 +5,8 @@ import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 from scipy.ndimage import median_filter
 
-
-
-
-
+def readBinaryArray(n,filename):
+    return np.fromfile(filename, dtype = np.float32, count = n)
 
 #--------------------------------------------------------------------
 start = timeit.default_timer()
