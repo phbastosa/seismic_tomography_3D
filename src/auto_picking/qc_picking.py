@@ -8,6 +8,10 @@ from scipy.ndimage import median_filter
 def readBinaryArray(n,filename):
     return np.fromfile(filename, dtype = np.float32, count = n)
 
+def readBinaryMatrix(n1,n2,filename):
+    data = np.fromfile(filename, dtype = np.float32, count = n1*n2)    
+    return np.reshape(data, [n1,n2], order='F')
+
 #--------------------------------------------------------------------
 start = timeit.default_timer()
 
