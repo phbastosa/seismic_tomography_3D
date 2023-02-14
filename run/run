@@ -1,0 +1,98 @@
+#!/bin/bash
+
+USER_MESSAGE="
+Usage:
+
+    $ $0 -check_data        
+    $ $0 -check_model     
+    $ $0 -check_geometry        
+    $ $0 -tomography      
+"
+
+# Check if user provide some parameter
+[ -z "$1" ] && {
+	echo " "
+	echo "You didn't provide any parameter!" 
+	echo "Type $0 -help for more info"
+	echo " "  
+	exit 1 
+}
+
+model="../src/model/model.cpp"
+file_manager="../src/file_manager.cpp"
+gaussian="../src/utils/smoothing/gaussian.cpp"
+trilinear="../src/utils/interpolation/trilinear.cpp"
+
+case "$1" in
+
+-help ) 
+	echo -e "$USER_MESSAGE"
+	exit 0
+;;
+
+-model) 
+
+    
+
+
+	exit 0
+;;
+
+-check_data) 
+
+    g++ ../src/file_manager/file_manager.cpp ../src/geometry/geometry.cpp ../src/geometry/geometry_main.cpp -lm -o ../bin/geometry.exe
+    
+    ./../bin/geometry.exe ../tests/geometry_test/test1_parameters.txt
+
+
+	exit 0
+;;
+
+-check_model) 
+    
+
+
+	exit 0
+;;
+
+-check_geometry) 
+
+
+	exit 0
+;;
+
+-tomography) 
+
+
+	exit 0
+;;
+
+* ) ## Message for bad parameter
+	
+	echo -e "\033[31mERRO: Option $1 unknown!\033[m"
+	echo -e "\033[31mType $0 -h for help \033[m"
+	exit 3
+;;
+
+esac
+
+
+
+# cgls="../../src/cgls/cgls.cu"
+# utils="../../src/essentials/utils.cpp"
+# model="../../src/essentials/model.cpp"
+# eikonal="../../src/eikonal/eikonal.cpp"
+# geometry="../../src/essentials/geometry.cpp"
+# tomography="../../src/tomography/tomography.cpp"
+
+# library="/usr/local/cuda/lib64/"
+# include="/usr/local/cuda/include/"
+
+# flags="-acc -fast -ta=tesla,cc60 -std=c++11 -g -lm -lcusparse -lcublas"
+
+# pgc++ $cgls $utils $model $geometry $eikonal $tomography tomography_main.cpp $flags -I $include -L $library -o tomography_main.exe
+
+# ./tomography_main.exe ../parameters.txt
+
+# # Clean it up
+# rm *.o *.exe 

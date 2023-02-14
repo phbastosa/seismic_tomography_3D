@@ -1,0 +1,140 @@
+#----------------------------------------------------------------------------------------------------
+# Model paramenters ---------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
+ 
+nx = 201           # x dimension of model <int>
+ny = 201           # y dimension of model <int>
+nz = 53            # z dimension of model <int>
+
+dx = 25            # x sample spacing of model [m] <float>
+dy = 25            # y sample spacing of model [m] <float> 
+dz = 25            # z sample spacing of model [m] <float>  
+
+model_file = "../../inputs/models/initModel_53x201x201_25m.bin"   # Velocity model location <string>
+
+#---------------------------------------------------------------------------------------------------
+# Geometry parameters ------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
+
+reciprocity = True         # Shots become nodes and nodes become shots <bool>  
+
+shots_geometry_type = 1    # 0 - circular shots | 1 - grid shots
+nodes_geometry_type = 1    # 0 - circular nodes | 1 - grid nodes 
+
+shots_elevation = 0        # Sources elevation [m] - flat surface <float>             
+nodes_elevation = 0        # Receivers elevation - flat surface [m] <float>
+
+shots_topography = False   #
+nodes_topography = False   #
+
+geometry_folder = "../../inputs/geometry/"      # Folder to manage geometry files <string>     
+shots_topography_file = "shotsTopography.bin"   #   
+nodes_topography_file = "nodesTopography.bin"   #    
+
+# Regular SHOTS geometry                        
+
+shots_n_xline = 100        # Number of sources in x direction <int>
+shots_n_yline = 100        # Number of sources in y direction <int>
+
+shot_SW = [25, 25]         # NW       # (x,y) [m] <float>    
+shot_NW = [25, 4975]       #  |       # (x,y) [m] <float>    
+shot_SE = [4975, 25]       # SW -- SE # (x,y) [m] <float>   
+
+# Regular NODES geometry                        
+
+nodes_n_xline = 21         # Number of sources in x direction <int>
+nodes_n_yline = 21         # Number of sources in y direction
+
+node_SW = [500, 500]       # NW       # (x,y) <float>     
+node_NW = [500, 4500]      #  |       # (x,y) <float>   
+node_SE = [4500, 500]      # SW -- SE # (x,y) <float>   
+
+# Circular SHOT geometry
+
+shots_xcenter = 1000              #
+shots_ycenter = 1000              #
+shots_spacing = 50                #
+shots_offsets = [500, 800]        #
+
+# Circular NODE geometry
+
+nodes_xcenter = 1000              #
+nodes_ycenter = 1000              #
+nodes_spacing = 50                #
+nodes_offsets = [500, 800]        #
+
+#-------------------------------------------------------------------------------------------------
+# Seismic modeling parameters --------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
+
+nb = 50          # Total samples in boundary <int>
+factor = 25      # Attenuation factor to apply in PML <float>
+
+nt = 3101        # Total samples in time domain <int>
+dt = 0.001       # Sample spacing in time domain [s] <float>
+
+fmax = 40.0      # Max frequency in source [Hz] <float>
+delay = 0.10     # Delay of source - anti causal [s] <float>
+
+seismFolder = "../../inputs/seismograms/"    # Folder to write seismograms <string>
+waveletFolder = "../../inputs/wavelets/"     # Folder to write wavelets <string>
+
+#-------------------------------------------------------------------------------------------------
+# Eikonal parameters -----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
+
+# 0 - Podvin & Lecomte (1991); 
+# 1 - Jeong & Whitaker (2008); 
+# 2 - Noble, Gesret and Belayouni (2014); 
+
+eikonalType = 0    # Eikonal Type flag <int>          
+
+exportRayPosition = False    # Ray position flag <bool>
+exportTravelTimes = False    # Travel times volume flag <bool> 
+exportIllumination = False   # Illumination matrix flag <bool>
+exportFirstArrivals = True   # First arrivals flag <bool> 
+
+raysFolder = "../../outputs/rayPosition/"             # Ray positions folder <string>
+eikonalFolder = "../../outputs/travelTimes/"          # Travel time volume folder <string>
+arrivalFolder = "../../outputs/dcal/"                 # Eikonal volume folder <string>
+illuminationFolder = "../../outputs/illumination/"    # Illumination volume folder <string>
+
+#-------------------------------------------------------------------------------------------------
+# Auto picking parameters ------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+#-------------------------------------------------------------------------------------------------
+# Tomography parameters --------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
+
+nxTomo = 26     # Resized x sample dimension of model <int>
+nyTomo = 26     # Resized y sample dimension of model <int>
+nzTomo = 14     # Resized z sample dimension of model <int>
+
+dxTomo = 200    # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 200    # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 100     # Resized model sample spacing [m] of z dimension <float>
+
+# Inversion parameters 
+
+regOrder = 2       # Tikhonov regularization order <int>
+regParam = 1e5     # Regularization parameter <float>
+maxIteration = 1   # Tomography max iteration <int>                   
+
+# Smoothing model per iteration 
+
+smooth = False             # Flag to smooth recovered model <bool>
+filterSamples = 5         # Samples in filter, must to be an odd number! <int>
+standardDeviation = 3.0   # For gaussian filter case to control smoothing <float>
+
+# Folders location
+
+dobsPath = "../../inputs/picks/obsData_10000_samples_shot_"  # Folder to write calculated data
+convergencyFolder = "../../outputs/convergency/"             # Folder to write convergency line to residuous norm
+estimatedModelsFolder = "../../outputs/recoveredModels/"     # Folder to write estimated models per iteration 
