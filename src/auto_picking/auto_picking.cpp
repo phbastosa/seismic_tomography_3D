@@ -7,7 +7,7 @@
 
 # include "../file_manager/file_manager.hpp"
 
-int main()
+int main(int argc, char**argv)
 {
     auto fm = File_manager();
 
