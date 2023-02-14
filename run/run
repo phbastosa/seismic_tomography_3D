@@ -1,5 +1,26 @@
 #!/bin/bash
 
+file_manager="../src/file_manager.cpp"
+
+trilinear="../src/utils/interpolation/trilinear.cpp"
+gaussian="../src/utils/smoothing/gaussian.cpp"
+model="../src/model/model.cpp"
+
+geometry="../src/geometry/geometry.cpp"
+circular="../src/geometry/circular/circular.cpp"
+regular="../src/geometry/regular/regular.cpp"
+
+picking="../src/auto_picking/auto_picking.cpp"
+qc_picks="../src/auto_picking/qc_picking.py"
+
+eikonal=""
+block_FIM=""
+accurate_FSM=""
+classic_method=""
+
+tomography=""
+classical_approach=""
+
 USER_MESSAGE="
 Usage:
 
@@ -17,19 +38,6 @@ Usage:
 	echo " "  
 	exit 1 
 }
-
-file_manager="../src/file_manager.cpp"
-
-trilinear="../src/utils/interpolation/trilinear.cpp"
-gaussian="../src/utils/smoothing/gaussian.cpp"
-model="../src/model/model.cpp"
-
-geometry="../src/geometry/geometry.cpp"
-circular="../src/geometry/circular/circular.cpp"
-regular="../src/geometry/regular/regular.cpp"
-
-picking="../src/auto_picking/auto_picking.cpp"
-qc_picks="../src/auto_picking/qc_picking.py"
 
 case "$1" in
 
