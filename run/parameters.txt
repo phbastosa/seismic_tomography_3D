@@ -33,54 +33,58 @@ nodes_topography_file = "nodesTopography.bin"   #
 
 # Regular SHOTS geometry                        
 
-shots_n_xline = 100        # Number of sources in x direction <int>
-shots_n_yline = 100        # Number of sources in y direction <int>
+shots_n_xline = 100           # Number of sources in x direction <int>
+shots_n_yline = 100           # Number of sources in y direction <int>
 
-shot_SW = [25, 25]         # NW       # (x,y) [m] <float>    
-shot_NW = [25, 4975]       #  |       # (x,y) [m] <float>    
-shot_SE = [4975, 25]       # SW -- SE # (x,y) [m] <float>   
+shot_SW = [25, 25]            # NW       # (x,y) [m] <float>    
+shot_NW = [25, 4975]          #  |       # (x,y) [m] <float>    
+shot_SE = [4975, 25]          # SW -- SE # (x,y) [m] <float>   
 
 # Regular NODES geometry                        
 
-nodes_n_xline = 21         # Number of sources in x direction <int>
-nodes_n_yline = 21         # Number of sources in y direction
+nodes_n_xline = 21            # Number of sources in x direction <int>
+nodes_n_yline = 21            # Number of sources in y direction
 
-node_SW = [500, 500]       # NW       # (x,y) <float>     
-node_NW = [500, 4500]      #  |       # (x,y) <float>   
-node_SE = [4500, 500]      # SW -- SE # (x,y) <float>   
+node_SW = [500, 500]          # NW       # (x,y) <float>     
+node_NW = [500, 4500]         #  |       # (x,y) <float>   
+node_SE = [4500, 500]         # SW -- SE # (x,y) <float>   
 
 # Circular SHOT geometry
 
-shots_xcenter = 1000              #
-shots_ycenter = 1000              #
-shots_spacing = 50                #
-shots_offsets = [500, 800]        #
+shots_xcenter = 1000          #
+shots_ycenter = 1000          #
+shots_spacing = 50            #
+shots_offsets = [500, 800]    #
 
 # Circular NODE geometry
 
-nodes_xcenter = 1000              #
-nodes_ycenter = 1000              #
-nodes_spacing = 50                #
-nodes_offsets = [500, 800]        #
+nodes_xcenter = 1000          #
+nodes_ycenter = 1000          #
+nodes_spacing = 50            #
+nodes_offsets = [500, 800]    #
 
 #-------------------------------------------------------------------------------------------------
 # Data and auto picking parameters ---------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nt = 3101              # Total samples in time domain <int>
-dt = 0.001             # Sample spacing in time domain [s] <float>
-tlag = 0.1             #
-tcut = 3.0             #
+nt = 3101                # Total samples in time domain <int>
+dt = 0.001               # Sample spacing in time domain [s] <float>
+tlag = 0.1               #
+tcut = 3.0               #
 
-amp_cut = 1e-9         #
-pick_lag = 4           # 
-pick_window = 0.02     #
+amp_cut = 1e-9           #
+pick_lag = 4             # 
+pick_window = 0.02       #
 
-nodes_all = 441        #
-shots_all = 10000      #
+nodes_all = 441          #
+shots_all = 10000        #
+
+gather_traces = 100      #
+qc_filter_window = 11    #
 
 data_folder = "../../inputs/seismograms/"    # Folder to write seismograms <string>
-pick_folder = "../../inputs/picks/"
+pick_folder = "../../inputs/picks/"          #
+
 #-------------------------------------------------------------------------------------------------
 # Eikonal parameters -----------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
