@@ -84,7 +84,7 @@ def check_model(models, dh, slices, subplots):
     px = 1/plt.rcParams['figure.dpi']  
     ticks = np.array([3,7,7], dtype = int)
 
-    fig = plt.figure(1, figsize=(700*px*subplots[1], 600*px*subplots[0]))
+    fig = plt.figure(1, figsize=(910*px*subplots[1], 780*px*subplots[0]))
 
     xloc = np.linspace(0,nx-1,ticks[1], dtype = int)
     yloc = np.linspace(0,ny-1,ticks[2], dtype = int)
