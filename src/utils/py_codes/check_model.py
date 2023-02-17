@@ -1,37 +1,27 @@
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from scipy.ndimage import gaussian_filter
+from functions import *
 
-def readBinaryVolume(dim1,dim2,dim3,filename):
-    with open(filename, 'rb') as f:    
-        data   = np.fromfile(filename, dtype=np.float32, count=dim1*dim2*dim3)
-        volume = np.reshape(data, [dim1,dim2,dim3], order='F')
-    return volume
+filename = sys.argv[1]
 
-nz = 81
-nx = 301
-ny = 301
+x_samples = int(catch_parameter(filename, "x_samples"))
+y_samples = int(catch_parameter(filename, "y_samples"))
+z_samples = int(catch_parameter(filename, "z_samples"))
 
-model = readBinaryVolume(nz,nx,ny,"saltDome3D_downscale_z81_x301_y301.bin")
+x_spacing = float(catch_parameter(filename, "x_spacing"))
+y_spacing = float(catch_parameter(filename, "y_spacing"))
+z_spacing = float(catch_parameter(filename, "z_spacing"))
 
-plt.figure(1,figsize=(18,6))
+vp_location = catch_parameter(filename, "vp_location")[1:-1]
 
-plt.subplot(131)
-plt.imshow(model[:,:,int(ny/2)],aspect="auto",cmap="Greys",vmin=1500,vmax=5000)
-cbar = plt.colorbar()
-cbar.set_label("P wave velocity [m/s]",fontsize=15)
+vp = readBinaryVolume(z_samples, x_samples, y_samples, vp_location)
 
-plt.subplot(132)
-plt.imshow(model[:,int(nx/2),:],aspect="auto",cmap="Greys",vmin=1500,vmax=5000)
-cbar = plt.colorbar()
-cbar.set_label("P wave velocity [m/s]",fontsize=15)
+subplots = np.array([1, 1], dtype = int)
+slices = np.array([z_samples/2, x_samples/2, y_samples/2], dtype = int) 
+dh = np.array([x_spacing, y_spacing, z_spacing])
 
-plt.subplot(133)
-plt.imshow(model[int(nz/2),:,:],aspect="auto",cmap="Greys",vmin=1500,vmax=5000)
-cbar = plt.colorbar()
-cbar.set_label("P wave velocity [m/s]",fontsize=15)
-
-plt.tight_layout()
+check_model(vp, dh, slices, subplots)
 plt.show()
 

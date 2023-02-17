@@ -1,17 +1,17 @@
 # ifndef GEOMETRY_HPP
 # define GEOMETRY_HPP
 
-# include "../file_manager/file_manager.hpp"
+# include "../utils/file_manager/file_manager.hpp"
 
 class Geometry
 {
 protected:
 
     File_manager fm;
-
-    std::string geometry_folder;      
+  
+    std::string geometry_folder;    
     std::string topography_file;
-
+    
     std::vector<std::string> splitted;
     
     bool topography;
@@ -33,7 +33,7 @@ public:
       
     virtual void set_shot_parameters(std::string file) = 0;
     virtual void set_node_parameters(std::string file) = 0;
-
+    
     void import_positions(std::string file);
     void export_positions(std::string file);
 };

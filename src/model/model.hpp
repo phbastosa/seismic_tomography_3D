@@ -7,23 +7,21 @@ class Model
 {
 public:    
    
-    int nb;               // Boundary samples
-    int nx;               // N samples in x direction
-    int ny;               // N samples in y direction
-    int nz;               // N samples in z direction   
+    int x_samples;               
+    int y_samples;
+    int z_samples;
 
-    int nPoints;          // Total samples in model 
+    int total_samples;
+    int boundary_samples;               
 
-    float dx;             // Sample spacing in x direction
-    float dy;             // Sample spacing in y direction
-    float dz;             // Sample spacing in z direction
+    float x_spacing;
+    float y_spacing;
+    float z_spacing;
 
-    float * value;        // Value of property in model       
+    float * property;               
 
     void expand();
     void reduce(); 
-    void smooth(float stdv, int samples);
-    void resize(float new_dz, float new_dx, float new_dy);
 
     void set_parameters(std::string file);
 };

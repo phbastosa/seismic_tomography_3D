@@ -7,6 +7,7 @@ void Geometry::get_shot_parameters()
     elevation = std::stof(fm.catch_parameter("shots_elevation"));
     topography = fm.str2bool(fm.catch_parameter("shots_topography"));
     topography_file = fm.catch_parameter("shots_topography_file");
+    geometry_folder = fm.catch_parameter("geometry_folder");
 }
 
 void Geometry::get_node_parameters()
@@ -14,6 +15,7 @@ void Geometry::get_node_parameters()
     elevation = std::stof(fm.catch_parameter("nodes_elevation"));
     topography = fm.str2bool(fm.catch_parameter("nodes_topography"));
     topography_file = fm.catch_parameter("nodes_topography_file");
+    geometry_folder = fm.catch_parameter("geometry_folder");
 }
 
 void Geometry::set_topography()
@@ -62,7 +64,7 @@ void Geometry::export_positions(std::string file)
 {
     std::string txt = geometry_folder + file;
 
-    std::ofstream write(file, std::ios::out);        
+    std::ofstream write(txt, std::ios::out);        
 
     for (int i = 0; i < all; i++)        
     {   

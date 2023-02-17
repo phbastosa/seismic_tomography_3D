@@ -2,15 +2,15 @@
 # Model paramenters ---------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------
  
-nx = 201           # x dimension of model <int>
-ny = 201           # y dimension of model <int>
-nz = 53            # z dimension of model <int>
+x_samples = 401           # <int>
+y_samples = 401           # <int>
+z_samples = 105           # <int>
 
-dx = 25            # x sample spacing of model [m] <float>
-dy = 25            # y sample spacing of model [m] <float> 
-dz = 25            # z sample spacing of model [m] <float>  
+x_spacing = 12.5          # in meters <float>
+y_spacing = 12.5          # in meters <float> 
+z_spacing = 12.5          # in meters <float>  
 
-model_file = "../../inputs/models/initModel_53x201x201_25m.bin"   # Velocity model location <string>
+vp_location = "../inputs/models/trueModel_105x401x401_12.5m.bin"   
 
 #---------------------------------------------------------------------------------------------------
 # Geometry parameters ------------------------------------------------------------------------------
@@ -22,14 +22,14 @@ shots_geometry_type = 1    # 0 - circular shots | 1 - grid shots
 nodes_geometry_type = 1    # 0 - circular nodes | 1 - grid nodes 
 
 shots_elevation = 0        # Sources elevation [m] - flat surface <float>             
-nodes_elevation = 0        # Receivers elevation - flat surface [m] <float>
+nodes_elevation = 200      # Receivers elevation - flat surface [m] <float>
 
 shots_topography = False   #
 nodes_topography = False   #
 
-geometry_folder = "../../inputs/geometry/"      # Folder to manage geometry files <string>     
-shots_topography_file = "shotsTopography.bin"   #   
-nodes_topography_file = "nodesTopography.bin"   #    
+geometry_folder = "../inputs/geometry/"        # Folder to manage geometry files <string>     
+shots_topography_file = "shotsTopography.bin"  #   
+nodes_topography_file = "nodesTopography.bin"  #    
 
 # Regular SHOTS geometry                        
 

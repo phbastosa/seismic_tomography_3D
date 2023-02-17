@@ -1,14 +1,15 @@
 #!/bin/bash
 
-file_manager="../src/file_manager.cpp"
+file_manager="../src/utils/file_manager/file_manager.cpp"
 
-trilinear="../src/utils/interpolation/trilinear.cpp"
-gaussian="../src/utils/smoothing/gaussian.cpp"
 model="../src/model/model.cpp"
+gaussian="../src/utils/smoothing/gaussian.cpp"
+trilinear="../src/utils/interpolation/trilinear.cpp"
 
 geometry="../src/geometry/geometry.cpp"
-circular="../src/geometry/circular/circular.cpp"
 regular="../src/geometry/regular/regular.cpp"
+circular="../src/geometry/circular/circular.cpp"
+geometry_main="../src/geometry/geometry_main.cpp"
 
 picking="../src/auto_picking/auto_picking.cpp"
 qc_picks="../src/auto_picking/qc_picking.py"
@@ -24,10 +25,15 @@ classical_approach=""
 USER_MESSAGE="
 Usage:
 
-    $ $0 -check_data        
-    $ $0 -check_model     
-    $ $0 -check_geometry        
-    $ $0 -tomography      
+----------------------------------------------------------------------------------------
+|      First steps      |        Second steps         |          Third steps           |
+---------------------------------------------------------------------------------------|  
+| $ $0 -build_all    | $ $0 -check_model        | $ $0 -run_tomography        |
+| $ $0 -auto_picking | $ $0 -check_geometry     | $ $0 -check_recovered_model |
+| $ $0 -check_data   | $ $0 -check_illumination | $ $0 -check_convergence     |
+----------------------------------------------------------------------------------------         
+
+Warning: Give a parameter in \033[31mred\033[m information!
 "
 
 # Check if user provide some parameter
@@ -46,9 +52,21 @@ case "$1" in
 	exit 0
 ;;
 
--model) 
+-build_all) 
 
-    
+    # geometry_main
+    pgc++ $geometry_main $geometry $circular $regular $file_manager -lm -o ../bin/geometry.exe
+
+    # eikonal_main
+    # tomography_main
+
+    rm *.o
+
+	exit 0
+;;
+
+-auto_picking) 
+
 
 
 	exit 0
@@ -56,9 +74,6 @@ case "$1" in
 
 -check_data) 
 
-    g++ ../src/file_manager/file_manager.cpp ../src/geometry/geometry.cpp ../src/geometry/geometry_main.cpp -lm -o ../bin/geometry.exe
-    
-    ./../bin/geometry.exe ../tests/geometry_test/test1_parameters.txt
 
 
 	exit 0
@@ -66,13 +81,15 @@ case "$1" in
 
 -check_model) 
     
-
+    python3 ../src/utils/py_codes/check_model.py parameters.txt
 
 	exit 0
 ;;
 
 -check_geometry) 
 
+    ./../bin/geometry.exe parameters.txt
+    python3 ../src/utils/py_codes/check_geometry.py parameters.txt
 
 	exit 0
 ;;

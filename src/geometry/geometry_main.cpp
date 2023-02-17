@@ -3,7 +3,8 @@
 # include "geometry.hpp"
 # include "regular/regular.hpp"
 # include "circular/circular.hpp"
-# include "../file_manager/file_manager.hpp"
+
+# include "../utils/file_manager/file_manager.hpp"
 
 int main(int argc, char **argv)
 {
@@ -33,8 +34,8 @@ int main(int argc, char **argv)
         shots[node_type]->set_node_parameters(fm.parameter_file);    
         nodes[shot_type]->set_shot_parameters(fm.parameter_file);
 
-        shots[node_type]->export_positions("xyz_shots.txt");
-        nodes[shot_type]->export_positions("xyz_nodes.txt");
+        shots[node_type]->export_positions("xyz_nodes.txt");
+        nodes[shot_type]->export_positions("xyz_shots.txt");
     }
     else
     {
