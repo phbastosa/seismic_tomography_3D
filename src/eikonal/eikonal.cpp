@@ -1,16 +1,76 @@
 # include <cmath>
+# include <iomanip>
 # include <fstream>
 # include <iostream>
 # include <algorithm>
 
 # include "eikonal.hpp"
 
+void Eikonal::info_message()
+{
+    std::cout << std::fixed << std::setprecision(1);
+
+    system("clear");
+    std::cout<<"3D eikonal equation solver\n\n";
+    
+    std::cout<<"Total x model length = "<<(model.x_samples-1)*model.x_spacing<<" m\n";
+    std::cout<<"Total Y model length = "<<(model.y_samples-1)*model.y_spacing<<" m\n";
+    std::cout<<"Total Z model length = "<<(model.z_samples-1)*model.z_spacing<<" m\n\n";
+    
+    if (reciprocity)
+        std::cout<<"Reciprocity = True\n\n";
+    else
+        std::cout<<"Shots reciprocity = False\n\n";
+
+    std::cout<<"Shot "<<shot_id+1<<" of "<<geometry[shots_type]->shots.all<<"\n";
+
+    std::cout<<"Position (x,y,z) = ("<<geometry[shots_type]->shots.x[shot_id]<<", "
+                                     <<geometry[shots_type]->shots.y[shot_id]<<", "
+                                     <<geometry[shots_type]->shots.z[shot_id]<<") m\n\n";
+}
+
 void Eikonal::set_parameters(std::string file)
 {
-    model->set_parameters(file); 
+    model.x_samples = std::stoi(fm.catch_parameter("x_samples", file));
+    model.y_samples = std::stoi(fm.catch_parameter("y_samples", file));
+    model.z_samples = std::stoi(fm.catch_parameter("z_samples", file));
 
-    shots_type = std::stoi(fm.catch_parameter("shots_geometry_type", file)); 
-    nodes_type = std::stoi(fm.catch_parameter("nodes_geometry_type", file)); 
+    model.boundary_samples = 1;        
+
+    model.x_samples_b = model.x_samples + 2 * model.boundary_samples;
+    model.y_samples_b = model.y_samples + 2 * model.boundary_samples;
+    model.z_samples_b = model.z_samples + 2 * model.boundary_samples;
+
+    model.total_samples = model.x_samples * model.y_samples * model.z_samples;
+    model.total_samples_b = model.x_samples_b * model.y_samples_b * model.z_samples_b;
+
+    model.x_spacing = std::stof(fm.catch_parameter("x_spacing", file));    
+    model.y_spacing = std::stof(fm.catch_parameter("y_spacing", file));    
+    model.z_spacing = std::stof(fm.catch_parameter("z_spacing", file));    
+
+    slowness = new float[model.total_samples]();
+    travel_time = new float[model.total_samples_b]();
+    illumination = new float[model.total_samples]();
+
+    std::string vp_file = fm.catch_parameter("vp_file", file);
+    fm.read_binary_float(vp_file, slowness, model.total_samples);
+    
+    slowness = model.expand(slowness); 
+    for (int index = 0; index < model.total_samples_b; index++)
+        slowness[index] = 1.0f / slowness[index];
+
+    export_time_volume = fm.str2bool(fm.catch_parameter("export_time_volume", file));
+    export_illumination = fm.str2bool(fm.catch_parameter("export_illumination",file));
+    export_ray_position = fm.str2bool(fm.catch_parameter("export_ray_position", file));
+    export_first_arrival = fm.str2bool(fm.catch_parameter("export_first_arrival", file));    
+
+    ray_folder = fm.catch_parameter("ray_folder", file);
+    time_volume_folder = fm.catch_parameter("time_volume_folder", file);
+    illumination_folder = fm.catch_parameter("illumination_folder", file);
+    first_arrival_folder = fm.catch_parameter("first_arrival_folder", file);
+
+    shots_type = std::stoi(fm.catch_parameter("shot_geometry_type", file)); 
+    nodes_type = std::stoi(fm.catch_parameter("node_geometry_type", file)); 
     reciprocity = fm.str2bool(fm.catch_parameter("reciprocity", file)); 
 
     geometry[0] = new Regular();
@@ -31,256 +91,219 @@ void Eikonal::set_parameters(std::string file)
         std::swap(geometry[shots_type]->shots.all, geometry[nodes_type]->nodes.all);
     }
 
-    eikonal_type = std::stoi(fm.catch_parameter("eikonalType", file));    
-    
-    // exportTimesVolume = str2bool(catchParameter("exportTravelTimes", parameters));
-    // exportFirstArrivals = str2bool(catchParameter("exportFirstArrivals", parameters));
-    // exportRayPosition = str2bool(catchParameter("exportRayPosition", parameters));
-    // exportIllumination = str2bool(catchParameter("exportIllumination", parameters));
-
-    // raysFolder = catchParameter("raysFolder", parameters);
-    // eikonalFolder = catchParameter("eikonalFolder", parameters);
-    // arrivalFolder = catchParameter("arrivalFolder", parameters);
-    // illuminationFolder = catchParameter("illuminationFolder", parameters);
-
-    // shots.n_xline = std::stoi(catchParameter("xShotNumber", parameters));
-    // shots.n_yline = std::stoi(catchParameter("yShotNumber", parameters));
-
-    // nodes.n_xline = std::stoi(catchParameter("xNodeNumber", parameters));
-    // nodes.n_yline = std::stoi(catchParameter("yNodeNumber", parameters));
-
-    // geometryFolder = catchParameter("geometryFolder", parameters);
-
-    // reciprocity = str2bool(catchParameter("reciprocity", parameters));
-    
-    // importPositions();
-
-    // nb = 1;
-    // nx = std::stoi(catchParameter("nx", parameters));
-    // ny = std::stoi(catchParameter("ny", parameters));
-    // nz = std::stoi(catchParameter("nz", parameters));
-    
-    // initialize();
-
-    // dx = std::stof(catchParameter("dx", parameters));
-    // dy = std::stof(catchParameter("dy", parameters));
-    // dz = std::stof(catchParameter("dz", parameters));
-        
-    // V = expand(readBinaryFloat(catchParameter("modelPath", parameters), nPoints));
-    
-    // if (exportIllumination) 
-    //     illumination = new float[nPointsB]();
+    first_arrival = new float[geometry[nodes_type]->nodes.all]();
 }
 
-// void Eikonal::write_time_volume()
-// {
-//     if (export_time_volume)
-//     {    
-//         T.reduce();
+void Eikonal::write_time_volume()
+{
+    if (export_time_volume)
+    {    
+        float * time_volume = model.reduce(travel_time);
         
-//         fm.write_binary_float(time_volume_folder + "eikonal_nz" + std::to_string(T.z_samples) + "_nx" + std::to_string(T.x_samples) + "_ny" + std::to_string(T.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", T.property, T.total_samples);
-//     }
-// }
+        fm.write_binary_float(time_volume_folder + "eikonal_nz" + std::to_string(model.z_samples) + "_nx" + std::to_string(model.x_samples) + "_ny" + std::to_string(model.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", time_volume, model.total_samples);
 
-// void Eikonal::write_illumination()
-// {
-//     if (export_illumination)
-//     {    
-//         illumination.reduce();
-        
-//         fm.write_binary_float(illumination_folder + "illumination_nz" + std::to_string(illumination.z_samples) + "_nx" + std::to_string(illumination.x_samples) + "_ny" + std::to_string(illumination.y_samples) + "_shot_" + std::to_string(shot_id) + ".bin", illumination.property, illumination.total_samples);
-//     }
-// }
+        delete[] time_volume;
+    }
+}
 
-// void::Eikonal::write_first_arrival()
-// {
-//     if (export_first_arrival) 
-//     {   
-//         int nxx = T.x_samples;
-//         int nyy = T.y_samples;
-//         int nzz = T.z_samples;
+void Eikonal::write_illumination()
+{
+    if (export_illumination)
+    {    
+        fm.write_binary_float(illumination_folder + "illumination_nz" + std::to_string(model.z_samples) + "_nx" + std::to_string(model.x_samples) + "_ny" + std::to_string(model.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", illumination, model.total_samples);
+    }
+}
 
-//         int nb = T.boundary_samples;
+void::Eikonal::write_first_arrival()
+{
+    if (export_first_arrival) 
+    {   
+        int nxx = model.x_samples_b;
+        int nzz = model.z_samples_b;
 
-//         float dx = T.x_spacing;
-//         float dy = T.y_spacing;
-//         float dz = T.z_spacing;
+        int nb = model.boundary_samples;
 
-//         float * firstArrivals = new float[nodes[node_type]->all]();
-        
-//         for (int r = 0; r < nodes[node_type]->all; r++)
-//         {
-//             interpolation.x = nodes[node_type]->x[r];
-//             interpolation.y = nodes[node_type]->y[r];
-//             interpolation.z = nodes[node_type]->z[r];
+        float dx = model.x_spacing;
+        float dy = model.y_spacing;
+        float dz = model.z_spacing;
 
-//             interpolation.x0 = floorf(interpolation.x / dx) * dx;
-//             interpolation.y0 = floorf(interpolation.y / dy) * dy;
-//             interpolation.z0 = floorf(interpolation.z / dz) * dz;
+        for (int r = 0; r < geometry[nodes_type]->nodes.all; r++)
+        {
+            interpolate.x = geometry[nodes_type]->nodes.x[r];
+            interpolate.y = geometry[nodes_type]->nodes.y[r];
+            interpolate.z = geometry[nodes_type]->nodes.z[r];
 
-//             interpolation.x1 = floorf(interpolation.x/dx) * dx + dx;
-//             interpolation.y1 = floorf(interpolation.y/dy) * dy + dy;
-//             interpolation.z1 = floorf(interpolation.z/dz) * dz + dz;
+            interpolate.x0 = floorf(interpolate.x / dx) * dx;
+            interpolate.y0 = floorf(interpolate.y / dy) * dy;
+            interpolate.z0 = floorf(interpolate.z / dz) * dz;
 
-//             int id = ((int)(interpolation.z / dz) + nb) + 
-//                      ((int)(interpolation.x / dx) + nb)*nzz + 
-//                      ((int)(interpolation.y / dy) + nb)*nxx*nzz;
+            interpolate.x1 = floorf(interpolate.x / dx) * dx + dx;
+            interpolate.y1 = floorf(interpolate.y / dy) * dy + dy;
+            interpolate.z1 = floorf(interpolate.z / dz) * dz + dz;
 
-//             interpolation.c000 = T.property[id];
-//             interpolation.c001 = T.property[id + 1];
-//             interpolation.c100 = T.property[id + nzz]; 
-//             interpolation.c101 = T.property[id + 1 + nzz]; 
-//             interpolation.c010 = T.property[id + nxx*nzz]; 
-//             interpolation.c011 = T.property[id + 1 + nxx*nzz]; 
-//             interpolation.c110 = T.property[id + nzz + nxx*nzz]; 
-//             interpolation.c111 = T.property[id + 1 + nzz + nxx*nzz];
+            int id = ((int)(interpolate.z / dz) + nb) + 
+                     ((int)(interpolate.x / dx) + nb)*nzz + 
+                     ((int)(interpolate.y / dy) + nb)*nxx*nzz;
 
-//             firstArrivals[r] = interpolation.trilinear();        
-//         }
+            interpolate.c000 = travel_time[id];
+            interpolate.c001 = travel_time[id + 1];
+            interpolate.c100 = travel_time[id + nzz]; 
+            interpolate.c101 = travel_time[id + 1 + nzz]; 
+            interpolate.c010 = travel_time[id + nxx*nzz]; 
+            interpolate.c011 = travel_time[id + 1 + nxx*nzz]; 
+            interpolate.c110 = travel_time[id + nzz + nxx*nzz]; 
+            interpolate.c111 = travel_time[id + 1 + nzz + nxx*nzz];
 
-//         writeBinaryFloat(arrivalFolder + "times_nr" + std::to_string(nodes.all) + "_shot_" + std::to_string(shotId+1) + ".bin", firstArrivals, nodes.all);
+            first_arrival[r] = interpolate.trilinear();        
+        }
 
-//         delete[] firstArrivals;
-//     }
-// }
+        fm.write_binary_float(first_arrival_folder + "times_nr" + std::to_string(geometry[nodes_type]->nodes.all) + "_shot_" + std::to_string(shot_id+1) + ".bin", first_arrival, geometry[nodes_type]->nodes.all);
+    }
+}
 
-// void Eikonal::run_ray_tracing()
-// {
-//     if (export_ray_position || export_illumination)
-//     {
-//         int nxx = T.x_samples;
-//         int nyy = T.y_samples;
-//         int nzz = T.z_samples;
+void Eikonal::ray_tracing()
+{
+    if (export_ray_position || export_illumination)
+    {
+        int nxx = model.x_samples_b;
+        int nzz = model.z_samples_b;
 
-//         int nb = T.boundary_samples;
+        int nb = model.boundary_samples;
 
-//         float dx = T.x_spacing;
-//         float dy = T.y_spacing;
-//         float dz = T.z_spacing;
+        float dx = model.x_spacing;
+        float dy = model.y_spacing;
+        float dz = model.z_spacing;
     
-//         int sIdz = (int)(shots[shot_type]->z[shot_id] / dz) + nb;
-//         int sIdx = (int)(shots[shot_type]->x[shot_id] / dx) + nb;
-//         int sIdy = (int)(shots[shot_type]->y[shot_id] / dy) + nb;
+        float sx = geometry[shots_type]->shots.x[shot_id];
+        float sy = geometry[shots_type]->shots.y[shot_id];
+        float sz = geometry[shots_type]->shots.z[shot_id];
 
-//         int sId = sIdz + sIdx*nzz + sIdy*nxx*nzz;     
+        int sIdz = (int)(sz / dz) + nb;
+        int sIdx = (int)(sx / dx) + nb;
+        int sIdy = (int)(sy / dy) + nb;
+
+        int sId = sIdz + sIdx*nzz + sIdy*nxx*nzz;     
         
-//         std::vector<float> xRay, yRay, zRay, iRay;
+        std::vector<float> xRay, yRay, zRay, iRay;
 
-//         int im, jm, km, rId;
+        int im, jm, km, rId;
 
-//         float rayStep = 0.2f * (dx + dy + dz) / 3.0f;
+        float rayStep = 0.2f * (dx + dy + dz) / 3.0f;
 
-//         for (int rayId = 0; rayId < nodes[node_type]->all; rayId++)
-//         {
-//             float zi = nodes[node_type]->z[rayId];
-//             float xi = nodes[node_type]->x[rayId];
-//             float yi = nodes[node_type]->y[rayId];
+        for (int rayId = 0; rayId < geometry[nodes_type]->nodes.all; rayId++)
+        {
+            float zi = geometry[nodes_type]->nodes.z[rayId];
+            float xi = geometry[nodes_type]->nodes.x[rayId];
+            float yi = geometry[nodes_type]->nodes.y[rayId];
 
-//             im = (int)(zi / dz) + nb; 
-//             jm = (int)(xi / dx) + nb; 
-//             km = (int)(yi / dy) + nb; 
+            im = (int)(zi / dz) + nb; 
+            jm = (int)(xi / dx) + nb; 
+            km = (int)(yi / dy) + nb; 
 
-//             rId = im + jm*nzz + km*nxx*nzz;
+            rId = im + jm*nzz + km*nxx*nzz;
 
-//             if (export_illumination) illumination.property[rId] += rayStep;
+            if (export_illumination) 
+                illumination[rId] += rayStep;
 
-//             if (export_ray_position)
-//             {
-//                 xRay.push_back(xi);
-//                 yRay.push_back(yi);
-//                 zRay.push_back(zi);
-//                 iRay.push_back((float) rayId);
-//             }
+            if (export_ray_position)
+            {
+                xRay.push_back(xi);
+                yRay.push_back(yi);
+                zRay.push_back(zi);
+                iRay.push_back((float) rayId);
+            }
 
-//             while (true)
-//             {
-//                 int i = (int)(zi / dz) + nb;
-//                 int j = (int)(xi / dx) + nb;
-//                 int k = (int)(yi / dy) + nb;
+            while (true)
+            {
+                int i = (int)(zi / dz) + nb;
+                int j = (int)(xi / dx) + nb;
+                int k = (int)(yi / dy) + nb;
 
-//                 float dTz = (T.property[(i+1) + j*nzz + k*nxx*nzz] - T.property[(i-1) + j*nzz + k*nxx*nzz]) / (2.0f*dz);    
-//                 float dTx = (T.property[i + (j+1)*nzz + k*nxx*nzz] - T.property[i + (j-1)*nzz + k*nxx*nzz]) / (2.0f*dx);    
-//                 float dTy = (T.property[i + j*nzz + (k+1)*nxx*nzz] - T.property[i + j*nzz + (k-1)*nxx*nzz]) / (2.0f*dy);
+                float dTz = (travel_time[(i+1) + j*nzz + k*nxx*nzz] - travel_time[(i-1) + j*nzz + k*nxx*nzz]) / (2.0f*dz);    
+                float dTx = (travel_time[i + (j+1)*nzz + k*nxx*nzz] - travel_time[i + (j-1)*nzz + k*nxx*nzz]) / (2.0f*dx);    
+                float dTy = (travel_time[i + j*nzz + (k+1)*nxx*nzz] - travel_time[i + j*nzz + (k-1)*nxx*nzz]) / (2.0f*dy);
 
-//                 float norm = sqrtf(dTx*dTx + dTy*dTy + dTz*dTz);
+                float norm = sqrtf(dTx*dTx + dTy*dTy + dTz*dTz);
 
-//                 zi -= rayStep*dTz / norm; // z ray position update   
-//                 xi -= rayStep*dTx / norm; // x ray position update   
-//                 yi -= rayStep*dTy / norm; // y ray position update   
+                zi -= rayStep*dTz / norm; // z ray position update   
+                xi -= rayStep*dTx / norm; // x ray position update   
+                yi -= rayStep*dTy / norm; // y ray position update   
 
-//                 im = (int)(zi / dz) + nb; 
-//                 jm = (int)(xi / dx) + nb; 
-//                 km = (int)(yi / dy) + nb; 
+                im = (int)(zi / dz) + nb; 
+                jm = (int)(xi / dx) + nb; 
+                km = (int)(yi / dy) + nb; 
 
-//                 rId = im + jm*nzz + km*nxx*nzz;
+                rId = im + jm*nzz + km*nxx*nzz;
 
-//                 if (rId == sId)
-//                 {
-//                     if (exportRayPosition)
-//                     {
-//                         xRay.push_back(shots.x[shotId]);
-//                         yRay.push_back(shots.y[shotId]);
-//                         zRay.push_back(shots.z[shotId]);
-//                         iRay.push_back((float) rayId);
-//                     }
+                if (rId == sId)
+                {
+                    if (export_ray_position)
+                    {
+                        xRay.push_back(sx);
+                        yRay.push_back(sy);
+                        zRay.push_back(sz);
+
+                        iRay.push_back((float) rayId);
+                    }
                 
-//                     if (exportIllumination)
-//                     {
-//                         float finalDist = sqrtf(powf(shots.x[shotId] - xi, 2.0f) + powf(shots.y[shotId] - yi, 2.0f) + powf(shots.z[shotId] - zi, 2.0f));        
-//                         illumination[rId] += finalDist;                
-//                     }            
+                    if (export_illumination)
+                    {
+                        float finalDist = sqrtf(powf(sx - xi, 2.0f) + powf(sy - yi, 2.0f) + powf(sz - zi, 2.0f));        
+                        illumination[rId] += finalDist;                
+                    }            
 
-//                     break;
-//                 }
+                    break;
+                }
 
-//                 if (exportIllumination) illumination[rId] += rayStep;
+                if (export_illumination) 
+                    illumination[rId] += rayStep;
 
-//                 if (exportRayPosition)
-//                 {
-//                     xRay.push_back(xi);
-//                     yRay.push_back(yi);
-//                     zRay.push_back(zi);
-//                     iRay.push_back((float) rayId);
-//                 }
-//             }
-//         }
+                if (export_ray_position)
+                {
+                    xRay.push_back(xi);
+                    yRay.push_back(yi);
+                    zRay.push_back(zi);
+                    iRay.push_back((float) rayId);
+                }
+            }
+        }
 
-//         if (exportRayPosition)
-//         {
-//             std::ofstream fout;
+        if (export_ray_position)
+        {
+            std::ofstream fout;
 
-//             size_t allRayPoints = iRay.size();
+            size_t allRayPoints = iRay.size();
 
-//             std::string xRayPath = raysFolder + "xRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
-//             std::string yRayPath = raysFolder + "yRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
-//             std::string zRayPath = raysFolder + "zRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
-//             std::string iRayPath = raysFolder + "iRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shotId+1) + ".bin";
+            std::string xRayPath = ray_folder + "xRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shot_id+1) + ".bin";
+            std::string yRayPath = ray_folder + "yRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shot_id+1) + ".bin";
+            std::string zRayPath = ray_folder + "zRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shot_id+1) + ".bin";
+            std::string iRayPath = ray_folder + "iRay_" + std::to_string(allRayPoints) + "_shot_" + std::to_string(shot_id+1) + ".bin";
 
-//             fout.open(xRayPath, std::ios::out);
-//             fout.write((char*)&xRay[0], xRay.size() * sizeof(xRay));
-//             std::cout<<"Ray x position file was written with name " + xRayPath<<std::endl;  
-//             fout.close();
+            fout.open(xRayPath, std::ios::out);
+            fout.write((char*)&xRay[0], xRay.size() * sizeof(xRay));
+            std::cout<<"Binary file " + xRayPath<<" was succesfully written."<<std::endl;  
+            fout.close();
 
-//             fout.open(yRayPath, std::ios::out);
-//             fout.write((char*)&yRay[0], yRay.size() * sizeof(yRay));
-//             std::cout<<"Ray y position file was written with name " + yRayPath<<std::endl;  
-//             fout.close();
+            fout.open(yRayPath, std::ios::out);
+            fout.write((char*)&yRay[0], yRay.size() * sizeof(yRay));
+            std::cout<<"Binary file " + yRayPath<<" was succesfully written."<<std::endl;  
+            fout.close();
 
-//             fout.open(zRayPath, std::ios::out);
-//             fout.write((char*)&zRay[0], zRay.size() * sizeof(zRay));
-//             std::cout<<"Ray z position file was written with name " + zRayPath<<std::endl;  
-//             fout.close();
+            fout.open(zRayPath, std::ios::out);
+            fout.write((char*)&zRay[0], zRay.size() * sizeof(zRay));
+            std::cout<<"Binary file " + zRayPath<<" was succesfully written."<<std::endl;  
+            fout.close();
 
-//             fout.open(iRayPath, std::ios::out);
-//             fout.write((char*)&iRay[0], iRay.size() * sizeof(iRay));
-//             std::cout<<"Ray node index file was written with name " + iRayPath<<std::endl;  
-//             fout.close();
-//         }
+            fout.open(iRayPath, std::ios::out);
+            fout.write((char*)&iRay[0], iRay.size() * sizeof(iRay));
+            std::cout<<"Binary file " + iRayPath<<" was succesfully written."<<std::endl;  
+            fout.close();
+        }
 
-//         std::vector<float>().swap(iRay);
-//         std::vector<float>().swap(xRay);
-//         std::vector<float>().swap(yRay);
-//         std::vector<float>().swap(zRay);
-//     }
-// }
+        std::vector<float>().swap(iRay);
+        std::vector<float>().swap(xRay);
+        std::vector<float>().swap(yRay);
+        std::vector<float>().swap(zRay);
+    }
+}
 

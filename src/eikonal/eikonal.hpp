@@ -4,7 +4,6 @@
 # include <string>
 
 # include "../model/model.hpp"
-# include "../model/eikonal_model/eikonal_model.hpp"
 
 # include "../geometry/geometry.hpp"
 # include "../geometry/regular/regular.hpp"
@@ -17,53 +16,48 @@ class Eikonal
 {   
 private:
 
-    int eikonal_type;
-
-    bool export_time_volume;  
-    bool export_first_arrival;
-    bool export_illumination; 
-    bool export_ray_position; 
-
-    std::string ray_folder;         
-    std::string time_volume_folder; 
-    std::string first_arrival_Folder;
-    std::string illumination_folder; 
-    
     File_manager fm;
+    Trilinear interpolate;
 
 protected:
 
-    Model * model = new Eikonal_model();
-    
-    Geometry * geometry[2];
-
-    int shots_type;
-    int nodes_type;
     bool reciprocity;
 
-    // Model illumination;
+    float * slowness;
+    float * travel_time;
+    float * illumination;      
+    float * first_arrival;
 
-    // File_manager fm;
+    bool export_time_volume;  
+    bool export_illumination; 
+    bool export_ray_position; 
+    bool export_first_arrival;
 
-    // int shot_id;
-    // int eikonal_type;
-
-    // int shot_type;
-    // int node_type;
-
-    // bool reciprocity;
+    std::string ray_folder;         
+    std::string time_volume_folder; 
+    std::string illumination_folder; 
+    std::string first_arrival_folder;
 
 public:
 
-    virtual void run_solver() = 0;    
+    Model model;
 
+    Geometry * geometry[2];
+
+    int type;
+    int shot_id;
+    int shots_type;
+    int nodes_type;
+
+    void info_message();
+    void set_parameters(std::string file);
+
+    void ray_tracing();
     void write_time_volume();
     void write_illumination();
     void write_first_arrival();
 
-    void run_ray_tracing();
-
-    void set_parameters(std::string file);
+    virtual void solve() = 0;    
 };
 
 # endif

@@ -2,9 +2,6 @@
 
 # include "model.hpp"
 
-# include "../utils/smoothing/gaussian.hpp"
-# include "../utils/interpolation/trilinear.hpp"
-
 float * Model::expand(float * volume)
 {
     float * new_volume = new float[total_samples_b]();
@@ -81,8 +78,6 @@ float * Model::reduce(float * volume)
 
 float * Model::smooth(float * volume)
 {
-    auto smoother = Gaussian();
-
     smoother.zdim = z_samples; 
     smoother.xdim = x_samples; 
     smoother.ydim = y_samples; 
@@ -105,8 +100,6 @@ float * Model::smooth(float * volume)
 
 float * Model::resize(float * volume)
 {
-    auto interpolate = Trilinear();
-
     new_z_samples = (int)(static_cast<float>(z_samples-1) * z_spacing / new_z_spacing) + 1;    
     new_x_samples = (int)(static_cast<float>(x_samples-1) * x_spacing / new_x_spacing) + 1;    
     new_y_samples = (int)(static_cast<float>(y_samples-1) * y_spacing / new_y_spacing) + 1;    

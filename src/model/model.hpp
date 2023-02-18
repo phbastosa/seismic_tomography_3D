@@ -1,26 +1,15 @@
 # ifndef MODEL_HPP
 # define MODEL_HPP
 
-# include <string>
-
-# include "../../utils/file_manager/file_manager.hpp"
+# include "../utils/smoothing/gaussian.hpp"
+# include "../utils/interpolation/trilinear.hpp"
 
 class Model
 {
-protected:
+private:
 
-    int smoothing_samples;
-    float standard_deviation;
-
-    int new_x_samples;
-    int new_y_samples;
-    int new_z_samples;
-
-    float new_x_spacing;
-    float new_y_spacing;
-    float new_z_spacing;    
-
-    File_manager fm;
+    Gaussian smoother;
+    Trilinear interpolate;
 
 public:    
    
@@ -40,12 +29,21 @@ public:
     float y_spacing;
     float z_spacing;
 
+    int new_x_samples;
+    int new_y_samples;
+    int new_z_samples;
+
+    float new_x_spacing;
+    float new_y_spacing;
+    float new_z_spacing; 
+
+    int smoothing_samples;
+    float standard_deviation;
+
     float * expand(float * volume);
     float * reduce(float * volume); 
     float * smooth(float * volume);
     float * resize(float * volume);
-
-    virtual void set_parameters(std::string file) = 0;
 };
 
 # endif

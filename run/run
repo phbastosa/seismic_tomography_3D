@@ -1,10 +1,10 @@
 #!/bin/bash
 
+gaussian="../src/utils/smoothing/gaussian.cpp"
+trilinear="../src/utils/interpolation/trilinear.cpp"
 file_manager="../src/utils/file_manager/file_manager.cpp"
 
 model="../src/model/model.cpp"
-gaussian="../src/utils/smoothing/gaussian.cpp"
-trilinear="../src/utils/interpolation/trilinear.cpp"
 
 geometry="../src/geometry/geometry.cpp"
 regular="../src/geometry/regular/regular.cpp"
@@ -14,26 +14,29 @@ geometry_main="../src/geometry/geometry_main.cpp"
 picking="../src/auto_picking/auto_picking.cpp"
 qc_picks="../src/auto_picking/qc_picking.py"
 
-eikonal=""
-block_FIM=""
-accurate_FSM=""
-classic_method=""
+eikonal="../src/eikonal/eikonal.cpp"
+classic="../src/eikonal/classic/classic.cpp"
+block_FIM="../src/eikonal/block_FIM/block_FIM.cpp"
+accurate_FSM="../src/eikonal/accurate_FSM/accurate_FSM.cpp"
+eikonal_main="../src/eikonal/eikonal_main.cpp"
 
 tomography=""
 classical_approach=""
 
+flags="-acc -fast -ta=tesla,cc60"
+
 USER_MESSAGE="
 Usage:
 
-----------------------------------------------------------------------------------------
-|      First steps      |        Second steps         |          Third steps           |
----------------------------------------------------------------------------------------|  
-| $ $0 -build_all    | $ $0 -check_model        | $ $0 -run_tomography        |
-| $ $0 -auto_picking | $ $0 -check_geometry     | $ $0 -check_recovered_model |
-| $ $0 -check_data   | $ $0 -check_illumination | $ $0 -check_convergence     |
-----------------------------------------------------------------------------------------         
-
-Warning: Give a parameter in \033[31mred\033[m information!
+---------------------------------------------------------------------------------------------
+|         Inputs          |            Modeling           |            Inversion            |
+--------------------------------------------------------------------------------------------|  
+| $ $0 \033[31m-build_all\033[m      | $ $0 -run_eikonal          | $ $0 -run_tomography         |
+| $ $0 -auto_picking   | $ $0 -check_ray_tracing    | $ $0 -check_recovered_model  |
+| $ $0 -check_data     | $ $0 -check_illumination   | $ $0 -check_convergence      |
+| $ $0 -check_model    | $ $0 -check_travel_times   | $ $0 -check_data_difference  |
+| $ $0 -check_geometry | $ $0 -check_first_arrivals | $ $0 -check_model_difference |
+---------------------------------------------------------------------------------------------         
 "
 
 # Check if user provide some parameter
@@ -54,10 +57,15 @@ case "$1" in
 
 -build_all) 
 
-    # geometry_main
-    pgc++ $geometry_main $geometry $circular $regular $file_manager -lm -o ../bin/geometry.exe
+    echo -e "Compiling stand-alone executables!"
 
-    # eikonal_main
+    echo -e "\n../bin/\033[31mgeometry.exe\033[m: \n" 
+    # pgc++ $file_manager $geometry $circular $regular $geometry_main -lm -o ../bin/geometry.exe
+
+    echo -e "\n../bin/\033[31meikonal.exe\033[m: \n" 
+    pgc++ $file_manager $trilinear $gaussian $model $geometry $regular $circular $eikonal $classic $accurate_FSM $eikonal_main $flags -lm -o ../bin/eikonal.exe 
+    
+    echo -e "\n../bin/\033[31mtomography.exe\033[m: \n" 
     # tomography_main
 
     rm *.o
@@ -90,6 +98,13 @@ case "$1" in
 
     ./../bin/geometry.exe parameters.txt
     python3 ../src/utils/py_codes/check_geometry.py parameters.txt
+
+	exit 0
+;;
+
+-run_eikonal) 
+
+    ./../bin/eikonal.exe parameters.txt
 
 	exit 0
 ;;

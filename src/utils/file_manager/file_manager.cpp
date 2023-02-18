@@ -46,7 +46,7 @@ void File_manager::write_binary_float(std::string path, float *array, int n)
         throw std::invalid_argument("Error: file could not be opened!");
     }
 
-    std::cout<<"Binary file " + path + " was successfully written."<<std::endl;
+    std::cout<<"Binary file " + path + " was succesfully written."<<std::endl;
 
     file.close();
 }
