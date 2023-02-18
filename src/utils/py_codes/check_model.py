@@ -14,7 +14,7 @@ x_spacing = float(catch_parameter(filename, "x_spacing"))
 y_spacing = float(catch_parameter(filename, "y_spacing"))
 z_spacing = float(catch_parameter(filename, "z_spacing"))
 
-vp_location = catch_parameter(filename, "vp_location")[1:-1]
+vp_location = catch_parameter(filename, "vp_file")[1:-1]
 
 vp = readBinaryVolume(z_samples, x_samples, y_samples, vp_location)
 

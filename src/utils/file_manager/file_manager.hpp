@@ -8,8 +8,6 @@ class File_manager
 {
 public:
 
-    std::string parameter_file;
-
     bool str2bool(std::string s);
 
     void read_binary_float(std::string path, float * array, int n);
@@ -17,7 +15,7 @@ public:
 
     void read_text_file(std::string path, std::vector<std::string> elements); 
 
-    std::string catch_parameter(std::string target);
+    std::string catch_parameter(std::string target, std::string file);
 
     std::vector<std::string> split(std::string s, char delimiter);
 };

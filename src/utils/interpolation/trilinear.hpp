@@ -5,10 +5,6 @@ class Trilinear
 {
 public:
 
-    int new_nx, new_ny, new_nz;
-     
-    float new_dx, new_dy, new_dz;
-
     float x, y, z;
     
     float x0, x1; 

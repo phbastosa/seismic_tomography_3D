@@ -23,61 +23,47 @@ std::vector<float> Regular::linspace(float xi, float xf, int n)
     return linspaced;
 }
 
-void Regular::set_shot_parameters(std::string file)
+void Regular::set_parameters(std::string file)
 {
-    fm.parameter_file = file;
+    folder = fm.catch_parameter("geometry_folder", file);
 
-    get_shot_parameters();
+    int max_coordinate_objects = 2;
+    
+    std::vector<std::string> coord = {"shot", "node"};
 
-    n_xline = std::stoi(fm.catch_parameter("shots_n_xline"));
-    n_yline = std::stoi(fm.catch_parameter("shots_n_yline"));
+    for (int i = 0; i < max_coordinate_objects; i++)
+    {
+        elevation = std::stof(fm.catch_parameter(coord[i] + "_elevation", file));
+        topography = fm.str2bool(fm.catch_parameter(coord[i] + "_topography", file));
+        topography_file = fm.catch_parameter(coord[i] + "_topography_file", file);
+    
+        n_xline = std::stoi(fm.catch_parameter(coord[i] + "_n_xline", file));
+        n_yline = std::stoi(fm.catch_parameter(coord[i] + "_n_yline", file));
 
-    splitted = fm.split(fm.catch_parameter("shot_SW"),',');
-    SW.x = std::stof(splitted[0]);
-    SW.y = std::stof(splitted[1]);
+        splitted = fm.split(fm.catch_parameter(coord[i] + "_SW", file),',');
+        SW.x = std::stof(splitted[0]);
+        SW.y = std::stof(splitted[1]);
 
-    splitted = fm.split(fm.catch_parameter("shot_NW"),',');
-    NW.x = std::stof(splitted[0]);
-    NW.y = std::stof(splitted[1]);
+        splitted = fm.split(fm.catch_parameter(coord[i] + "_NW", file),',');
+        NW.x = std::stof(splitted[0]);
+        NW.y = std::stof(splitted[1]);
 
-    splitted = fm.split(fm.catch_parameter("shot_SE"),',');
-    SE.x = std::stof(splitted[0]);
-    SE.y = std::stof(splitted[1]);
+        splitted = fm.split(fm.catch_parameter(coord[i] + "_SE", file),',');
+        SE.x = std::stof(splitted[0]);
+        SE.y = std::stof(splitted[1]);
 
-    build_geometry();
+        if (i == 0) build_geometry(shots);
+        if (i == 1) build_geometry(nodes);
+    }
 }
 
-void Regular::set_node_parameters(std::string file)
+void Regular::build_geometry(Coordinates &obj)
 {
-    fm.parameter_file = file;
+    obj.all = n_xline * n_yline;
 
-    get_node_parameters();
-
-    n_xline = std::stoi(fm.catch_parameter("nodes_n_xline"));
-    n_yline = std::stoi(fm.catch_parameter("nodes_n_yline"));
-
-    splitted = fm.split(fm.catch_parameter("node_SW"),',');
-    SW.x = std::stof(splitted[0]);
-    SW.y = std::stof(splitted[1]);
-
-    splitted = fm.split(fm.catch_parameter("node_NW"),',');
-    NW.x = std::stof(splitted[0]);
-    NW.y = std::stof(splitted[1]);
-
-    splitted = fm.split(fm.catch_parameter("node_SE"),',');
-    SE.x = std::stof(splitted[0]);
-    SE.y = std::stof(splitted[1]);
-
-    build_geometry();
-}
-
-void Regular::build_geometry()
-{
-    all = n_xline * n_yline;
-
-    x = new float[all];
-    y = new float[all];
-    z = new float[all];
+    obj.x = new float[obj.all];
+    obj.y = new float[obj.all];
+    obj.z = new float[obj.all];
 
     std::vector<float> x_tmp = linspace(SW.x, SE.x, n_xline);
     std::vector<float> y_tmp = linspace(SW.y, NW.y, n_yline);
@@ -86,12 +72,12 @@ void Regular::build_geometry()
     {
         for (int j = 0; j < x_tmp.size(); j++)
         {
-            x[j + k*x_tmp.size()] = x_tmp[j];
-            y[j + k*y_tmp.size()] = y_tmp[k];
+            obj.x[j + k*x_tmp.size()] = x_tmp[j];
+            obj.y[j + k*y_tmp.size()] = y_tmp[k];
         }
     }    
 
-    set_topography();
+    set_topography(obj);
 
     std::vector< float >().swap(x_tmp);
     std::vector< float >().swap(y_tmp);

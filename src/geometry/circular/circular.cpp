@@ -2,47 +2,41 @@
 
 # include "circular.hpp"
 
-void Circular::set_shot_parameters(std::string file)
+void Circular::set_parameters(std::string file)
 {
-    fm.parameter_file = file;
+    folder = fm.catch_parameter("geometry_folder", file);
 
-    get_shot_parameters();
+    int max_coordinate_objects = 2;
 
-    xcenter = std::stof(fm.catch_parameter("shots_xcenter"));
-    ycenter = std::stof(fm.catch_parameter("shots_ycenter"));
-    spacing = std::stof(fm.catch_parameter("shots_spacing"));
+    std::vector<std::string> coord = {"shot", "node"};
 
-    splitted = fm.split(fm.catch_parameter("shots_offsets"),',');
+    for (int i = 0; i < max_coordinate_objects; i++)
+    {
+        elevation = std::stof(fm.catch_parameter(coord[i] + "_elevation", file));
+        topography = fm.str2bool(fm.catch_parameter(coord[i] + "_topography", file));
+        topography_file = fm.catch_parameter(coord[i] + "_topography_file", file);
 
-    for (auto offset : splitted)
-        offsets.push_back(std::stof(offset));
+        xcenter = std::stof(fm.catch_parameter(coord[i] + "_x_center", file));
+        ycenter = std::stof(fm.catch_parameter(coord[i] + "_y_center", file));
+        spacing = std::stof(fm.catch_parameter(coord[i] + "_spacing", file));
 
-    build_geometry();    
+        splitted = fm.split(fm.catch_parameter(coord[i] + "_offsets", file),',');
+
+        for (auto offset : splitted)
+            offsets.push_back(std::stof(offset));
+
+        if (i == 0) build_geometry(shots);
+        if (i == 1) build_geometry(nodes);
+ 
+        std::vector<float>().swap(offsets);    
+    }
 }
 
-void Circular::set_node_parameters(std::string file)
-{
-    fm.parameter_file = file;
-
-    get_node_parameters();
-
-    xcenter = std::stof(fm.catch_parameter("shots_xcenter"));
-    ycenter = std::stof(fm.catch_parameter("shots_ycenter"));
-    spacing = std::stof(fm.catch_parameter("shots_spacing"));
-
-    splitted = fm.split(fm.catch_parameter("shots_offsets"),',');
-
-    for (auto offset : splitted)
-        offsets.push_back(std::stof(offset));
-
-    build_geometry();
-}
-
-void Circular::build_geometry()
+void Circular::build_geometry(Coordinates &obj)
 {
     std::vector<float> x_tmp, y_tmp;
 
-    all = 0;
+    obj.all = 0;
 
     for (float radius : offsets)
     {
@@ -55,21 +49,21 @@ void Circular::build_geometry()
 
             theta += acos(1.0f - powf(spacing, 2.0f) / (2.0f * powf(radius, 2.0f)));    
 
-            all += 1;
+            obj.all += 1;
         }
     }
 
-    x = new float[all]();
-    y = new float[all]();
-    z = new float[all]();
+    obj.x = new float[obj.all]();
+    obj.y = new float[obj.all]();
+    obj.z = new float[obj.all]();
 
-    for (int i = 0; i < all; i++)
+    for (int i = 0; i < obj.all; i++)
     {
-        x[i] = x_tmp[i]; 
-        y[i] = y_tmp[i];
+        obj.x[i] = x_tmp[i]; 
+        obj.y[i] = y_tmp[i];
     }
 
-    set_topography();
+    set_topography(obj);
 
     std::vector< float >().swap(x_tmp);
     std::vector< float >().swap(y_tmp);

@@ -8,41 +8,25 @@
 
 int main(int argc, char **argv)
 {
-    Geometry * shots[] = 
+    Geometry * geometry[] = 
     { 
-        new Circular(), 
-        new Regular() 
+        new Regular(),
+        new Circular() 
     };
     
-    Geometry * nodes[] = 
-    {
-        new Circular(),
-        new Regular()         
-    };
-
     auto fm = File_manager();
 
-    fm.parameter_file = std::string(argv[1]);
+    int shots_type = std::stoi(fm.catch_parameter("shot_geometry_type", std::string(argv[1])));
+    int nodes_type = std::stoi(fm.catch_parameter("node_geometry_type", std::string(argv[1])));
+
+    bool reciprocity = fm.str2bool(fm.catch_parameter("reciprocity", std::string(argv[1])));
+
+    geometry[shots_type]->set_parameters(std::string(argv[1]));
+    geometry[shots_type]->build_geometry(geometry[shots_type]->shots);
     
-    int shot_type = std::stoi(fm.catch_parameter("shots_geometry_type"));
-    int node_type = std::stoi(fm.catch_parameter("nodes_geometry_type"));
+    geometry[nodes_type]->set_parameters(std::string(argv[1]));
+    geometry[nodes_type]->build_geometry(geometry[nodes_type]->nodes);
 
-    bool reciprocity = fm.str2bool(fm.catch_parameter("reciprocity"));
-
-    if (reciprocity)
-    {
-        shots[node_type]->set_node_parameters(fm.parameter_file);    
-        nodes[shot_type]->set_shot_parameters(fm.parameter_file);
-
-        shots[node_type]->export_positions("xyz_nodes.txt");
-        nodes[shot_type]->export_positions("xyz_shots.txt");
-    }
-    else
-    {
-        shots[shot_type]->set_shot_parameters(fm.parameter_file);
-        nodes[node_type]->set_node_parameters(fm.parameter_file);
-
-        shots[shot_type]->export_positions("xyz_shots.txt");
-        nodes[node_type]->export_positions("xyz_nodes.txt");
-    }
+    geometry[shots_type]->export_positions(geometry[shots_type]->shots, "xyz_shots.txt");
+    geometry[nodes_type]->export_positions(geometry[nodes_type]->nodes, "xyz_nodes.txt");
 }

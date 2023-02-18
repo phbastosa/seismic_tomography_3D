@@ -5,37 +5,40 @@
 
 class Geometry
 {
+private:
+
 protected:
 
     File_manager fm;
-  
-    std::string geometry_folder;    
-    std::string topography_file;
-    
+
+    typedef struct 
+    {
+        float * x;
+        float * y;
+        float * z;
+
+        int all;
+
+    } Coordinates;
+
     std::vector<std::string> splitted;
-    
+
     bool topography;
     float elevation;
+    std::string topography_file;
+    void set_topography(Coordinates &obj);
 
-    void set_topography();
-    void get_shot_parameters();
-    void get_node_parameters();
-
-    virtual void build_geometry() = 0;
+    std::string folder;
 
 public:  
+ 
+    Coordinates shots;
+    Coordinates nodes;
 
-    float * x;
-    float * y;
-    float * z;
+    virtual void build_geometry(Coordinates &obj) = 0;
+    virtual void set_parameters(std::string file) = 0;
 
-    int all;
-      
-    virtual void set_shot_parameters(std::string file) = 0;
-    virtual void set_node_parameters(std::string file) = 0;
-    
-    void import_positions(std::string file);
-    void export_positions(std::string file);
+    void export_positions(Coordinates &obj, std::string file);
 };
 
 # endif

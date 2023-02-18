@@ -23,9 +23,8 @@ private:
 
 public:  
 
-    void build_geometry();
-    void set_shot_parameters(std::string file);
-    void set_node_parameters(std::string file);
+    void build_geometry(Coordinates &obj);
+    void set_parameters(std::string file);
 };
 
 # endif

@@ -1,42 +1,22 @@
+# include <cmath> 
+
 # include "model.hpp"
 
-# include "../utils/file_manager/file_manager.hpp"
+# include "../utils/smoothing/gaussian.hpp"
+# include "../utils/interpolation/trilinear.hpp"
 
-void Model::set_parameters(std::string file)
+float * Model::expand(float * volume)
 {
-    auto fm = File_manager();
-
-    fm.parameter_file = file;
-
-    x_samples = std::stoi(fm.catch_parameter("x_samples"));
-    y_samples = std::stoi(fm.catch_parameter("y_samples"));
-    z_samples = std::stoi(fm.catch_parameter("z_samples"));
-    
-    total_samples = x_samples * y_samples * z_samples;
-
-    x_spacing = std::stof(fm.catch_parameter("x_spacing"));    
-    y_spacing = std::stof(fm.catch_parameter("y_spacing"));    
-    z_spacing = std::stof(fm.catch_parameter("z_spacing"));    
-
-    property = new float[total_samples];
-}
-
-void Model::expand()
-{
-    int nzz = z_samples + 2*boundary_samples;
-    int nxx = x_samples + 2*boundary_samples;
-    int nyy = y_samples + 2*boundary_samples;
-
-    float * expandedModel = new float[nzz*nxx*nyy]();
+    float * new_volume = new float[total_samples_b]();
 
     // Centering
-    for (int z = boundary_samples; z < nzz - boundary_samples; z++)
+    for (int z = boundary_samples; z < z_samples_b - boundary_samples; z++)
     {
-        for (int y = boundary_samples; y < nyy - boundary_samples; y++)
+        for (int y = boundary_samples; y < y_samples_b - boundary_samples; y++)
         {
-            for (int x = boundary_samples; x < nxx - boundary_samples; x++)
+            for (int x = boundary_samples; x < x_samples_b - boundary_samples; x++)
             {
-                expandedModel[z + x*nzz + y*nxx*nzz] = property[(z - boundary_samples) + (x - boundary_samples)*z_samples + (y - boundary_samples)*x_samples*z_samples];
+                new_volume[z + x*z_samples_b + y*x_samples_b*z_samples_b] = volume[(z - boundary_samples) + (x - boundary_samples)*z_samples + (y - boundary_samples)*x_samples*z_samples];
             }
         }
     }
@@ -44,12 +24,12 @@ void Model::expand()
     // Z direction
     for (int z = 0; z < boundary_samples; z++)
     {
-        for (int y = boundary_samples; y < nyy - boundary_samples; y++)
+        for (int y = boundary_samples; y < y_samples_b - boundary_samples; y++)
         {
-            for (int x = boundary_samples; x < nxx - boundary_samples; x++)
+            for (int x = boundary_samples; x < x_samples_b - boundary_samples; x++)
             {
-                expandedModel[z + x*nzz + y*nxx*nzz] = property[0 + (x - boundary_samples)*z_samples + (y - boundary_samples)*x_samples*z_samples];
-                expandedModel[(nzz - z - 1) + x*nzz + y*nxx*nzz] = property[(z_samples - 1) + (x - boundary_samples)*z_samples + (y - boundary_samples)*x_samples*z_samples];
+                new_volume[z + x*z_samples_b + y*x_samples_b*z_samples_b] = volume[0 + (x - boundary_samples)*z_samples + (y - boundary_samples)*x_samples*z_samples];
+                new_volume[(z_samples_b - z - 1) + x*z_samples_b + y*x_samples_b*z_samples_b] = volume[(z_samples - 1) + (x - boundary_samples)*z_samples + (y - boundary_samples)*x_samples*z_samples];
             }
         }
     }
@@ -57,12 +37,12 @@ void Model::expand()
     // X direction
     for (int x = 0; x < boundary_samples; x++)
     {
-        for (int z = 0; z < nzz; z++)
+        for (int z = 0; z < z_samples_b; z++)
         {
-            for (int y = boundary_samples; y < nyy - boundary_samples; y++)
+            for (int y = boundary_samples; y < y_samples_b - boundary_samples; y++)
             {
-                expandedModel[z + x*nzz + y*nxx*nzz] = expandedModel[z + boundary_samples*nzz + y*nxx*nzz];
-                expandedModel[z + (nxx - x - 1)*nzz + y*nxx*nzz] = expandedModel[z + (nxx - boundary_samples - 1)*nzz + y*nxx*nzz];
+                new_volume[z + x*z_samples_b + y*x_samples_b*z_samples_b] = new_volume[z + boundary_samples*z_samples_b + y*x_samples_b*z_samples_b];
+                new_volume[z + (x_samples_b - x - 1)*z_samples_b + y*x_samples_b*z_samples_b] = new_volume[z + (x_samples_b - boundary_samples - 1)*z_samples_b + y*x_samples_b*z_samples_b];
             }
         }
     }
@@ -70,43 +50,22 @@ void Model::expand()
     // Y direction
     for (int y = 0; y < boundary_samples; y++)
     {
-        for (int z = 0; z < nzz; z++)
+        for (int z = 0; z < z_samples_b; z++)
         {
-            for (int x = 0; x < nxx; x++)
+            for (int x = 0; x < x_samples_b; x++)
             {
-                expandedModel[z + x*nzz + y*nxx*nzz] = expandedModel[z + x*nzz + boundary_samples*nxx*nzz];
-                expandedModel[z + x*nzz + (nyy - y - 1)*nxx*nzz] = expandedModel[z + x*nzz + (nyy - boundary_samples - 1)*nxx*nzz];
+                new_volume[z + x*z_samples_b + y*x_samples_b*z_samples_b] = new_volume[z + x*z_samples_b + boundary_samples*x_samples_b*z_samples_b];
+                new_volume[z + x*z_samples_b + (y_samples_b - y - 1)*x_samples_b*z_samples_b] = new_volume[z + x*z_samples_b + (y_samples_b - boundary_samples - 1)*x_samples_b*z_samples_b];
             }
         }
     }
 
-    delete[] property;
-
-    z_samples = nzz;
-    x_samples = nxx;
-    y_samples = nyy;
-
-    total_samples = nxx*nyy*nzz;
-
-    property = new float[total_samples]();
-
-    std::swap(property, expandedModel);
-
-    delete[] expandedModel;
+    return new_volume;
 }
 
-void Model::reduce()
-{
-    int nzz = z_samples;
-    int nxx = x_samples;
-    
-    z_samples -= 2*boundary_samples;
-    x_samples -= 2*boundary_samples;
-    y_samples -= 2*boundary_samples;
-    
-    total_samples = x_samples*y_samples*z_samples;
-
-    float * reducedModel = new float[total_samples];
+float * Model::reduce(float * volume)
+{    
+    float * new_volume = new float[total_samples];
 
     for (int index = 0; index < total_samples; index++)
     {
@@ -114,173 +73,147 @@ void Model::reduce()
         int x = (int) (index - y*x_samples*z_samples) / z_samples;    
         int z = (int) (index - x*z_samples - y*x_samples*z_samples);  
 
-        reducedModel[z + x*z_samples + y*x_samples*z_samples] = property[(z + boundary_samples) + (x + boundary_samples)*nzz + (y + boundary_samples)*nxx*nzz];
+        new_volume[z + x*z_samples + y*x_samples*z_samples] = volume[(z + boundary_samples) + (x + boundary_samples)*z_samples_b + (y + boundary_samples)*x_samples_b*z_samples_b];
     }
-
-    delete[] property;
-
-    property = new float[total_samples]();
     
-    std::swap(property, reducedModel);
-
-    delete[] reducedModel;
+    return new_volume;
 }
 
-// void Model::smooth(float stdv, int samples)
-// {
-//     auto smooth = Gaussian();
+float * Model::smooth(float * volume)
+{
+    auto smoother = Gaussian();
 
-//     smooth.zdim = z_samples; 
-//     smooth.xdim = x_samples; 
-//     smooth.ydim = y_samples; 
+    smoother.zdim = z_samples; 
+    smoother.xdim = x_samples; 
+    smoother.ydim = y_samples; 
 
-//     smooth.stdv = stdv;
-//     smooth.samples = samples;
+    smoother.stdv = standard_deviation;
+    smoother.samples = smoothing_samples;
 
-//     smooth.volume = new float[total_samples]();
+    smoother.volume = new float[total_samples]();
 
-//     for (int index = 0; index < total_samples; index++)
-//         smooth.volume[index] = 1.0f / property[index];
+    for (int index = 0; index < total_samples; index++)
+        smoother.volume[index] = 1.0f / volume[index];
 
-//     smooth.gaussian();
+    smoother.gaussian();
 
-//     for (int index = 0; index < total_samples; index++)
-//         property[index] = 1.0f / smooth.volume[index];
+    for (int index = 0; index < total_samples; index++)
+        volume[index] = 1.0f / smoother.volume[index];
 
-//     delete[] smooth.volume;
-// }
+    return smoother.volume;
+}
 
-// void Model::resize(float new_dz, float new_dx, float new_dy)
-// {
-//     auto interp = Trilinear();
+float * Model::resize(float * volume)
+{
+    auto interpolate = Trilinear();
 
-//     interp.new_dz = new_dz;
-//     interp.new_dx = new_dx;
-//     interp.new_dy = new_dy;
+    new_z_samples = (int)(static_cast<float>(z_samples-1) * z_spacing / new_z_spacing) + 1;    
+    new_x_samples = (int)(static_cast<float>(x_samples-1) * x_spacing / new_x_spacing) + 1;    
+    new_y_samples = (int)(static_cast<float>(y_samples-1) * y_spacing / new_y_spacing) + 1;    
 
-//     interp.new_nz = (int)(static_cast<float>(z_samples-1) * dz / interp.new_dz) + 1;    
-//     interp.new_nx = (int)(static_cast<float>(x_samples-1) * dx / interp.new_dx) + 1;    
-//     interp.new_ny = (int)(static_cast<float>(y_samples-1) * dy / interp.new_dy) + 1;    
+    float * z = new float[new_z_samples]();
+    float * x = new float[new_x_samples]();
+    float * y = new float[new_y_samples]();
 
-//     float * z = new float[interp.new_nz]();
-//     float * x = new float[interp.new_nx]();
-//     float * y = new float[interp.new_ny]();
-
-//     for (int i = 0; i < interp.new_nz; i++) 
-//         z[i] = static_cast<float>(i) * interp.new_dz;
+    for (int i = 0; i < new_z_samples; i++) 
+        z[i] = static_cast<float>(i) * new_z_spacing;
     
-//     for (int j = 0; j < interp.new_nx; j++) 
-//         x[j] = static_cast<float>(j) * interp.new_dx;
+    for (int j = 0; j < new_x_samples; j++) 
+        x[j] = static_cast<float>(j) * new_x_spacing;
     
-//     for (int k = 0; k < interp.new_ny; k++) 
-//         y[k] = static_cast<float>(k) * interp.new_dy;
+    for (int k = 0; k < new_y_samples; k++) 
+        y[k] = static_cast<float>(k) * new_y_spacing;
 
-//     float * interpolatedModel = new float[interp.new_nz * interp.new_nx * interp.new_ny]();
+    float * new_volume = new float[new_z_samples * new_x_samples * new_y_samples]();
 
-//     for (int k = 0; k < interp.new_ny; k++)
-//     {    
-//         for (int j = 0; j < interp.new_nx; j++)
-//         {
-//             for (int i = 0; i < interp.new_nz; i++)
-//             {
-//                 if ((z[i] > 0.0f) && (z[i] < (z_samples-1)*dz) && 
-//                     (x[j] > 0.0f) && (x[j] < (x_samples-1)*dx) && 
-//                     (y[k] > 0.0f) && (y[k] < (y_samples-1)*dy))
-//                 {
-//                     interp.z = z[i];
-//                     interp.x = x[j];
-//                     interp.y = y[k];
+    for (int k = 0; k < new_y_samples; k++)
+    {    
+        for (int j = 0; j < new_x_samples; j++)
+        {
+            for (int i = 0; i < new_z_samples; i++)
+            {
+                if ((z[i] > 0.0f) && (z[i] < (z_samples-1)*z_spacing) && 
+                    (x[j] > 0.0f) && (x[j] < (x_samples-1)*x_spacing) && 
+                    (y[k] > 0.0f) && (y[k] < (y_samples-1)*y_spacing))
+                {
+                    interpolate.z = z[i];
+                    interpolate.x = x[j];
+                    interpolate.y = y[k];
 
-//                     interp.z0 = floorf(z[i] / dz) * dz;
-//                     interp.x0 = floorf(x[j] / dx) * dx;
-//                     interp.y0 = floorf(y[k] / dy) * dy;
+                    interpolate.z0 = floorf(z[i] / z_spacing) * z_spacing;
+                    interpolate.x0 = floorf(x[j] / x_spacing) * x_spacing;
+                    interpolate.y0 = floorf(y[k] / y_spacing) * y_spacing;
 
-//                     interp.z1 = floorf(z[i] / dz) * dz + dz;
-//                     interp.x1 = floorf(x[j] / dx) * dx + dx;
-//                     interp.y1 = floorf(y[k] / dy) * dy + dy;
+                    interpolate.z1 = floorf(z[i] / z_spacing) * z_spacing + z_spacing;
+                    interpolate.x1 = floorf(x[j] / x_spacing) * x_spacing + x_spacing;
+                    interpolate.y1 = floorf(y[k] / y_spacing) * y_spacing + y_spacing;
 
-//                     int id = static_cast<int>(z[i]/dz) + 
-//                              static_cast<int>(x[j]/dx)*z_samples + 
-//                              static_cast<int>(y[k]/dy)*x_samples*z_samples;
+                    int id = static_cast<int>(z[i]/z_spacing) + 
+                             static_cast<int>(x[j]/x_spacing)*z_samples + 
+                             static_cast<int>(y[k]/y_spacing)*x_samples*z_samples;
 
-//                     interp.c000 = property[id];
-//                     interp.c001 = property[id + 1];
-//                     interp.c100 = property[id + z_samples]; 
-//                     interp.c101 = property[id + 1 + z_samples]; 
-//                     interp.c010 = property[id + x_samples*z_samples]; 
-//                     interp.c011 = property[id + 1 + x_samples*z_samples]; 
-//                     interp.c110 = property[id + z_samples + x_samples*z_samples]; 
-//                     interp.c111 = property[id + 1 + z_samples + x_samples*z_samples];
+                    interpolate.c000 = volume[id];
+                    interpolate.c001 = volume[id + 1];
+                    interpolate.c100 = volume[id + z_samples]; 
+                    interpolate.c101 = volume[id + 1 + z_samples]; 
+                    interpolate.c010 = volume[id + x_samples*z_samples]; 
+                    interpolate.c011 = volume[id + 1 + x_samples*z_samples]; 
+                    interpolate.c110 = volume[id + z_samples + x_samples*z_samples]; 
+                    interpolate.c111 = volume[id + 1 + z_samples + x_samples*z_samples];
 
-//                     int interp_id = static_cast<int>(z[i]/interp.new_dz) + 
-//                                     static_cast<int>(x[j]/interp.new_dx)*interp.new_nz + 
-//                                     static_cast<int>(y[k]/interp.new_dy)*interp.new_nx*interp.new_nz;
+                    int interp_id = static_cast<int>(z[i]/new_z_spacing) + 
+                                    static_cast<int>(x[j]/new_x_spacing)*new_z_samples + 
+                                    static_cast<int>(y[k]/new_y_spacing)*new_x_samples*new_z_samples;
 
-//                     interpolatedModel[interp_id] = interp.trilinear();
-//                 }
-//             }
-//         }
-//     }
+                    new_volume[interp_id] = interpolate.trilinear();
+                }
+            }
+        }
+    }
 
-//     int zfactor = static_cast<int>(floorf(dz / interp.new_dz)) + 1;
-//     int xfactor = static_cast<int>(floorf(dx / interp.new_dx)) + 1;
-//     int yfactor = static_cast<int>(floorf(dy / interp.new_dy)) + 1;
+    int zfactor = static_cast<int>(floorf(z_spacing / new_z_spacing)) + 1;
+    int xfactor = static_cast<int>(floorf(x_spacing / new_x_spacing)) + 1;
+    int yfactor = static_cast<int>(floorf(y_spacing / new_y_spacing)) + 1;
 
-//     for (int idz = 0; idz < zfactor; idz++)
-//     {
-//         for (int idy = yfactor; idy < interp.new_ny - yfactor; idy++)
-//         {
-//             for (int idx = xfactor; idx < interp.new_nx - xfactor; idx++)
-//             {
-//                 interpolatedModel[idz + idx*interp.new_nz + idy*interp.new_nx*interp.new_nz] = interpolatedModel[zfactor + idx*interp.new_nz + idy*interp.new_nx*interp.new_nz];    
-//                 interpolatedModel[(interp.new_nz - idz - 1) + idx*interp.new_nz + idy*interp.new_nx*interp.new_nz] = interpolatedModel[(interp.new_nz - zfactor - 1) + idx*interp.new_nz + idy*interp.new_nx*interp.new_nz];          
-//             }
-//         }
-//     }
+    for (int idz = 0; idz < zfactor; idz++)
+    {
+        for (int idy = yfactor; idy < new_y_samples - yfactor; idy++)
+        {
+            for (int idx = xfactor; idx < new_x_samples - xfactor; idx++)
+            {
+                new_volume[idz + idx*new_z_samples + idy*new_x_samples*new_z_samples] = new_volume[zfactor + idx*new_z_samples + idy*new_x_samples*new_z_samples];    
+                new_volume[(new_z_samples - idz - 1) + idx*new_z_samples + idy*new_x_samples*new_z_samples] = new_volume[(new_z_samples - zfactor - 1) + idx*new_z_samples + idy*new_x_samples*new_z_samples];          
+            }
+        }
+    }
 
-//     for (int idx = 0; idx < xfactor; idx++)
-//     {
-//         for (int idz = 0; idz < interp.new_nz; idz++)
-//         {
-//             for (int idy = yfactor; idy < interp.new_ny - yfactor; idy++)
-//             {
-//                 interpolatedModel[idz + idx*interp.new_nz + idy*interp.new_nx*interp.new_nz] = interpolatedModel[idz + xfactor*interp.new_nz + idy*interp.new_nx*interp.new_nz];    
-//                 interpolatedModel[idz + (interp.new_nx - idx - 1)*interp.new_nz + idy*interp.new_nx*interp.new_nz] = interpolatedModel[idz + (interp.new_nx - xfactor - 1)*interp.new_nz + idy*interp.new_nx*interp.new_nz];          
-//             }
-//         }
-//     }
+    for (int idx = 0; idx < xfactor; idx++)
+    {
+        for (int idz = 0; idz < new_z_samples; idz++)
+        {
+            for (int idy = yfactor; idy < new_y_samples - yfactor; idy++)
+            {
+                new_volume[idz + idx*new_z_samples + idy*new_x_samples*new_z_samples] = new_volume[idz + xfactor*new_z_samples + idy*new_x_samples*new_z_samples];    
+                new_volume[idz + (new_x_samples - idx - 1)*new_z_samples + idy*new_x_samples*new_z_samples] = new_volume[idz + (new_x_samples - xfactor - 1)*new_z_samples + idy*new_x_samples*new_z_samples];          
+            }
+        }
+    }
 
-//     for (int idy = 0; idy < yfactor; idy++)
-//     {
-//         for (int idz = 0; idz < interp.new_nz; idz++)
-//         {
-//             for (int idx = 0; idx < interp.new_nx; idx++)
-//             {
-//                 interpolatedModel[idz + idx*interp.new_nz + idy*interp.new_nx*interp.new_nz] = interpolatedModel[idz + idx*interp.new_nz + yfactor*interp.new_nx*interp.new_nz];    
-//                 interpolatedModel[idz + idx*interp.new_nz + (interp.new_ny - idy - 1)*interp.new_nx*interp.new_nz] = interpolatedModel[idz + idx*interp.new_nz + (interp.new_ny - yfactor - 1)*interp.new_nx*interp.new_nz];          
-//             }
-//         }
-//     }
-
-//     delete[] property;
-
-//     x_samples = interp.new_nx;
-//     y_samples = interp.new_ny;
-//     z_samples = interp.new_nz;
-
-//     dx = interp.new_dx;
-//     dy = interp.new_dy;
-//     dz = interp.new_dz;
-
-//     total_samples = x_samples * y_samples * z_samples;
-
-//     property = new float[total_samples];
-
-//     std::swap(property, interpolatedModel);
-
-//     delete[] interpolatedModel;
+    for (int idy = 0; idy < yfactor; idy++)
+    {
+        for (int idz = 0; idz < new_z_samples; idz++)
+        {
+            for (int idx = 0; idx < new_x_samples; idx++)
+            {
+                new_volume[idz + idx*new_z_samples + idy*new_x_samples*new_z_samples] = new_volume[idz + idx*new_z_samples + yfactor*new_x_samples*new_z_samples];    
+                new_volume[idz + idx*new_z_samples + (new_y_samples - idy - 1)*new_x_samples*new_z_samples] = new_volume[idz + idx*new_z_samples + (new_y_samples - yfactor - 1)*new_x_samples*new_z_samples];          
+            }
+        }
+    }
     
-//     interp.~Trilinear();
-// }
+    interpolate.~Trilinear();
+
+    return new_volume;
+}
 
 

@@ -2,39 +2,44 @@
 # Model paramenters ---------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------
  
-x_samples = 401           # <int>
-y_samples = 401           # <int>
-z_samples = 105           # <int>
+x_samples = 401           
+y_samples = 401           
+z_samples = 105           
 
-x_spacing = 12.5          # in meters <float>
-y_spacing = 12.5          # in meters <float> 
-z_spacing = 12.5          # in meters <float>  
+x_spacing = 12.5          # in meters [m] 
+y_spacing = 12.5          # in meters [m]  
+z_spacing = 12.5          # in meters [m]  
 
-vp_location = "../inputs/models/trueModel_105x401x401_12.5m.bin"   
+vp_file = "../inputs/models/trueModel_105x401x401_12.5m.bin"   
 
 #---------------------------------------------------------------------------------------------------
 # Geometry parameters ------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------
 
-reciprocity = True         # Shots become nodes and nodes become shots <bool>  
+reciprocity = False           
 
-shots_geometry_type = 1    # 0 - circular shots | 1 - grid shots
-nodes_geometry_type = 1    # 0 - circular nodes | 1 - grid nodes 
+# Geoemtry type:
+# 0 - regular geometry
+# 1 - circular geometry
 
-shots_elevation = 0        # Sources elevation [m] - flat surface <float>             
-nodes_elevation = 200      # Receivers elevation - flat surface [m] <float>
+shot_geometry_type = 0    
+node_geometry_type = 0     
 
-shots_topography = False   #
-nodes_topography = False   #
+shot_elevation = 0        # flat surface [m] <float>             
+node_elevation = 200      # flat surface [m] <float>
 
-geometry_folder = "../inputs/geometry/"        # Folder to manage geometry files <string>     
-shots_topography_file = "shotsTopography.bin"  #   
-nodes_topography_file = "nodesTopography.bin"  #    
+shot_topography = False   
+node_topography = False   
+
+geometry_folder = "../inputs/geometry/"       #
+
+shot_topography_file = "shots_topography.txt"  #     
+node_topography_file = "nodes_topography.txt"  #      
 
 # Regular SHOTS geometry                        
 
-shots_n_xline = 100           # Number of sources in x direction <int>
-shots_n_yline = 100           # Number of sources in y direction <int>
+shot_n_xline = 100           
+shot_n_yline = 100           
 
 shot_SW = [25, 25]            # NW       # (x,y) [m] <float>    
 shot_NW = [25, 4975]          #  |       # (x,y) [m] <float>    
@@ -42,8 +47,8 @@ shot_SE = [4975, 25]          # SW -- SE # (x,y) [m] <float>
 
 # Regular NODES geometry                        
 
-nodes_n_xline = 21            # Number of sources in x direction <int>
-nodes_n_yline = 21            # Number of sources in y direction
+node_n_xline = 21            
+node_n_yline = 21            
 
 node_SW = [500, 500]          # NW       # (x,y) <float>     
 node_NW = [500, 4500]         #  |       # (x,y) <float>   
@@ -51,17 +56,17 @@ node_SE = [4500, 500]         # SW -- SE # (x,y) <float>
 
 # Circular SHOT geometry
 
-shots_xcenter = 1000          #
-shots_ycenter = 1000          #
-shots_spacing = 50            #
-shots_offsets = [500, 800]    #
+shot_x_center = 1000          
+shot_y_center = 1000          
+shot_spacing = 50            
+shot_offsets = [500, 800]    # array <float>
 
 # Circular NODE geometry
 
-nodes_xcenter = 1000          #
-nodes_ycenter = 1000          #
-nodes_spacing = 50            #
-nodes_offsets = [500, 800]    #
+node_x_center = 1000          
+node_y_center = 1000         
+node_spacing = 50            
+node_offsets = [500, 800]    # array <float>
 
 #-------------------------------------------------------------------------------------------------
 # Data and auto picking parameters ---------------------------------------------------------------
@@ -93,27 +98,17 @@ pick_folder = "../../inputs/picks/"          #
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonalType = 0    # Eikonal Type flag <int>          
+eikonal_type = 0    # Eikonal Type flag <int>          
 
-exportRayPosition = False    # Ray position flag <bool>
-exportTravelTimes = False    # Travel times volume flag <bool> 
-exportIllumination = False   # Illumination matrix flag <bool>
-exportFirstArrivals = True   # First arrivals flag <bool> 
+export_ray_position = False   # Ray position flag <bool>
+export_time_volume = False    # Travel times volume flag <bool> 
+export_illumination = False   # Illumination matrix flag <bool>
+export_first_arrival = True   # First arrivals flag <bool> 
 
 raysFolder = "../../outputs/rayPosition/"             # Ray positions folder <string>
 eikonalFolder = "../../outputs/travelTimes/"          # Travel time volume folder <string>
 arrivalFolder = "../../outputs/dcal/"                 # Eikonal volume folder <string>
 illuminationFolder = "../../outputs/illumination/"    # Illumination volume folder <string>
-
-#-------------------------------------------------------------------------------------------------
-# Auto picking parameters ------------------------------------------------------------------------
-#-------------------------------------------------------------------------------------------------
-
-
-
-
-
-
 
 #-------------------------------------------------------------------------------------------------
 # Tomography parameters --------------------------------------------------------------------------

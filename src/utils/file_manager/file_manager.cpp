@@ -72,7 +72,7 @@ void File_manager::read_text_file(std::string path, std::vector<std::string> ele
     file.close();
 }
 
-std::string File_manager::catch_parameter(std::string target)
+std::string File_manager::catch_parameter(std::string target, std::string file)
 {
     char spaces = ' ';
     char comment = '#';
@@ -80,7 +80,7 @@ std::string File_manager::catch_parameter(std::string target)
     std::string line;
     std::string variable;
 
-    std::ifstream parameters(parameter_file);
+    std::ifstream parameters(file);
 
     if (parameters.is_open())
     {

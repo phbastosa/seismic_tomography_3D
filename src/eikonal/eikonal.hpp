@@ -3,95 +3,67 @@
 
 # include <string>
 
-# include "../essentials/utils.hpp"
-# include "../essentials/model.hpp"
-# include "../essentials/geometry.hpp"
+# include "../model/model.hpp"
+# include "../model/eikonal_model/eikonal_model.hpp"
 
-class Eikonal : public Utils, public Model, public Geometry
+# include "../geometry/geometry.hpp"
+# include "../geometry/regular/regular.hpp"
+# include "../geometry/circular/circular.hpp"
+
+# include "../utils/file_manager/file_manager.hpp"
+# include "../utils/interpolation/trilinear.hpp"
+
+class Eikonal 
 {   
 private:
 
-    typedef struct
-    {
-        int sgntz; int sgntx;            // 
-        int sgnty; int sgnvy;            //
-        int sgnvz; int sgnvx;            //
+    int eikonal_type;
 
-        int i, j, k;                     //
+    bool export_time_volume;  
+    bool export_first_arrival;
+    bool export_illumination; 
+    bool export_ray_position; 
 
-        float dzi, dxi, dyi;             //
-        float dz2i, dx2i, dy2i;          //
-        float dz2dx2, dz2dy2;            //
-        float dx2dy2, dsum;              //
-        
-    } FSM;
+    std::string ray_folder;         
+    std::string time_volume_folder; 
+    std::string first_arrival_Folder;
+    std::string illumination_folder; 
     
-    FSM fsm;                             // Compressing fast sweeping method variables
+    File_manager fm;
 
-    /* */
-    float min(float v1, float v2);
+protected:
 
-    /* */
-    void writeTravelTimes();
+    Model * model = new Eikonal_model();
     
-    /* */
-    void writeFirstArrivals();
+    Geometry * geometry[2];
 
-    /* */
-    void initSweep();
-    
-    /* */
-    void fullSweep();
+    int shots_type;
+    int nodes_type;
+    bool reciprocity;
 
-    /* */
-    void innerSweep();
+    // Model illumination;
 
-    /* */
-    void podvin();
-    
-    /* */ 
-    void jeongFIM();
+    // File_manager fm;
 
-    /* */
-    void nobleFSM();
+    // int shot_id;
+    // int eikonal_type;
 
-    /* */
-    void rayTracing();
+    // int shot_type;
+    // int node_type;
 
-public:    
-    
-    /* 0 - podvin & Lecomte (1991); 
-       1 - Jeong & Whitaker (2008); 
-       2 - Noble, Gesret & Belayouni (2014); 
-    */  
-    int eikonalType;
+    // bool reciprocity;
 
-    int shotId;                          // Current source index available
+public:
 
-    float * V;                           // Velocity volume 
-    float * T;                           // Travel times volume
-    float * S;                           // Slowness volume 
+    virtual void run_solver() = 0;    
 
-    float * illumination;                // Illumination matrix for all shots 
+    void write_time_volume();
+    void write_illumination();
+    void write_first_arrival();
 
-    bool exportTimesVolume;              // To set if you want to write the times volume 
-    bool exportFirstArrivals;            // To set if you want to write the first arrivals
-    bool exportIllumination;             // To set if you want to write illumination matrix
-    bool exportRayPosition;              // To set if you want to write ray positions 
+    void run_ray_tracing();
 
-    std::string raysFolder;              // Folder to write ray position points 
-    std::string eikonalFolder;           // Folder to write travel times volume 
-    std::string arrivalFolder;           // Folder to write first arrivals
-    std::string illuminationFolder;      // Folder to write illumination volume
-
-    /* */
-    void eikonalComputing();
-
-    /* */
-    void writeIllumination();
-    
-    /* */
-    void setEikonalParameters();
+    void set_parameters(std::string file);
 };
 
 # endif
