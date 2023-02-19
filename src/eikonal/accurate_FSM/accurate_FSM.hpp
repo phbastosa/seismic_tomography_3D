@@ -31,6 +31,7 @@ private:
 public:
 
     void solve();
+    void prepare_volumes();
 };
 
 # endif

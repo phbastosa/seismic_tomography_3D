@@ -5,6 +5,13 @@
 
 # include "accurate_FSM.hpp"
 
+void Accurate_FSM::prepare_volumes()
+{
+
+
+    
+}
+
 void Accurate_FSM::inner_sweep()
 {
     float ta, tb, tc, t1, t2, t3, Sref;

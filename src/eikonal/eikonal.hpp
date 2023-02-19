@@ -44,7 +44,6 @@ public:
 
     Geometry * geometry[2];
 
-    int type;
     int shot_id;
     int shots_type;
     int nodes_type;
@@ -57,7 +56,8 @@ public:
     void write_illumination();
     void write_first_arrival();
 
-    virtual void solve() = 0;    
+    virtual void solve() = 0;
+    virtual void prepare_volumes() = 0;    
 };
 
 # endif

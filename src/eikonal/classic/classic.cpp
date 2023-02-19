@@ -7,6 +7,13 @@
 
 float Classic::min(float v1, float v2) { return !(v2 < v1) ? v1 : v2; }
 
+void Classic::prepare_volumes()
+{
+
+
+
+}
+
 void Classic::solve()
 {
     int nPoints = model.total_samples_b;

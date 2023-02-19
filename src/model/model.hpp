@@ -40,7 +40,9 @@ public:
     int smoothing_samples;
     float standard_deviation;
 
+    float * expand_warp(float * volume);
     float * expand(float * volume);
+
     float * reduce(float * volume); 
     float * smooth(float * volume);
     float * resize(float * volume);

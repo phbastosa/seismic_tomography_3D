@@ -35,29 +35,21 @@ void Eikonal::set_parameters(std::string file)
     model.y_samples = std::stoi(fm.catch_parameter("y_samples", file));
     model.z_samples = std::stoi(fm.catch_parameter("z_samples", file));
 
-    model.boundary_samples = 1;        
-
-    model.x_samples_b = model.x_samples + 2 * model.boundary_samples;
-    model.y_samples_b = model.y_samples + 2 * model.boundary_samples;
-    model.z_samples_b = model.z_samples + 2 * model.boundary_samples;
-
     model.total_samples = model.x_samples * model.y_samples * model.z_samples;
-    model.total_samples_b = model.x_samples_b * model.y_samples_b * model.z_samples_b;
 
     model.x_spacing = std::stof(fm.catch_parameter("x_spacing", file));    
     model.y_spacing = std::stof(fm.catch_parameter("y_spacing", file));    
     model.z_spacing = std::stof(fm.catch_parameter("z_spacing", file));    
 
     slowness = new float[model.total_samples]();
-    travel_time = new float[model.total_samples_b]();
-    illumination = new float[model.total_samples]();
 
     std::string vp_file = fm.catch_parameter("vp_file", file);
     fm.read_binary_float(vp_file, slowness, model.total_samples);
     
-    slowness = model.expand(slowness); 
-    for (int index = 0; index < model.total_samples_b; index++)
+    for (int index = 0; index < model.total_samples; index++)
         slowness[index] = 1.0f / slowness[index];
+
+    illumination = new float[model.total_samples]();
 
     export_time_volume = fm.str2bool(fm.catch_parameter("export_time_volume", file));
     export_illumination = fm.str2bool(fm.catch_parameter("export_illumination",file));
@@ -96,32 +88,22 @@ void Eikonal::set_parameters(std::string file)
 
 void Eikonal::write_time_volume()
 {
-    if (export_time_volume)
-    {    
-        float * time_volume = model.reduce(travel_time);
-        
-        fm.write_binary_float(time_volume_folder + "eikonal_nz" + std::to_string(model.z_samples) + "_nx" + std::to_string(model.x_samples) + "_ny" + std::to_string(model.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", time_volume, model.total_samples);
-
-        delete[] time_volume;
-    }
+    if (export_time_volume)        
+        fm.write_binary_float(time_volume_folder + "eikonal_nz" + std::to_string(model.z_samples) + "_nx" + std::to_string(model.x_samples) + "_ny" + std::to_string(model.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", travel_time, model.total_samples);
 }
 
 void Eikonal::write_illumination()
 {
     if (export_illumination)
-    {    
         fm.write_binary_float(illumination_folder + "illumination_nz" + std::to_string(model.z_samples) + "_nx" + std::to_string(model.x_samples) + "_ny" + std::to_string(model.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", illumination, model.total_samples);
-    }
 }
 
 void::Eikonal::write_first_arrival()
 {
     if (export_first_arrival) 
     {   
-        int nxx = model.x_samples_b;
-        int nzz = model.z_samples_b;
-
-        int nb = model.boundary_samples;
+        int nx = model.x_samples;
+        int nz = model.z_samples;
 
         float dx = model.x_spacing;
         float dy = model.y_spacing;
@@ -141,18 +123,18 @@ void::Eikonal::write_first_arrival()
             interpolate.y1 = floorf(interpolate.y / dy) * dy + dy;
             interpolate.z1 = floorf(interpolate.z / dz) * dz + dz;
 
-            int id = ((int)(interpolate.z / dz) + nb) + 
-                     ((int)(interpolate.x / dx) + nb)*nzz + 
-                     ((int)(interpolate.y / dy) + nb)*nxx*nzz;
+            int id = ((int)(interpolate.z / dz)) + 
+                     ((int)(interpolate.x / dx))*nz + 
+                     ((int)(interpolate.y / dy))*nx*nz;
 
             interpolate.c000 = travel_time[id];
             interpolate.c001 = travel_time[id + 1];
-            interpolate.c100 = travel_time[id + nzz]; 
-            interpolate.c101 = travel_time[id + 1 + nzz]; 
-            interpolate.c010 = travel_time[id + nxx*nzz]; 
-            interpolate.c011 = travel_time[id + 1 + nxx*nzz]; 
-            interpolate.c110 = travel_time[id + nzz + nxx*nzz]; 
-            interpolate.c111 = travel_time[id + 1 + nzz + nxx*nzz];
+            interpolate.c100 = travel_time[id + nz]; 
+            interpolate.c101 = travel_time[id + 1 + nz]; 
+            interpolate.c010 = travel_time[id + nx*nz]; 
+            interpolate.c011 = travel_time[id + 1 + nx*nz]; 
+            interpolate.c110 = travel_time[id + nz + nx*nz]; 
+            interpolate.c111 = travel_time[id + 1 + nz + nx*nz];
 
             first_arrival[r] = interpolate.trilinear();        
         }
@@ -165,6 +147,8 @@ void Eikonal::ray_tracing()
 {
     if (export_ray_position || export_illumination)
     {
+        // model expand (nb = 1)   
+    
         int nxx = model.x_samples_b;
         int nzz = model.z_samples_b;
 

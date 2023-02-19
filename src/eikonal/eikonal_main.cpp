@@ -3,6 +3,7 @@
 
 # include "eikonal.hpp"
 # include "classic/classic.hpp"
+// # include "block_FIM/block_FIM.hpp"
 # include "accurate_FSM/accurate_FSM.hpp"
 
 # include "../utils/file_manager/file_manager.hpp"
@@ -19,6 +20,7 @@ int main(int argc, char **argv)
     Eikonal * eikonal[] = 
     {
         new Classic(),
+        // new Block_FIM(),
         new Accurate_FSM()
     };
 
@@ -32,6 +34,7 @@ int main(int argc, char **argv)
     int type = std::stoi(fm.catch_parameter("eikonal_type", std::string(argv[1])));
 
     eikonal[type]->set_parameters(std::string(argv[1]));
+    // eikonal[type]->prepare_volumes();
 
     for (eikonal[type]->shot_id = 0; eikonal[type]->shot_id < eikonal[type]->geometry[eikonal[type]->shots_type]->shots.all; eikonal[type]->shot_id++)
     {

@@ -100,9 +100,9 @@ float * Model::smooth(float * volume)
 
 float * Model::resize(float * volume)
 {
-    new_z_samples = (int)(static_cast<float>(z_samples-1) * z_spacing / new_z_spacing) + 1;    
-    new_x_samples = (int)(static_cast<float>(x_samples-1) * x_spacing / new_x_spacing) + 1;    
-    new_y_samples = (int)(static_cast<float>(y_samples-1) * y_spacing / new_y_spacing) + 1;    
+    // new_z_samples = (int)(static_cast<float>(z_samples-1) * z_spacing / new_z_spacing) + 1;    
+    // new_x_samples = (int)(static_cast<float>(x_samples-1) * x_spacing / new_x_spacing) + 1;    
+    // new_y_samples = (int)(static_cast<float>(y_samples-1) * y_spacing / new_y_spacing) + 1;    
 
     float * z = new float[new_z_samples]();
     float * x = new float[new_x_samples]();
