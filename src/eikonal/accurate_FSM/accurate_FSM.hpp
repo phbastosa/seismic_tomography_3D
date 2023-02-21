@@ -16,8 +16,6 @@ private:
     int sgntz, sgntx, sgnty; 
     int sgnvz, sgnvx, sgnvy;
 
-    int nb;
-
     float dsum;
     float dxi, dyi, dzi;
     float dx2i, dy2i, dz2i; 
@@ -27,6 +25,9 @@ private:
     int sidx, sidy, sidz;
 
     float dx, dy, dz;
+
+    float * S;
+    float * T;
 
 public:
 

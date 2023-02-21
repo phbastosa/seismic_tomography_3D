@@ -1,10 +1,14 @@
 #!/bin/bash
 
+library="/usr/local/cuda/lib64/"
+include="/usr/local/cuda/include/"
+
 gaussian="../src/utils/smoothing/gaussian.cpp"
 trilinear="../src/utils/interpolation/trilinear.cpp"
 file_manager="../src/utils/file_manager/file_manager.cpp"
 
-model="../src/model/model.cpp"
+eiko_m="../src/model/eikonal_model/eikonal_model.cpp"
+tomo_m=""
 
 geometry="../src/geometry/geometry.cpp"
 regular="../src/geometry/regular/regular.cpp"
@@ -17,6 +21,7 @@ qc_picks="../src/auto_picking/qc_picking.py"
 eikonal="../src/eikonal/eikonal.cpp"
 classic="../src/eikonal/classic/classic.cpp"
 block_FIM="../src/eikonal/block_FIM/block_FIM.cpp"
+kernel_FIM="../src/eikonal/block_FIM/cuda_kernel.cu"
 accurate_FSM="../src/eikonal/accurate_FSM/accurate_FSM.cpp"
 eikonal_main="../src/eikonal/eikonal_main.cpp"
 
@@ -63,7 +68,7 @@ case "$1" in
     # pgc++ $file_manager $geometry $circular $regular $geometry_main -lm -o ../bin/geometry.exe
 
     echo -e "\n../bin/\033[31meikonal.exe\033[m: \n" 
-    pgc++ $file_manager $trilinear $gaussian $model $geometry $regular $circular $eikonal $classic $accurate_FSM $eikonal_main $flags -lm -o ../bin/eikonal.exe 
+    pgc++ $file_manager $trilinear $gaussian $eiko_m $geometry $regular $circular $eikonal $classic $kernel_FIM $block_FIM $accurate_FSM $eikonal_main $flags -I $include -L $library -lm -o ../bin/eikonal.exe 
     
     echo -e "\n../bin/\033[31mtomography.exe\033[m: \n" 
     # tomography_main

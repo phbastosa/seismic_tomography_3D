@@ -25,7 +25,7 @@ reciprocity = False
 shot_geometry_type = 0    
 node_geometry_type = 0     
 
-shot_elevation = 0        # flat surface [m] <float>             
+shot_elevation = 100      # flat surface [m] <float>             
 node_elevation = 200      # flat surface [m] <float>
 
 shot_topography = False   
@@ -103,7 +103,7 @@ eikonal_type = 1    # Eikonal Type flag <int>
 export_time_volume = True    # Travel times volume flag <bool> 
 export_illumination = True   # Illumination matrix flag <bool>
 export_ray_position = True   # Ray position flag <bool>
-export_first_arrival = True   # First arrivals flag <bool> 
+export_first_arrival = True  # First arrivals flag <bool> 
 
 ray_folder = "../outputs/ray_positions/"             # Ray positions folder <string>
 time_volume_folder = "../outputs/travel_times/"      # Travel time volume folder <string>

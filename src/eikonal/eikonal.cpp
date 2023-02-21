@@ -13,9 +13,9 @@ void Eikonal::info_message()
     system("clear");
     std::cout<<"3D eikonal equation solver\n\n";
     
-    std::cout<<"Total x model length = "<<(model.x_samples-1)*model.x_spacing<<" m\n";
-    std::cout<<"Total Y model length = "<<(model.y_samples-1)*model.y_spacing<<" m\n";
-    std::cout<<"Total Z model length = "<<(model.z_samples-1)*model.z_spacing<<" m\n\n";
+    std::cout<<"Total x model length = "<<(eiko_m.x_samples-1)*eiko_m.x_spacing<<" m\n";
+    std::cout<<"Total Y model length = "<<(eiko_m.y_samples-1)*eiko_m.y_spacing<<" m\n";
+    std::cout<<"Total Z model length = "<<(eiko_m.z_samples-1)*eiko_m.z_spacing<<" m\n\n";
     
     if (reciprocity)
         std::cout<<"Reciprocity = True\n\n";
@@ -31,25 +31,25 @@ void Eikonal::info_message()
 
 void Eikonal::set_parameters(std::string file)
 {
-    model.x_samples = std::stoi(fm.catch_parameter("x_samples", file));
-    model.y_samples = std::stoi(fm.catch_parameter("y_samples", file));
-    model.z_samples = std::stoi(fm.catch_parameter("z_samples", file));
+    eiko_m.x_samples = std::stoi(fm.catch_parameter("x_samples", file));
+    eiko_m.y_samples = std::stoi(fm.catch_parameter("y_samples", file));
+    eiko_m.z_samples = std::stoi(fm.catch_parameter("z_samples", file));
 
-    model.total_samples = model.x_samples * model.y_samples * model.z_samples;
+    eiko_m.total_samples = eiko_m.x_samples * eiko_m.y_samples * eiko_m.z_samples;
 
-    model.x_spacing = std::stof(fm.catch_parameter("x_spacing", file));    
-    model.y_spacing = std::stof(fm.catch_parameter("y_spacing", file));    
-    model.z_spacing = std::stof(fm.catch_parameter("z_spacing", file));    
+    eiko_m.x_spacing = std::stof(fm.catch_parameter("x_spacing", file));    
+    eiko_m.y_spacing = std::stof(fm.catch_parameter("y_spacing", file));    
+    eiko_m.z_spacing = std::stof(fm.catch_parameter("z_spacing", file));    
 
-    slowness = new float[model.total_samples]();
+    slowness = new float[eiko_m.total_samples]();
 
     std::string vp_file = fm.catch_parameter("vp_file", file);
-    fm.read_binary_float(vp_file, slowness, model.total_samples);
+    fm.read_binary_float(vp_file, slowness, eiko_m.total_samples);
     
-    for (int index = 0; index < model.total_samples; index++)
+    for (int index = 0; index < eiko_m.total_samples; index++)
         slowness[index] = 1.0f / slowness[index];
 
-    illumination = new float[model.total_samples]();
+    illumination = new float[eiko_m.total_samples]();
 
     export_time_volume = fm.str2bool(fm.catch_parameter("export_time_volume", file));
     export_illumination = fm.str2bool(fm.catch_parameter("export_illumination",file));
@@ -89,25 +89,25 @@ void Eikonal::set_parameters(std::string file)
 void Eikonal::write_time_volume()
 {
     if (export_time_volume)        
-        fm.write_binary_float(time_volume_folder + "eikonal_nz" + std::to_string(model.z_samples) + "_nx" + std::to_string(model.x_samples) + "_ny" + std::to_string(model.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", travel_time, model.total_samples);
+        fm.write_binary_float(time_volume_folder + "eikonal_nz" + std::to_string(eiko_m.z_samples) + "_nx" + std::to_string(eiko_m.x_samples) + "_ny" + std::to_string(eiko_m.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", travel_time, eiko_m.total_samples);
 }
 
 void Eikonal::write_illumination()
 {
     if (export_illumination)
-        fm.write_binary_float(illumination_folder + "illumination_nz" + std::to_string(model.z_samples) + "_nx" + std::to_string(model.x_samples) + "_ny" + std::to_string(model.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", illumination, model.total_samples);
+        fm.write_binary_float(illumination_folder + "illumination_nz" + std::to_string(eiko_m.z_samples) + "_nx" + std::to_string(eiko_m.x_samples) + "_ny" + std::to_string(eiko_m.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", illumination, eiko_m.total_samples);
 }
 
 void::Eikonal::write_first_arrival()
 {
     if (export_first_arrival) 
     {   
-        int nx = model.x_samples;
-        int nz = model.z_samples;
+        int nx = eiko_m.x_samples;
+        int nz = eiko_m.z_samples;
 
-        float dx = model.x_spacing;
-        float dy = model.y_spacing;
-        float dz = model.z_spacing;
+        float dx = eiko_m.x_spacing;
+        float dy = eiko_m.y_spacing;
+        float dz = eiko_m.z_spacing;
 
         for (int r = 0; r < geometry[nodes_type]->nodes.all; r++)
         {
@@ -147,24 +147,22 @@ void Eikonal::ray_tracing()
 {
     if (export_ray_position || export_illumination)
     {
-        // model expand (nb = 1)   
+        float * T = eiko_m.expand_fdm(travel_time);   
     
-        int nxx = model.x_samples_b;
-        int nzz = model.z_samples_b;
+        int nxx = eiko_m.x_samples_b;
+        int nzz = eiko_m.z_samples_b;
 
-        int nb = model.boundary_samples;
-
-        float dx = model.x_spacing;
-        float dy = model.y_spacing;
-        float dz = model.z_spacing;
+        float dx = eiko_m.x_spacing;
+        float dy = eiko_m.y_spacing;
+        float dz = eiko_m.z_spacing;
     
         float sx = geometry[shots_type]->shots.x[shot_id];
         float sy = geometry[shots_type]->shots.y[shot_id];
         float sz = geometry[shots_type]->shots.z[shot_id];
 
-        int sIdz = (int)(sz / dz) + nb;
-        int sIdx = (int)(sx / dx) + nb;
-        int sIdy = (int)(sy / dy) + nb;
+        int sIdx = (int)(sx / dx) + 1;
+        int sIdy = (int)(sy / dy) + 1;
+        int sIdz = (int)(sz / dz) + 1;
 
         int sId = sIdz + sIdx*nzz + sIdy*nxx*nzz;     
         
@@ -180,9 +178,9 @@ void Eikonal::ray_tracing()
             float xi = geometry[nodes_type]->nodes.x[rayId];
             float yi = geometry[nodes_type]->nodes.y[rayId];
 
-            im = (int)(zi / dz) + nb; 
-            jm = (int)(xi / dx) + nb; 
-            km = (int)(yi / dy) + nb; 
+            im = (int)(zi / dz) + 1; 
+            jm = (int)(xi / dx) + 1; 
+            km = (int)(yi / dy) + 1; 
 
             rId = im + jm*nzz + km*nxx*nzz;
 
@@ -199,13 +197,13 @@ void Eikonal::ray_tracing()
 
             while (true)
             {
-                int i = (int)(zi / dz) + nb;
-                int j = (int)(xi / dx) + nb;
-                int k = (int)(yi / dy) + nb;
+                int i = (int)(zi / dz) + 1;
+                int j = (int)(xi / dx) + 1;
+                int k = (int)(yi / dy) + 1;
 
-                float dTz = (travel_time[(i+1) + j*nzz + k*nxx*nzz] - travel_time[(i-1) + j*nzz + k*nxx*nzz]) / (2.0f*dz);    
-                float dTx = (travel_time[i + (j+1)*nzz + k*nxx*nzz] - travel_time[i + (j-1)*nzz + k*nxx*nzz]) / (2.0f*dx);    
-                float dTy = (travel_time[i + j*nzz + (k+1)*nxx*nzz] - travel_time[i + j*nzz + (k-1)*nxx*nzz]) / (2.0f*dy);
+                float dTz = (T[(i+1) + j*nzz + k*nxx*nzz] - T[(i-1) + j*nzz + k*nxx*nzz]) / (2.0f*dz);    
+                float dTx = (T[i + (j+1)*nzz + k*nxx*nzz] - T[i + (j-1)*nzz + k*nxx*nzz]) / (2.0f*dx);    
+                float dTy = (T[i + j*nzz + (k+1)*nxx*nzz] - T[i + j*nzz + (k-1)*nxx*nzz]) / (2.0f*dy);
 
                 float norm = sqrtf(dTx*dTx + dTy*dTy + dTz*dTz);
 
@@ -213,9 +211,9 @@ void Eikonal::ray_tracing()
                 xi -= rayStep*dTx / norm; // x ray position update   
                 yi -= rayStep*dTy / norm; // y ray position update   
 
-                im = (int)(zi / dz) + nb; 
-                jm = (int)(xi / dx) + nb; 
-                km = (int)(yi / dy) + nb; 
+                im = (int)(zi / dz) + 1; 
+                jm = (int)(xi / dx) + 1; 
+                km = (int)(yi / dy) + 1; 
 
                 rId = im + jm*nzz + km*nxx*nzz;
 
@@ -288,6 +286,8 @@ void Eikonal::ray_tracing()
         std::vector<float>().swap(xRay);
         std::vector<float>().swap(yRay);
         std::vector<float>().swap(zRay);
+
+        delete[] T;
     }
 }
 

@@ -14,20 +14,8 @@ void cuda_safe_call(cudaError_t error)
     }
 }
 
-void block_FIM_solver(CUDAMEMSTRUCT &cmem, bool verbose)
+void block_FIM_solver(CUDAMEMSTRUCT &cmem)
 {
-    int deviceID; 
-    cudaGetDevice(&deviceID);
-    cudaDeviceProp deviceProp;
-    cudaGetDeviceProperties(&deviceProp, deviceID);
-
-	size_t freeMem, totalMem;
-	cudaMemGetInfo(&freeMem, &totalMem);
-
-	std::cout << "Device id : "<<deviceID<<", name : "<<deviceProp.name<<"\n";	
-    std::cout << "Total Memory : " << totalMem / (1024 * 1024) << "MB" << "\n";
-    std::cout << "Free Memory  : " << freeMem / (1024 * 1024) << "MB" << "\n";
-
     int xdim = cmem.xdim;
     int ydim = cmem.ydim;
     int zdim = cmem.zdim;
@@ -41,7 +29,6 @@ void block_FIM_solver(CUDAMEMSTRUCT &cmem, bool verbose)
 
     float * d_spd;
     float * d_sol;
-    float * h_sol;
     float * t_sol;
 
     uint * d_list;
@@ -51,33 +38,46 @@ void block_FIM_solver(CUDAMEMSTRUCT &cmem, bool verbose)
     bool * d_mask;
 
     // copy so that original value should not be modified
-    uint *h_list = (uint*) malloc(blknum*sizeof(uint));
-    bool *h_listed = (bool*) malloc(blknum*sizeof(bool));
-    bool *h_listVol = (bool*) malloc(blknum*sizeof(bool));
+    uint *h_list = new uint[blknum]();
+    bool *h_listed = new bool[blknum]();
+    bool *h_listVol = new bool[blknum]();
 
     // initialization
-    memcpy(h_list, cmem.h_list, blknum*sizeof(uint));
-    memcpy(h_listed, cmem.h_listed, blknum*sizeof(bool));
-    memcpy(h_listVol, cmem.h_listVol, blknum*sizeof(bool));
+    for (int k = 0; k < blknum; k++)
+    {
+        h_list[k] = cmem.h_list[k];
+        h_listed[k] = cmem.h_listed[k];
+        h_listVol[k] = cmem.h_listVol[k];
+    }
 
   	// create host/device memory using CUDA mem functions
-
 	cuda_safe_call(cudaMalloc((void**)&(d_spd), volsize*sizeof(float)));
 	cuda_safe_call(cudaMalloc((void**)&(d_sol), volsize*sizeof(float)));
 	cuda_safe_call(cudaMalloc((void**)&(t_sol), volsize*sizeof(float))); 
 	cuda_safe_call(cudaMalloc((void**)&(d_con), volsize*sizeof(bool)));  
+	cuda_safe_call(cudaMalloc((void**)&(d_mask), volsize*sizeof(bool)));
 	cuda_safe_call(cudaMalloc((void**)&(d_list), blknum*sizeof(uint)));
 	cuda_safe_call(cudaMalloc((void**)&(d_listVol), blknum*sizeof(bool)));
-	cuda_safe_call(cudaMalloc((void**)&(d_mask), volsize*sizeof(bool)));
 
 	cuda_safe_call(cudaMemcpy(d_spd, cmem.h_spd, volsize*sizeof(float), cudaMemcpyHostToDevice));
-	cuda_safe_call(cudaMemcpy(d_mask, cmem.h_mask, volsize*sizeof(bool), cudaMemcpyHostToDevice));
-
-    cuda_safe_call(cudaMemcpy(d_list, h_list, nActiveBlock*sizeof(uint), cudaMemcpyHostToDevice));
-    cuda_safe_call(cudaMemcpy(d_listVol, h_listVol, blknum*sizeof(bool), cudaMemcpyHostToDevice));
-    cuda_safe_call(cudaMemcpy(d_sol, h_sol, volsize*sizeof(float), cudaMemcpyHostToDevice));
-    cuda_safe_call(cudaMemcpy(t_sol, h_sol, volsize*sizeof(float), cudaMemcpyHostToDevice));
+    cuda_safe_call(cudaMemcpy(d_sol, cmem.h_sol, volsize*sizeof(float), cudaMemcpyHostToDevice));
+    cuda_safe_call(cudaMemcpy(t_sol, cmem.h_sol, volsize*sizeof(float), cudaMemcpyHostToDevice));
     cuda_safe_call(cudaMemset(d_con, 1, volsize*sizeof(bool)));
+	cuda_safe_call(cudaMemcpy(d_mask, cmem.h_mask, volsize*sizeof(bool), cudaMemcpyHostToDevice));
+    cuda_safe_call(cudaMemcpy(d_list, cmem.h_list, nActiveBlock*sizeof(uint), cudaMemcpyHostToDevice));
+    cuda_safe_call(cudaMemcpy(d_listVol, cmem.h_listVol, blknum*sizeof(bool), cudaMemcpyHostToDevice));
+
+    int deviceID; 
+    cudaGetDevice(&deviceID);
+    cudaDeviceProp deviceProp;
+    cudaGetDeviceProperties(&deviceProp, deviceID);
+
+	size_t freeMem, totalMem;
+	cudaMemGetInfo(&freeMem, &totalMem);
+
+	std::cout << "\nDevice id : "<<deviceID<<", name : "<<deviceProp.name<<"\n";	
+    std::cout << "Total Memory : " << totalMem / (1024 * 1024) << "MB" << "\n";
+    std::cout << "Free Memory  : " << freeMem / (1024 * 1024) << "MB" << "\n";
 
     // set dimension of block and entire grid size
     dim3 dimBlock(BLOCK_LENGTH,BLOCK_LENGTH,BLOCK_LENGTH);
@@ -85,9 +85,6 @@ void block_FIM_solver(CUDAMEMSTRUCT &cmem, bool verbose)
     dim3 dimGrid(nActiveBlock);
 
     int nTotalIter = 0;
-
-    std::vector<int> sourceList;
-    sourceList.push_back((zdim/2)*ydim*xdim + (ydim/2)*xdim + (xdim/2));
 
     uint nTotalBlockProcessed = 0;
 
@@ -269,14 +266,15 @@ __global__ void run_solver(float* spd, bool* mask, const float *sol_in, float *s
 		uint zgridlength = zdim/BLOCK_LENGTH;
 
 		// compute block index
-		uint bx = block_idx%xgridlength;
-		uint tmpIdx = (block_idx - bx)/xgridlength;
-		uint by = tmpIdx%ygridlength;
-		uint bz = (tmpIdx-by)/ygridlength;
+		uint bx = block_idx % xgridlength;
+		uint tmpIdx = (block_idx - bx) / xgridlength;
+		uint by = tmpIdx % ygridlength;
+		uint bz = (tmpIdx - by) / ygridlength;
 
 		uint tx = threadIdx.x;
 		uint ty = threadIdx.y;
 		uint tz = threadIdx.z;
+
 		uint tIdx = tz*BLOCK_LENGTH*BLOCK_LENGTH + ty*BLOCK_LENGTH + tx;
 
 		__shared__ float _sol[BLOCK_LENGTH+2][BLOCK_LENGTH+2][BLOCK_LENGTH+2];

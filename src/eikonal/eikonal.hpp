@@ -4,6 +4,7 @@
 # include <string>
 
 # include "../model/model.hpp"
+# include "../model/eikonal_model/eikonal_model.hpp"
 
 # include "../geometry/geometry.hpp"
 # include "../geometry/regular/regular.hpp"
@@ -40,7 +41,7 @@ protected:
 
 public:
 
-    Model model;
+    Eikonal_model eiko_m;
 
     Geometry * geometry[2];
 

@@ -9,28 +9,27 @@ float Classic::min(float v1, float v2) { return !(v2 < v1) ? v1 : v2; }
 
 void Classic::prepare_volumes()
 {
+    S = eiko_m.expand_fdm(slowness);
 
-
-
+    T = new float[eiko_m.total_samples_b]();
+    K = new float[eiko_m.total_samples_b]();    
+    nT = new float[eiko_m.total_samples_b]();    
+    nK = new float[eiko_m.total_samples_b]();  
 }
 
 void Classic::solve()
 {
-    int nPoints = model.total_samples_b;
+    int nxx = eiko_m.x_samples_b;
+    int nyy = eiko_m.y_samples_b;
+    int nzz = eiko_m.z_samples_b;
 
-    float * K = new float[nPoints]();    
-    float * nT = new float[nPoints]();    
-    float * nK = new float[nPoints]();  
+    int nPoints = eiko_m.total_samples_b;
 
-    int nxx = model.x_samples_b;
-    int nyy = model.y_samples_b;
-    int nzz = model.z_samples_b;
+    int nb = 1;
 
-    int nb = model.boundary_samples;
-
-    float dx = model.x_spacing;
-    float dy = model.y_spacing;
-    float dz = model.z_spacing;
+    float dx = eiko_m.x_spacing;
+    float dy = eiko_m.y_spacing;
+    float dz = eiko_m.z_spacing;
 
     float sx = geometry[shots_type]->shots.x[shot_id];  
     float sy = geometry[shots_type]->shots.y[shot_id];  
@@ -52,13 +51,13 @@ void Classic::solve()
 
             float dist = sqrtf(powf(sx - grid_sx, 2.0f) + powf(sy - grid_sy, 2.0f) + powf(sz - grid_sz, 2.0f));
 
-            travel_time[sId] = dist * slowness[sId];
-            nT[sId] = travel_time[sId]; 
+            T[sId] = dist * S[sId];
+            nT[sId] = T[sId]; 
         }
         else
         {
             nT[index] = 1e6f;
-            travel_time[index] = 1e6f;
+            T[index] = 1e6f;
         }
         
         K[index] = 0.0f;
@@ -127,157 +126,157 @@ void Classic::solve()
     # pragma acc enter data copyin(this[0:1], K[0:nPoints])
     # pragma acc enter data copyin(this[0:1], nT[0:nPoints])
     # pragma acc enter data copyin(this[0:1], nK[0:nPoints])
-    # pragma acc enter data copyin(this[0:1], slowness[0:nPoints])
-    # pragma acc enter data copyin(this[0:1], travel_time[0:nPoints])
+    # pragma acc enter data copyin(this[0:1], S[0:nPoints])
+    # pragma acc enter data copyin(this[0:1], T[0:nPoints])
     {
         for (int iteration = 0; iteration < nItEikonal; iteration++)
         {  
-            # pragma acc parallel loop present(slowness[0:nPoints],travel_time[0:nPoints],K[0:nPoints],nT[0:nPoints])
+            # pragma acc parallel loop present(S[0:nPoints],T[0:nPoints],K[0:nPoints],nT[0:nPoints])
             for (int index = 0; index < nPoints; index++)
             {
                 if (K[index] == 1.0f)
                 {
-                    int k = (int) (index / (nxx*nzz));             // y direction
+                    int k = (int) (index / (nxx*nzz));         // y direction
                     int j = (int) (index - k*nxx*nzz) / nzz;   // x direction
                     int i = (int) (index - j*nzz - k*nxx*nzz); // z direction
 
                     if ((i > 0) && (i < nzz-1) && (j > 0) && (j < nxx-1) && (k > 0) && (k < nyy-1))
                     {
                         float h = dx;
-                        float lowest = travel_time[index];
+                        float lowest = T[index];
                         float Tijk, T1, T2, Sref, M, N, P, Q, hs2; 
 
                         /* 1D operator head wave: i,j-1,k -> i,j,k (x direction) */
-                        Tijk = travel_time[index - nzz] + h * min(slowness[index - nzz], 
-                                                                     min(slowness[index - 1 - nzz], 
-                                                                     min(slowness[index - nzz - nxx*nzz], slowness[index - 1 - nzz - nxx*nzz]))); 
+                        Tijk = T[index - nzz] + h * min(S[index - nzz], 
+                                                                     min(S[index - 1 - nzz], 
+                                                                     min(S[index - nzz - nxx*nzz], S[index - 1 - nzz - nxx*nzz]))); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i,j+1,k -> i,j,k (x direction) */
-                        Tijk = travel_time[index + nzz] + h * min(slowness[index], 
-                                                                     min(slowness[index - 1], 
-                                                                     min(slowness[index - nxx*nzz], slowness[index - 1 - nxx*nzz])));
+                        Tijk = T[index + nzz] + h * min(S[index], 
+                                                                     min(S[index - 1], 
+                                                                     min(S[index - nxx*nzz], S[index - 1 - nxx*nzz])));
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i,j,k-1 -> i,j,k (y direction) */
-                        Tijk = travel_time[index - nxx*nzz] + h * min(slowness[index - nxx*nzz], 
-                                                                         min(slowness[index - nzz - nxx*nzz], 
-                                                                         min(slowness[index - 1 - nxx*nzz], slowness[index - 1 - nzz - nxx*nzz]))); 
+                        Tijk = T[index - nxx*nzz] + h * min(S[index - nxx*nzz], 
+                                                                         min(S[index - nzz - nxx*nzz], 
+                                                                         min(S[index - 1 - nxx*nzz], S[index - 1 - nzz - nxx*nzz]))); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i,j,k+1 -> i,j,k (y direction) */
-                        Tijk = travel_time[index + nxx*nzz] + h * min(slowness[index],
-                                                                         min(slowness[index - 1], 
-                                                                         min(slowness[index - nzz], slowness[index - 1 - nzz]))); 
+                        Tijk = T[index + nxx*nzz] + h * min(S[index],
+                                                                         min(S[index - 1], 
+                                                                         min(S[index - nzz], S[index - 1 - nzz]))); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i-1,j,k -> i,j,k (z direction) */
-                        Tijk = travel_time[index - 1] + h * min(slowness[index - 1], 
-                                                                   min(slowness[index - 1 - nzz], 
-                                                                   min(slowness[index - 1 - nxx*nzz], slowness[index - 1 - nzz - nxx*nzz]))); 
+                        Tijk = T[index - 1] + h * min(S[index - 1], 
+                                                                   min(S[index - 1 - nzz], 
+                                                                   min(S[index - 1 - nxx*nzz], S[index - 1 - nzz - nxx*nzz]))); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i+1,j,k -> i,j,k (z direction) */
-                        Tijk = travel_time[index + 1] + h * min(slowness[index], 
-                                                                   min(slowness[index - nzz], 
-                                                                   min(slowness[index - nxx*nzz], slowness[index - nzz - nxx*nzz]))); 
+                        Tijk = T[index + 1] + h * min(S[index], 
+                                                                   min(S[index - nzz], 
+                                                                   min(S[index - nxx*nzz], S[index - nzz - nxx*nzz]))); 
                         if (Tijk < lowest) lowest = Tijk;
                     
                         /* 1D operator diffraction XZ plane */
                         
                         // i-1,j-1,k -> i,j,k
-                        Tijk = travel_time[index - 1 - nzz] + h*sqrt2*slowness[index - 1 - nzz]; 
+                        Tijk = T[index - 1 - nzz] + h*sqrt2*S[index - 1 - nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i-1,j+1,k -> i,j,k
-                        Tijk = travel_time[index - 1 + nzz] + h*sqrt2*slowness[index - 1]; 
+                        Tijk = T[index - 1 + nzz] + h*sqrt2*S[index - 1]; 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j-1,k -> i,j,k
-                        Tijk = travel_time[index + 1 - nzz] + h*sqrt2*slowness[index - nzz]; 
+                        Tijk = T[index + 1 - nzz] + h*sqrt2*S[index - nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j+1,k -> i,j,k
-                        Tijk = travel_time[index + 1 + nzz] + h*sqrt2*slowness[index]; 
+                        Tijk = T[index + 1 + nzz] + h*sqrt2*S[index]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator diffraction YZ plane */
 
                         // i-1,j,k-1 -> i,j,k
-                        Tijk = travel_time[index - 1 - nxx*nzz] + h*sqrt2*slowness[index - 1 - nxx*nzz]; 
+                        Tijk = T[index - 1 - nxx*nzz] + h*sqrt2*S[index - 1 - nxx*nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i-1,j,k+1 -> i,j,k
-                        Tijk = travel_time[index - 1 + nxx*nzz] + h*sqrt2*slowness[index - 1]; 
+                        Tijk = T[index - 1 + nxx*nzz] + h*sqrt2*S[index - 1]; 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j,k-1 -> i,j,k
-                        Tijk = travel_time[index + 1 - nxx*nzz] + h*sqrt2*slowness[index - nxx*nzz]; 
+                        Tijk = T[index + 1 - nxx*nzz] + h*sqrt2*S[index - nxx*nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j,k+1 -> i,j,k
-                        Tijk = travel_time[index + 1 + nxx*nzz] + h*sqrt2*slowness[index]; 
+                        Tijk = T[index + 1 + nxx*nzz] + h*sqrt2*S[index]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator diffraction XY plane */
                         
                         // i,j-1,k-1 -> i,j,k
-                        Tijk = travel_time[index - nzz - nxx*nzz] + h*sqrt2*slowness[index - nzz - nxx*nzz]; 
+                        Tijk = T[index - nzz - nxx*nzz] + h*sqrt2*S[index - nzz - nxx*nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i,j-1,k+1 -> i,j,k
-                        Tijk = travel_time[index - nzz + nxx*nzz] + h*sqrt2*slowness[index - nzz]; 
+                        Tijk = T[index - nzz + nxx*nzz] + h*sqrt2*S[index - nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i,j+1,k-1 -> i,j,k
-                        Tijk = travel_time[index + nzz - nxx*nzz] + h*sqrt2*slowness[index - nxx*nzz]; 
+                        Tijk = T[index + nzz - nxx*nzz] + h*sqrt2*S[index - nxx*nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i,j+1,k+1 -> i,j,k
-                        Tijk = travel_time[index + nzz + nxx*nzz] + h*sqrt2*slowness[index]; 
+                        Tijk = T[index + nzz + nxx*nzz] + h*sqrt2*S[index]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator corner diffractions */
 
                         // i-1,j-1,k-1 -> i,j,k
-                        Tijk = travel_time[index - 1 - nzz - nxx*nzz] + h*sqrt3*slowness[index - 1 - nzz - nxx*nzz]; 
+                        Tijk = T[index - 1 - nzz - nxx*nzz] + h*sqrt3*S[index - 1 - nzz - nxx*nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i-1,j-1,k+1 -> i,j,k
-                        Tijk = travel_time[index - 1 - nzz + nxx*nzz] + h*sqrt3*slowness[index - 1 - nzz]; 
+                        Tijk = T[index - 1 - nzz + nxx*nzz] + h*sqrt3*S[index - 1 - nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i+1,j-1,k-1 -> i,j,k
-                        Tijk = travel_time[index + 1 - nzz - nxx*nzz] + h*sqrt3*slowness[index - nzz - nxx*nzz]; 
+                        Tijk = T[index + 1 - nzz - nxx*nzz] + h*sqrt3*S[index - nzz - nxx*nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i+1,j-1,k+1 -> i,j,k
-                        Tijk = travel_time[index + 1 - nzz + nxx*nzz] + h*sqrt3*slowness[index - nzz]; 
+                        Tijk = T[index + 1 - nzz + nxx*nzz] + h*sqrt3*S[index - nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i-1,j+1,k-1 -> i,j,k
-                        Tijk = travel_time[index - 1 + nzz - nxx*nzz] + h*sqrt3*slowness[index - 1 - nxx*nzz]; 
+                        Tijk = T[index - 1 + nzz - nxx*nzz] + h*sqrt3*S[index - 1 - nxx*nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i-1,j+1,k+1 -> i,j,k
-                        Tijk = travel_time[index - 1 + nzz + nxx*nzz] + h*sqrt3*slowness[index - 1]; 
+                        Tijk = T[index - 1 + nzz + nxx*nzz] + h*sqrt3*S[index - 1]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i+1,j+1,k-1 -> i,j,k
-                        Tijk = travel_time[index + 1 + nzz - nxx*nzz] + h*sqrt3*slowness[index - nxx*nzz]; 
+                        Tijk = T[index + 1 + nzz - nxx*nzz] + h*sqrt3*S[index - nxx*nzz]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i+1,j+1,k+1 -> i,j,k
-                        Tijk = travel_time[index + 1 + nzz + nxx*nzz] + h*sqrt3*slowness[index]; 
+                        Tijk = T[index + 1 + nzz + nxx*nzz] + h*sqrt3*S[index]; 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 2D operator XZ plane: First Quadrant*/
 
-                        Sref = slowness[index - 1 - nzz];
+                        Sref = S[index - 1 - nzz];
 
                         // i,j-1,k - i-1,j-1,k -> i,j,k
-                        T1 = travel_time[index - nzz];
-                        T2 = travel_time[index - 1 - nzz];
+                        T1 = T[index - nzz];
+                        T2 = T[index - 1 - nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -288,8 +287,8 @@ void Classic::solve()
                         }
 
                         // i-1,j,k - i-1,j-1,k -> i,j,k
-                        T1 = travel_time[index - 1];
-                        T2 = travel_time[index - 1 - nzz];
+                        T1 = T[index - 1];
+                        T2 = T[index - 1 - nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -301,11 +300,11 @@ void Classic::solve()
 
                         /* 2D operator XZ plane: Second Quadrant*/                        
 
-                        Sref = slowness[index - nzz];
+                        Sref = S[index - nzz];
 
                         // i,j-1,k - i+1,j-1,k -> i,j,k
-                        T1 = travel_time[index - nzz];
-                        T2 = travel_time[index + 1 - nzz];
+                        T1 = T[index - nzz];
+                        T2 = T[index + 1 - nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -316,8 +315,8 @@ void Classic::solve()
                         }
 
                         // i+1,j,k - i+1,j-1,k -> i,j,k
-                        T1 = travel_time[index + 1];
-                        T2 = travel_time[index + 1 - nzz];
+                        T1 = T[index + 1];
+                        T2 = T[index + 1 - nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -329,11 +328,11 @@ void Classic::solve()
 
                         /* 2D operator XZ plane: Third Quadrant*/                        
 
-                        Sref = slowness[index];
+                        Sref = S[index];
 
                         // i+1,j,k - i+1,j+1,k -> i,j,k
-                        T1 = travel_time[index + 1];
-                        T2 = travel_time[index + 1 + nzz];
+                        T1 = T[index + 1];
+                        T2 = T[index + 1 + nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -344,8 +343,8 @@ void Classic::solve()
                         }
 
                         // i,j+1,k - i+1,j+1,k -> i,j,k
-                        T1 = travel_time[index + nzz];
-                        T2 = travel_time[index + 1 + nzz];
+                        T1 = T[index + nzz];
+                        T2 = T[index + 1 + nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -357,11 +356,11 @@ void Classic::solve()
 
                         /* 2D operator XZ plane: Fourth Quadrant*/                        
 
-                        Sref = slowness[index - 1];
+                        Sref = S[index - 1];
 
                         // i,j+1,k - i-1,j+1,k -> i,j,k
-                        T1 = travel_time[index + nzz];
-                        T2 = travel_time[index - 1 + nzz];
+                        T1 = T[index + nzz];
+                        T2 = T[index - 1 + nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -372,8 +371,8 @@ void Classic::solve()
                         }
 
                         // i-1,j,k - i-1,j+1,k -> i,j,k
-                        T1 = travel_time[index - 1];
-                        T2 = travel_time[index - 1 + nzz];
+                        T1 = T[index - 1];
+                        T2 = T[index - 1 + nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -385,11 +384,11 @@ void Classic::solve()
 
                         /* 2D operator YZ plane: First Quadrant */                        
 
-                        Sref = slowness[index - 1 - nxx*nzz];
+                        Sref = S[index - 1 - nxx*nzz];
 
                         // i,j,k-1 - i-1,j,k-1 -> i,j,k
-                        T1 = travel_time[index - nxx*nzz];
-                        T2 = travel_time[index - 1 - nxx*nzz];
+                        T1 = T[index - nxx*nzz];
+                        T2 = T[index - 1 - nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -400,8 +399,8 @@ void Classic::solve()
                         }
 
                         // i-1,j,k - i-1,j,k-1 -> i,j,k
-                        T1 = travel_time[index - 1];
-                        T2 = travel_time[index - 1 - nxx*nzz];
+                        T1 = T[index - 1];
+                        T2 = T[index - 1 - nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -413,11 +412,11 @@ void Classic::solve()
 
                         /* 2D operator YZ plane: Second Quadrant */                        
 
-                        Sref = slowness[index - nxx*nzz];
+                        Sref = S[index - nxx*nzz];
 
                         // i,j,k-1 - i+1,j,k-1 -> i,j,k
-                        T1 = travel_time[index - nxx*nzz];
-                        T2 = travel_time[index + 1 - nxx*nzz];
+                        T1 = T[index - nxx*nzz];
+                        T2 = T[index + 1 - nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -428,8 +427,8 @@ void Classic::solve()
                         }
 
                         // i+1,j,k - i+1,j,k-1 -> i,j,k
-                        T1 = travel_time[index + 1];
-                        T2 = travel_time[index + 1 - nxx*nzz];
+                        T1 = T[index + 1];
+                        T2 = T[index + 1 - nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -441,11 +440,11 @@ void Classic::solve()
 
                         /* 2D operator YZ plane: Third Quadrant*/                        
 
-                        Sref = slowness[index];
+                        Sref = S[index];
 
                         // i+1,j,k - i+1,j,k+1 -> i,j,k
-                        T1 = travel_time[index + 1];
-                        T2 = travel_time[index + 1 + nxx*nzz];
+                        T1 = T[index + 1];
+                        T2 = T[index + 1 + nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -456,8 +455,8 @@ void Classic::solve()
                         }
 
                         // i,j,k+1 - i+1,j,k+1 -> i,j,k
-                        T1 = travel_time[index + nxx*nzz];
-                        T2 = travel_time[index + 1 + nxx*nzz];
+                        T1 = T[index + nxx*nzz];
+                        T2 = T[index + 1 + nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -469,11 +468,11 @@ void Classic::solve()
 
                         /* 2D operator YZ plane: Fourth Quadrant*/                        
 
-                        Sref = slowness[index - 1];
+                        Sref = S[index - 1];
 
                         // i,j,k+1 - i-1,j,k+1 -> i,j,k
-                        T1 = travel_time[index + nxx*nzz];
-                        T2 = travel_time[index - 1 + nxx*nzz];
+                        T1 = T[index + nxx*nzz];
+                        T2 = T[index - 1 + nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -484,8 +483,8 @@ void Classic::solve()
                         }
 
                         // i-1,j,k - i-1,j,k+1 -> i,j,k
-                        T1 = travel_time[index - 1];
-                        T2 = travel_time[index - 1 + nxx*nzz];
+                        T1 = T[index - 1];
+                        T2 = T[index - 1 + nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -497,11 +496,11 @@ void Classic::solve()
 
                         /* 2D operator XY plane: First Quadrant*/                        
 
-                        Sref = slowness[index - nzz - nxx*nzz];
+                        Sref = S[index - nzz - nxx*nzz];
 
                         // i,j-1,k - i,j-1,k-1 -> i,j,k
-                        T1 = travel_time[index - nzz];
-                        T2 = travel_time[index - nzz - nxx*nzz];
+                        T1 = T[index - nzz];
+                        T2 = T[index - nzz - nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -512,8 +511,8 @@ void Classic::solve()
                         }
 
                         // i,j,k-1 - i,j-1,k-1 -> i,j,k
-                        T1 = travel_time[index - nxx*nzz];
-                        T2 = travel_time[index - nzz - nxx*nzz];
+                        T1 = T[index - nxx*nzz];
+                        T2 = T[index - nzz - nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -525,11 +524,11 @@ void Classic::solve()
 
                         /* 2D operator XY plane: Second Quadrant*/                        
 
-                        Sref = slowness[index - nzz];
+                        Sref = S[index - nzz];
 
                         // i,j-1,k - i,j-1,k+1 -> i,j,k
-                        T1 = travel_time[index - nzz];
-                        T2 = travel_time[index - nzz + nxx*nzz];
+                        T1 = T[index - nzz];
+                        T2 = T[index - nzz + nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -540,8 +539,8 @@ void Classic::solve()
                         }
 
                         // i,j,k+1 - i,j-1,k+1 -> i,j,k
-                        T1 = travel_time[index + nxx*nzz];
-                        T2 = travel_time[index - nzz + nxx*nzz];
+                        T1 = T[index + nxx*nzz];
+                        T2 = T[index - nzz + nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -553,11 +552,11 @@ void Classic::solve()
 
                         /* 2D operator XY plane: Third Quadrant*/                        
 
-                        Sref = slowness[index];
+                        Sref = S[index];
 
                         // i,j,k+1 - i,j+1,k+1 -> i,j,k
-                        T1 = travel_time[index + nxx*nzz];
-                        T2 = travel_time[index + nzz + nxx*nzz];
+                        T1 = T[index + nxx*nzz];
+                        T2 = T[index + nzz + nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -568,8 +567,8 @@ void Classic::solve()
                         }
 
                         // i,j+1,k - i,j+1,k+1 -> i,j,k
-                        T1 = travel_time[index + nzz];
-                        T2 = travel_time[index + nzz + nxx*nzz];
+                        T1 = T[index + nzz];
+                        T2 = T[index + nzz + nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -581,11 +580,11 @@ void Classic::solve()
 
                         /* 2D operator XY plane: Fourth Quadrant*/                        
 
-                        Sref = slowness[index - nxx*nzz];
+                        Sref = S[index - nxx*nzz];
 
                         // i,j+1,k - i,j+1,k-1 -> i,j,k
-                        T1 = travel_time[index + nzz];
-                        T2 = travel_time[index + nzz - nxx*nzz];
+                        T1 = T[index + nzz];
+                        T2 = T[index + nzz - nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -596,8 +595,8 @@ void Classic::solve()
                         }
 
                         // i,j,k-1 - i,j+1,k-1 -> i,j,k
-                        T1 = travel_time[index - nxx*nzz];
-                        T2 = travel_time[index + nzz - nxx*nzz];
+                        T1 = T[index - nxx*nzz];
+                        T2 = T[index + nzz - nxx*nzz];
                         if ((T1 - T2) > 0.0f)
                         {
                             if ((T1 - T2) < h*Sref/sqrt2)
@@ -609,13 +608,13 @@ void Classic::solve()
 
                         /* 3D operator - First octant: XY plane */
 
-                        Sref = slowness[index - 1 - nzz - nxx*nzz];
+                        Sref = S[index - 1 - nzz - nxx*nzz];
                         hs2 = h*h*Sref*Sref;
 
-    /* i-1,j-1,k-1 */   M = travel_time[index - 1 - nzz - nxx*nzz];   
-    /* i-1,j-1, k  */   N = travel_time[index - 1 - nzz];             
-    /* i-1, j ,k-1 */   P = travel_time[index - 1 - nxx*nzz];       
-    /* i-1, j , k  */   Q = travel_time[index - 1];                 
+    /* i-1,j-1,k-1 */   M = T[index - 1 - nzz - nxx*nzz];   
+    /* i-1,j-1, k  */   N = T[index - 1 - nzz];             
+    /* i-1, j ,k-1 */   P = T[index - 1 - nxx*nzz];       
+    /* i-1, j , k  */   Q = T[index - 1];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -653,10 +652,10 @@ void Classic::solve()
 
                         /* 3D operator - First octant: YZ plane */
 
-    /* i-1,j-1,k-1 */   M = travel_time[index - 1 - nzz - nxx*nzz];   
-    /* i-1,j-1, k  */   N = travel_time[index - 1 - nzz];             
-    /*  i ,j-1,k-1 */   P = travel_time[index - nzz - nxx*nzz];       
-    /*  i ,j-1, k  */   Q = travel_time[index - nzz];                 
+    /* i-1,j-1,k-1 */   M = T[index - 1 - nzz - nxx*nzz];   
+    /* i-1,j-1, k  */   N = T[index - 1 - nzz];             
+    /*  i ,j-1,k-1 */   P = T[index - nzz - nxx*nzz];       
+    /*  i ,j-1, k  */   Q = T[index - nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -694,10 +693,10 @@ void Classic::solve()
 
                         /* 3D operator - First octant: XZ plane */
 
-    /* i-1,j-1,k-1 */   M = travel_time[index - 1 - nzz - nxx*nzz];   
-    /*  i ,j-1,k-1 */   N = travel_time[index - nzz - nxx*nzz];             
-    /* i-1, j ,k-1 */   P = travel_time[index - 1 - nxx*nzz];       
-    /*  i , j ,k-1 */   Q = travel_time[index - nxx*nzz];                 
+    /* i-1,j-1,k-1 */   M = T[index - 1 - nzz - nxx*nzz];   
+    /*  i ,j-1,k-1 */   N = T[index - nzz - nxx*nzz];             
+    /* i-1, j ,k-1 */   P = T[index - 1 - nxx*nzz];       
+    /*  i , j ,k-1 */   Q = T[index - nxx*nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -735,13 +734,13 @@ void Classic::solve()
 
                         /* 3D operator - Second octant: XY plane */
 
-                        Sref = slowness[index - 1 - nxx*nzz];
+                        Sref = S[index - 1 - nxx*nzz];
                         hs2 = h*h*Sref*Sref;
 
-    /* i-1,j+1,k-1 */   M = travel_time[index - 1 + nzz - nxx*nzz];   
-    /* i-1, j ,k-1 */   N = travel_time[index - 1 - nxx*nzz];             
-    /* i-1,j+1, k  */   P = travel_time[index - 1 + nzz];       
-    /* i-1, j , k  */   Q = travel_time[index - 1];                 
+    /* i-1,j+1,k-1 */   M = T[index - 1 + nzz - nxx*nzz];   
+    /* i-1, j ,k-1 */   N = T[index - 1 - nxx*nzz];             
+    /* i-1,j+1, k  */   P = T[index - 1 + nzz];       
+    /* i-1, j , k  */   Q = T[index - 1];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -779,10 +778,10 @@ void Classic::solve()
 
                         /* 3D operator - Second octant: YZ plane */
 
-    /* i-1,j+1,k-1 */   M = travel_time[index - 1 + nzz - nxx*nzz];   
-    /* i-1,j+1, k  */   N = travel_time[index - 1 + nzz];             
-    /*  i ,j+1,k-1 */   P = travel_time[index + nzz - nxx*nzz];       
-    /*  i ,j+1, k  */   Q = travel_time[index + nzz];                 
+    /* i-1,j+1,k-1 */   M = T[index - 1 + nzz - nxx*nzz];   
+    /* i-1,j+1, k  */   N = T[index - 1 + nzz];             
+    /*  i ,j+1,k-1 */   P = T[index + nzz - nxx*nzz];       
+    /*  i ,j+1, k  */   Q = T[index + nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -820,10 +819,10 @@ void Classic::solve()
 
                         /* 3D operator - Second octant: XZ plane */
 
-    /* i-1,j+1,k-1 */   M = travel_time[index - 1 + nzz - nxx*nzz];   
-    /* i-1, j ,k-1 */   N = travel_time[index - 1 - nxx*nzz];             
-    /*  i ,j+1,k-1 */   P = travel_time[index + nzz - nxx*nzz];       
-    /*  i , j ,k-1 */   Q = travel_time[index - nxx*nzz];                 
+    /* i-1,j+1,k-1 */   M = T[index - 1 + nzz - nxx*nzz];   
+    /* i-1, j ,k-1 */   N = T[index - 1 - nxx*nzz];             
+    /*  i ,j+1,k-1 */   P = T[index + nzz - nxx*nzz];       
+    /*  i , j ,k-1 */   Q = T[index - nxx*nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -861,13 +860,13 @@ void Classic::solve()
 
                         /* 3D operator - Third octant: XY plane */
 
-                        Sref = slowness[index - 1];
+                        Sref = S[index - 1];
                         hs2 = h*h*Sref*Sref;
 
-    /* i-1,j+1,k+1 */   M = travel_time[index - 1 + nzz + nxx*nzz];   
-    /* i-1,j+1, k  */   N = travel_time[index - 1 + nzz];             
-    /* i-1, j ,k+1 */   P = travel_time[index - 1 + nxx*nzz];       
-    /* i-1, j , k  */   Q = travel_time[index - 1];                 
+    /* i-1,j+1,k+1 */   M = T[index - 1 + nzz + nxx*nzz];   
+    /* i-1,j+1, k  */   N = T[index - 1 + nzz];             
+    /* i-1, j ,k+1 */   P = T[index - 1 + nxx*nzz];       
+    /* i-1, j , k  */   Q = T[index - 1];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -905,10 +904,10 @@ void Classic::solve()
 
                         /* 3D operator - Third octant: YZ plane */
 
-    /* i-1,j+1,k+1 */   M = travel_time[index - 1 + nzz + nxx*nzz];   
-    /*  i ,j+1,k+1 */   N = travel_time[index + nzz + nxx*nzz];             
-    /* i-1,j+1, k  */   P = travel_time[index - 1 + nzz];       
-    /*  i ,j+1, k  */   Q = travel_time[index + nzz];                 
+    /* i-1,j+1,k+1 */   M = T[index - 1 + nzz + nxx*nzz];   
+    /*  i ,j+1,k+1 */   N = T[index + nzz + nxx*nzz];             
+    /* i-1,j+1, k  */   P = T[index - 1 + nzz];       
+    /*  i ,j+1, k  */   Q = T[index + nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -946,10 +945,10 @@ void Classic::solve()
 
                         /* 3D operator - Third octant: XZ plane */
 
-    /* i-1,j+1,k+1 */   M = travel_time[index - 1 + nzz + nxx*nzz];   
-    /* i-1, j ,k+1 */   N = travel_time[index - 1 + nxx*nzz];             
-    /*  i ,j+1,k+1 */   P = travel_time[index + nzz + nxx*nzz];       
-    /*  i , j ,k+1 */   Q = travel_time[index + nxx*nzz];                 
+    /* i-1,j+1,k+1 */   M = T[index - 1 + nzz + nxx*nzz];   
+    /* i-1, j ,k+1 */   N = T[index - 1 + nxx*nzz];             
+    /*  i ,j+1,k+1 */   P = T[index + nzz + nxx*nzz];       
+    /*  i , j ,k+1 */   Q = T[index + nxx*nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -987,13 +986,13 @@ void Classic::solve()
 
                         /* 3D operator - Fourth octant: XY plane */
 
-                        Sref = slowness[index - 1 - nzz];
+                        Sref = S[index - 1 - nzz];
                         hs2 = h*h*Sref*Sref;
 
-    /* i-1,j-1,k+1 */   M = travel_time[index - 1 - nzz + nxx*nzz];   
-    /* i-1, j ,k+1 */   N = travel_time[index - 1 + nxx*nzz];             
-    /* i-1,j-1, k  */   P = travel_time[index - 1 - nzz];       
-    /* i-1, j , k  */   Q = travel_time[index - 1];                 
+    /* i-1,j-1,k+1 */   M = T[index - 1 - nzz + nxx*nzz];   
+    /* i-1, j ,k+1 */   N = T[index - 1 + nxx*nzz];             
+    /* i-1,j-1, k  */   P = T[index - 1 - nzz];       
+    /* i-1, j , k  */   Q = T[index - 1];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1031,10 +1030,10 @@ void Classic::solve()
 
                         /* 3D operator - Fourth octant: YZ plane */
 
-    /* i-1,j-1,k+1 */   M = travel_time[index - 1 - nzz + nxx*nzz];   
-    /* i-1,j-1, k  */   N = travel_time[index - 1 - nzz];             
-    /*  i ,j-1,k+1 */   P = travel_time[index - nzz + nxx*nzz];       
-    /*  i ,j-1, k  */   Q = travel_time[index - nzz];                 
+    /* i-1,j-1,k+1 */   M = T[index - 1 - nzz + nxx*nzz];   
+    /* i-1,j-1, k  */   N = T[index - 1 - nzz];             
+    /*  i ,j-1,k+1 */   P = T[index - nzz + nxx*nzz];       
+    /*  i ,j-1, k  */   Q = T[index - nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1072,10 +1071,10 @@ void Classic::solve()
 
                         /* 3D operator - Fourth octant: XZ plane */
 
-    /* i-1,j-1,k+1 */   M = travel_time[index - 1 - nzz + nxx*nzz];   
-    /*  i ,j-1,k+1 */   N = travel_time[index - nzz + nxx*nzz];             
-    /* i-1, j ,k+1 */   P = travel_time[index - 1 + nxx*nzz];       
-    /*  i , j ,k+1 */   Q = travel_time[index + nxx*nzz];                 
+    /* i-1,j-1,k+1 */   M = T[index - 1 - nzz + nxx*nzz];   
+    /*  i ,j-1,k+1 */   N = T[index - nzz + nxx*nzz];             
+    /* i-1, j ,k+1 */   P = T[index - 1 + nxx*nzz];       
+    /*  i , j ,k+1 */   Q = T[index + nxx*nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1113,13 +1112,13 @@ void Classic::solve()
 
                         /* 3D operator - Fifth octant: XY plane */
 
-                        Sref = slowness[index - nzz - nxx*nzz];
+                        Sref = S[index - nzz - nxx*nzz];
                         hs2 = h*h*Sref*Sref;
 
-    /* i+1,j-1,k-1 */   M = travel_time[index + 1 - nzz - nxx*nzz];   
-    /* i+1, j ,k-1 */   N = travel_time[index + 1 - nxx*nzz];             
-    /* i+1,j-1, k  */   P = travel_time[index + 1 - nzz];       
-    /* i+1, j , k  */   Q = travel_time[index + 1];                 
+    /* i+1,j-1,k-1 */   M = T[index + 1 - nzz - nxx*nzz];   
+    /* i+1, j ,k-1 */   N = T[index + 1 - nxx*nzz];             
+    /* i+1,j-1, k  */   P = T[index + 1 - nzz];       
+    /* i+1, j , k  */   Q = T[index + 1];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1157,10 +1156,10 @@ void Classic::solve()
 
                         /* 3D operator - Fifth octant: YZ plane */
 
-    /* i+1,j-1,k-1 */   M = travel_time[index + 1 - nzz - nxx*nzz];   
-    /* i+1,j-1, k  */   N = travel_time[index + 1 - nzz];             
-    /*  i ,j-1,k-1 */   P = travel_time[index - nzz - nxx*nzz];       
-    /*  i ,j-1, k  */   Q = travel_time[index - nzz];                 
+    /* i+1,j-1,k-1 */   M = T[index + 1 - nzz - nxx*nzz];   
+    /* i+1,j-1, k  */   N = T[index + 1 - nzz];             
+    /*  i ,j-1,k-1 */   P = T[index - nzz - nxx*nzz];       
+    /*  i ,j-1, k  */   Q = T[index - nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1198,10 +1197,10 @@ void Classic::solve()
 
                         /* 3D operator - Fifth octant: XZ plane */
 
-    /* i+1,j-1,k-1 */   M = travel_time[index + 1 - nzz - nxx*nzz];   
-    /*  i ,j-1,k-1 */   N = travel_time[index - nzz - nxx*nzz];             
-    /* i+1, j ,k-1 */   P = travel_time[index + 1 - nxx*nzz];       
-    /*  i , j ,k-1 */   Q = travel_time[index - nxx*nzz];                 
+    /* i+1,j-1,k-1 */   M = T[index + 1 - nzz - nxx*nzz];   
+    /*  i ,j-1,k-1 */   N = T[index - nzz - nxx*nzz];             
+    /* i+1, j ,k-1 */   P = T[index + 1 - nxx*nzz];       
+    /*  i , j ,k-1 */   Q = T[index - nxx*nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1239,13 +1238,13 @@ void Classic::solve()
 
                         /* 3D operator - Sixth octant: XY plane */
 
-                        Sref = slowness[index - nxx*nzz];
+                        Sref = S[index - nxx*nzz];
                         hs2 = h*h*Sref*Sref;
 
-    /* i+1,j+1,k-1 */   M = travel_time[index + 1 + nzz - nxx*nzz];   
-    /* i+1,j+1, k  */   N = travel_time[index + 1 + nzz];             
-    /* i+1, j ,k-1 */   P = travel_time[index + 1 - nxx*nzz];       
-    /* i+1, j , k  */   Q = travel_time[index + 1];                 
+    /* i+1,j+1,k-1 */   M = T[index + 1 + nzz - nxx*nzz];   
+    /* i+1,j+1, k  */   N = T[index + 1 + nzz];             
+    /* i+1, j ,k-1 */   P = T[index + 1 - nxx*nzz];       
+    /* i+1, j , k  */   Q = T[index + 1];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1283,10 +1282,10 @@ void Classic::solve()
 
                         /* 3D operator - Sixth octant: YZ plane */
 
-    /* i+1,j+1,k-1 */   M = travel_time[index + 1 + nzz - nxx*nzz];   
-    /*  i ,j+1,k-1 */   N = travel_time[index + nzz - nxx*nzz];             
-    /* i+1,j+1, k  */   P = travel_time[index + 1 + nzz];       
-    /*  i ,j+1, k  */   Q = travel_time[index + nzz];                 
+    /* i+1,j+1,k-1 */   M = T[index + 1 + nzz - nxx*nzz];   
+    /*  i ,j+1,k-1 */   N = T[index + nzz - nxx*nzz];             
+    /* i+1,j+1, k  */   P = T[index + 1 + nzz];       
+    /*  i ,j+1, k  */   Q = T[index + nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1324,10 +1323,10 @@ void Classic::solve()
 
                         /* 3D operator - Sixth octant: XZ plane */
 
-    /* i+1,j+1,k-1 */   M = travel_time[index + 1 + nzz - nxx*nzz];   
-    /* i+1, j ,k-1 */   N = travel_time[index + 1 - nxx*nzz];             
-    /*  i ,j+1,k-1 */   P = travel_time[index + nzz - nxx*nzz];       
-    /*  i , j ,k-1 */   Q = travel_time[index - nxx*nzz];                 
+    /* i+1,j+1,k-1 */   M = T[index + 1 + nzz - nxx*nzz];   
+    /* i+1, j ,k-1 */   N = T[index + 1 - nxx*nzz];             
+    /*  i ,j+1,k-1 */   P = T[index + nzz - nxx*nzz];       
+    /*  i , j ,k-1 */   Q = T[index - nxx*nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1365,13 +1364,13 @@ void Classic::solve()
 
                         /* 3D operator - Seventh octant: XY plane */
                         
-                        Sref = slowness[index - nzz];
+                        Sref = S[index - nzz];
                         hs2 = h*h*Sref*Sref;
 
-    /* i+1,j-1,k+1 */   M = travel_time[index + 1 - nzz + nxx*nzz];   
-    /* i+1,j-1, k  */   N = travel_time[index + 1 - nzz];             
-    /* i+1, j ,k+1 */   P = travel_time[index + 1 + nxx*nzz];       
-    /* i+1, j , k  */   Q = travel_time[index + 1];                 
+    /* i+1,j-1,k+1 */   M = T[index + 1 - nzz + nxx*nzz];   
+    /* i+1,j-1, k  */   N = T[index + 1 - nzz];             
+    /* i+1, j ,k+1 */   P = T[index + 1 + nxx*nzz];       
+    /* i+1, j , k  */   Q = T[index + 1];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1409,10 +1408,10 @@ void Classic::solve()
 
                         /* 3D operator - Seventh octant: YZ plane */
 
-    /* i+1,j-1,k+1 */   M = travel_time[index + 1 - nzz + nxx*nzz];   
-    /*  i ,j-1,k+1 */   N = travel_time[index - nzz + nxx*nzz];             
-    /* i+1,j-1, k  */   P = travel_time[index + 1 - nzz];       
-    /*  i ,j-1, k  */   Q = travel_time[index - nzz];                 
+    /* i+1,j-1,k+1 */   M = T[index + 1 - nzz + nxx*nzz];   
+    /*  i ,j-1,k+1 */   N = T[index - nzz + nxx*nzz];             
+    /* i+1,j-1, k  */   P = T[index + 1 - nzz];       
+    /*  i ,j-1, k  */   Q = T[index - nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1450,10 +1449,10 @@ void Classic::solve()
 
                         /* 3D operator - Seventh octant: XZ plane */
 
-    /* i+1,j-1,k+1 */   M = travel_time[index + 1 - nzz + nxx*nzz];   
-    /* i+1, j ,k+1 */   N = travel_time[index + 1 + nxx*nzz];             
-    /*  i ,j-1,k+1 */   P = travel_time[index - nzz + nxx*nzz];       
-    /*  i , j ,k+1 */   Q = travel_time[index + nxx*nzz];                 
+    /* i+1,j-1,k+1 */   M = T[index + 1 - nzz + nxx*nzz];   
+    /* i+1, j ,k+1 */   N = T[index + 1 + nxx*nzz];             
+    /*  i ,j-1,k+1 */   P = T[index - nzz + nxx*nzz];       
+    /*  i , j ,k+1 */   Q = T[index + nxx*nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1491,13 +1490,13 @@ void Classic::solve()
 
                         /* 3D operator - Eighth octant: XY plane */
 
-                        Sref = slowness[index];
+                        Sref = S[index];
                         hs2 = h*h*Sref*Sref;
 
-    /* i+1,j+1,k+1 */   M = travel_time[index + 1 + nzz + nxx*nzz];   
-    /* i+1, j ,k+1 */   N = travel_time[index + 1 + nxx*nzz];             
-    /* i+1,j+1, k  */   P = travel_time[index + 1 + nzz];       
-    /* i+1, j , k  */   Q = travel_time[index + 1];                 
+    /* i+1,j+1,k+1 */   M = T[index + 1 + nzz + nxx*nzz];   
+    /* i+1, j ,k+1 */   N = T[index + 1 + nxx*nzz];             
+    /* i+1,j+1, k  */   P = T[index + 1 + nzz];       
+    /* i+1, j , k  */   Q = T[index + 1];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1535,10 +1534,10 @@ void Classic::solve()
 
                         /* 3D operator - Eighth octant: YZ plane */
 
-    /* i+1,j+1,k+1 */   M = travel_time[index + 1 + nzz + nxx*nzz];   
-    /* i+1,j+1, k  */   N = travel_time[index + 1 + nzz];             
-    /*  i ,j+1,k+1 */   P = travel_time[index + nzz + nxx*nzz];       
-    /*  i ,j+1, k  */   Q = travel_time[index + nzz];                 
+    /* i+1,j+1,k+1 */   M = T[index + 1 + nzz + nxx*nzz];   
+    /* i+1,j+1, k  */   N = T[index + 1 + nzz];             
+    /*  i ,j+1,k+1 */   P = T[index + nzz + nxx*nzz];       
+    /*  i ,j+1, k  */   Q = T[index + nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1576,10 +1575,10 @@ void Classic::solve()
 
                         /* 3D operator - Eighth octant: XZ plane */
 
-    /* i+1,j+1,k+1 */   M = travel_time[index + 1 + nzz + nxx*nzz];   
-    /*  i ,j+1,k+1 */   N = travel_time[index + nzz + nxx*nzz];             
-    /* i+1, j ,k+1 */   P = travel_time[index + 1 + nxx*nzz];       
-    /*  i , j ,k+1 */   Q = travel_time[index + nxx*nzz];                 
+    /* i+1,j+1,k+1 */   M = T[index + 1 + nzz + nxx*nzz];   
+    /*  i ,j+1,k+1 */   N = T[index + nzz + nxx*nzz];             
+    /* i+1, j ,k+1 */   P = T[index + 1 + nxx*nzz];       
+    /*  i , j ,k+1 */   Q = T[index + nxx*nzz];                 
 
                         // MNP -> R 
                         if ((M <= N) && (M <= P) && 
@@ -1616,7 +1615,7 @@ void Classic::solve()
                         }        
 
                         /* Time atualization */
-                        if (lowest == travel_time[index]) K[index] = 0.0f;
+                        if (lowest == T[index]) K[index] = 0.0f;
 
                         nT[index] = lowest;
                     }
@@ -1631,7 +1630,7 @@ void Classic::solve()
             {
                 if (K[index] == 1.0f)
                 {
-                    int k = (int) (index / (nxx*nzz));             // y direction
+                    int k = (int) (index / (nxx*nzz));         // y direction
                     int j = (int) (index - k*nxx*nzz) / nzz;   // x direction
                     int i = (int) (index - j*nzz - k*nxx*nzz); // z direction
 
@@ -1667,10 +1666,10 @@ void Classic::solve()
                 }
             }
 
-            # pragma acc parallel loop present(travel_time[0:nPoints],nT[0:nPoints],K[0:nPoints],nK[0:nPoints])
+            # pragma acc parallel loop present(T[0:nPoints],nT[0:nPoints],K[0:nPoints],nK[0:nPoints])
             for (int index = 0; index < nPoints; index++)
             {
-                travel_time[index] = nT[index];
+                T[index] = nT[index];
                 K[index] = nK[index];
             }
         }
@@ -1678,10 +1677,8 @@ void Classic::solve()
     # pragma acc exit data delete(K[0:nPoints], this[0:1])
     # pragma acc exit data delete(nT[0:nPoints], this[0:1])
     # pragma acc exit data delete(nK[0:nPoints], this[0:1])
-    # pragma acc exit data copyout(slowness[0:nPoints], this[0:1])
-    # pragma acc exit data copyout(travel_time[0:nPoints], this[0:1])
+    # pragma acc exit data delete(S[0:nPoints], this[0:1])
+    # pragma acc exit data copyout(T[0:nPoints], this[0:1])
 
-    delete[] K;
-    delete[] nT;
-    delete[] nK;
+    travel_time = eiko_m.reduce_fdm(T);
 }

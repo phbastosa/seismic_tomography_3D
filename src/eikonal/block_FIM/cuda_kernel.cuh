@@ -45,11 +45,11 @@ typedef struct
 } CUDAMEMSTRUCT;
 
 void cuda_safe_call(cudaError_t error);
-void block_FIM_solver(CUDAMEMSTRUCT &cmem, bool verbose);
+void block_FIM_solver(CUDAMEMSTRUCT &cmem);
 
-__global__ void run_solver(float* spd, bool* mask, const float *sol_in, float *sol_out, bool *con, uint* list, int xdim, int ydim, int zdim, int nIter, uint nActiveBlock);
+__global__ void run_solver(float* spd, bool* mask, const float *sol_in, float *sol_out, bool *con, uint* list, int xdim, int ydim, int zdim, float dh, int nIter, uint nActiveBlock);
 __global__ void run_reduction(bool *con, bool *listVol, uint *list, uint nActiveBlock);
-__global__ void run_check_neighbor(float* spd, bool* mask, const float *sol_in, float *sol_out, bool *con, uint* list, int xdim, int ydim, int zdim, uint nActiveBlock, uint nTotalBlock);
-__device__ float get_time_eikonal(float a, float b, float c, float s);
+__global__ void run_check_neighbor(float* spd, bool* mask, const float *sol_in, float *sol_out, bool *con, uint* list, int xdim, int ydim, int zdim, float dh, uint nActiveBlock, uint nTotalBlock);
+__device__ float get_time_eikonal(float a, float b, float c, float h, float s);
 
 # endif
