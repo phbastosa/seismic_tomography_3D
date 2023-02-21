@@ -22,6 +22,12 @@ private:
 
     float * S;
     float * T;
+    float * K;
+    float * nT;
+    float * nK;
+
+    void original_FIM();
+    void open_acc_FIM();
 
     void apply_model_mask();
     void extract_solution();
