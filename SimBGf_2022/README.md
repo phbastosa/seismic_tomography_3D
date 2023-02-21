@@ -22,29 +22,3 @@
 <h3 align="center"> Comparison results of methods analized </h3>
 
 ![shot5](https://user-images.githubusercontent.com/44127778/206926089-ef1889de-97bc-4448-bb6c-4c8d172c87e3.png)
-
-### Eikonal equation runtime test
-
-## Asus x5570zd: Ryzen 5 2500u and GTX 1050 4GB mobile
-
-    Model dimensions:
-    Samples in x: 881 -> 22000 m
-    Samples in y: 881 -> 22000 m
-    Samples in z: 45 -> 1100 m
-
-    Central shot applied in position:
-    x = 11000 m
-    y = 11000 m
-    elevation = 0 m
-
-    Circular geometry applied in configuration:
-    x center = 11000 m
-    y center = 11000 m
-    elevation = 0 m
-    offset = 10000 m
-
-    ----------------- Run time ------------------
-
-    Podvin & Lecomte (1991) time = 25.1027 s.
-    Jeong & Whitaker (2008) time = 20.4786 s.
-    Noble, Gesret and Belayouni (2014) time = 39.8723 s.

@@ -68,12 +68,12 @@ void Eikonal::set_parameters(std::string file)
     geometry[0] = new Regular();
     geometry[1] = new Circular();
 
-    geometry[shots_type]->set_parameters(file);
-    geometry[shots_type]->build_geometry(geometry[shots_type]->shots);
-    
+    geometry[shots_type]->set_parameters(file);    
     geometry[nodes_type]->set_parameters(file);
-    geometry[nodes_type]->build_geometry(geometry[nodes_type]->nodes);
 
+    geometry[shots_type]->export_positions(geometry[shots_type]->shots, "xyz_shots.txt");
+    geometry[nodes_type]->export_positions(geometry[nodes_type]->nodes, "xyz_nodes.txt");
+    
     if (reciprocity)
     {
         std::swap(geometry[shots_type]->shots.x, geometry[nodes_type]->nodes.x); 

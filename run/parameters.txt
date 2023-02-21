@@ -98,7 +98,7 @@ pick_folder = "../../inputs/picks/"          #
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonal_type = 1    # Eikonal Type flag <int>          
+eikonal_type = 2    # Eikonal Type flag <int>          
 
 export_time_volume = True    # Travel times volume flag <bool> 
 export_illumination = True   # Illumination matrix flag <bool>

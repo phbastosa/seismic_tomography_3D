@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
     for (eikonal[type]->shot_id = 0; eikonal[type]->shot_id < eikonal[type]->geometry[eikonal[type]->shots_type]->shots.all; eikonal[type]->shot_id++)
     {
-        // eikonal[type]->info_message();
+        eikonal[type]->info_message();
 
         std::cout<<"Solving eikonal equation with the "<<formulation[type]<<" formulation\n";
         
@@ -47,8 +47,8 @@ int main(int argc, char **argv)
         eikonal[type]->write_time_volume();
         eikonal[type]->write_first_arrival();
 
-        // eikonal[type]->ray_tracing();
-        // eikonal[type]->write_illumination();
+        eikonal[type]->ray_tracing();
+        eikonal[type]->write_illumination();
     }
 
     tf = std::chrono::system_clock::now();
