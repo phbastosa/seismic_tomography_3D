@@ -20,6 +20,11 @@ void Block_FIM::solve()
     open_acc_FIM();
 }
 
+float Block_FIM::min(float v1, float v2)
+{ 
+    return !(v2 < v1) ? v1 : v2; 
+}
+
 void Block_FIM::apply_model_mask() 
 {
 	int nx = memoryStruct_.xdim;
@@ -293,26 +298,6 @@ void Block_FIM::open_acc_FIM()
     K[sId + nzz] = 1.0f;
     K[sId - nxx*nzz] = 1.0f;
     K[sId + nxx*nzz] = 1.0f;
-    K[sId + 1 - nzz] = 1.0f;
-    K[sId - 1 - nzz] = 1.0f;
-    K[sId + 1 + nzz] = 1.0f;
-    K[sId - 1 + nzz] = 1.0f;
-    K[sId + 1 + nxx*nzz] = 1.0f;
-    K[sId + 1 - nxx*nzz] = 1.0f;
-    K[sId - 1 + nxx*nzz] = 1.0f;
-    K[sId - 1 - nxx*nzz] = 1.0f;
-    K[sId - nzz - nxx*nzz] = 1.0f;
-    K[sId - nzz + nxx*nzz] = 1.0f;
-    K[sId + nzz - nxx*nzz] = 1.0f;
-    K[sId + nzz + nxx*nzz] = 1.0f;
-    K[sId + 1 + nzz + nxx*nzz] = 1.0f;
-    K[sId + 1 + nzz - nxx*nzz] = 1.0f;
-    K[sId + 1 - nzz + nxx*nzz] = 1.0f;
-    K[sId + 1 - nzz - nxx*nzz] = 1.0f;
-    K[sId - 1 - nzz - nxx*nzz] = 1.0f;
-    K[sId - 1 - nzz + nxx*nzz] = 1.0f;
-    K[sId - 1 + nzz - nxx*nzz] = 1.0f;
-    K[sId - 1 + nzz + nxx*nzz] = 1.0f;
 
     int aux = 0;
     int nItEikonal = 0;
@@ -343,9 +328,6 @@ void Block_FIM::open_acc_FIM()
 
     nItEikonal += (int)(3 * nItEikonal / 2);
 
-    float sqrt2 = sqrtf(2.0f);
-    float sqrt3 = sqrtf(3.0f);
-
     # pragma acc enter data copyin(this[0:1], K[0:nPoints])
     # pragma acc enter data copyin(this[0:1], nT[0:nPoints])
     # pragma acc enter data copyin(this[0:1], nK[0:nPoints])
@@ -366,12 +348,11 @@ void Block_FIM::open_acc_FIM()
                     if ((i > 0) && (i < nzz-1) && (j > 0) && (j < nxx-1) && (k > 0) && (k < nyy-1))
                     {
                         float h = dx;
-                        float lowest = T[index];
-                        float a, b, c, tmp, Tijk, lowest;
+                        float a, b, c, tmp, Tijk;
 
-                        a = std::min(T[index - nzz],T[index + nzz]);         // Tx min        
-                        b = std::min(T[index - nxx*nzz],T[index + nxx*nzz]); // Ty min        
-                        c = std::min(T[index - 1],T[index + 1]);             // Tz min        
+                        a = min(T[index - nzz], T[index + nzz]);         // Tx min        
+                        b = min(T[index - nxx*nzz], T[index + nxx*nzz]); // Ty min        
+                        c = min(T[index - 1], T[index + 1]);             // Tz min        
 
                         // a,b,c <------- sort(Tx,Ty,Tz), where a > b > c
                         if (a < b) {tmp = a; a = b; b = tmp;}
@@ -386,13 +367,13 @@ void Block_FIM::open_acc_FIM()
 
                             if (Tijk > b)
                             {
-                                tmp = 0.5f * (b + c + sqrt(2.0f * h*h * S[index]*S[index] - (b - c)*(b - c)));           
+                                tmp = 0.5f * (b + c + sqrtf(2.0f * h*h * S[index]*S[index] - (b - c)*(b - c)));           
 
                                 if (tmp > b) Tijk = tmp;
 
                                 if (Tijk > a)
                                 {
-                                    tmp = (a + b + c) / 3.0f + sqrt(2.0f * (a*(b - a) + b*(c - b) + c*(a - c))  + 3.0f * h*h * S[index]*S[index]) / 3.0f;
+                                    tmp = (a + b + c) / 3.0f + sqrtf(2.0f * (a*(b - a) + b*(c - b) + c*(a - c))  + 3.0f * h*h * S[index]*S[index]) / 3.0f;
 
                                     if (tmp > a) Tijk = tmp;
                                 }
@@ -400,6 +381,8 @@ void Block_FIM::open_acc_FIM()
                         }
  
                         /* Time atualization */
+                        float lowest = min(Tijk, T[index]);    
+
                         if (lowest == T[index]) K[index] = 0.0f;
 
                         nT[index] = lowest;

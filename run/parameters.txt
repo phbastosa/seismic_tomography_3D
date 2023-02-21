@@ -25,7 +25,7 @@ reciprocity = False
 shot_geometry_type = 0    
 node_geometry_type = 0     
 
-shot_elevation = 100      # flat surface [m] <float>             
+shot_elevation = 0        # flat surface [m] <float>             
 node_elevation = 200      # flat surface [m] <float>
 
 shot_topography = False   
