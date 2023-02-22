@@ -214,26 +214,6 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
     px = 1/plt.rcParams['figure.dpi']  
     ticks = np.array([3,7,7], dtype = int)
 
-    line_node = int(np.sqrt(len(nodes[:,0])))
-
-    x_nodes = np.reshape(nodes[:,0], [line_node,line_node], order = "F") 
-    y_nodes = np.reshape(nodes[:,1], [line_node,line_node], order = "F") 
-    z_nodes = np.reshape(nodes[:,2], [line_node,line_node], order = "F")
-
-    for k, line in enumerate(x_nodes[:,0]):
-        if slices[2]*dh[1] < line:
-            x_target = k
-            break
-
-        x_target = line_node-1
-
-    for k, line in enumerate(y_nodes[0,:]):
-        if slices[1]*dh[0] < line:
-            y_target = k
-            break
-
-        y_target = line_node-1
-
     fig = plt.figure(1, figsize=(910*px*subplots[1], 780*px*subplots[0]))
 
     xloc = np.linspace(0,nx-1,ticks[1], dtype = int)
@@ -287,11 +267,11 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
             else:
                 ims = [models[ind, slices[0],:,:].T, models[ind,:,slices[2],:].T, models[ind,:,:,slices[1]]]
 
-            xshot = [shots[:,0]/dh[0], shots[:,2]/dh[2], shots[:,0]/dh[0]]
-            yshot = [shots[:,1]/dh[1], shots[:,1]/dh[2], shots[:,2]/dh[2]]
+            xshot = [shots[:,0]/dh[0],[],[]]
+            yshot = [shots[:,1]/dh[1],[],[]]
 
-            xnode = [nodes[:,0]/dh[0], z_nodes[:,y_target]/dh[2], x_nodes[:,x_target]/dh[0]]
-            ynode = [nodes[:,1]/dh[1], y_nodes[y_target,:]/dh[1], z_nodes[x_target,:]/dh[2]]
+            xnode = [nodes[:,0]/dh[0],[],[]]
+            ynode = [nodes[:,1]/dh[1],[],[]]
 
             for k, axs in enumerate(axes):
 
@@ -328,9 +308,12 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
                 else:
                     
                     ax.imshow(ims[k], aspect = 'auto', cmap = "Greys", vmin = vmin, vmax = vmax)    
+
+                    ax.plot(xSlices[k][0], xSlices[k][1], xSlices[k][2], linewidth = 0.5)
+                    ax.plot(ySlices[k][0], ySlices[k][1], ySlices[k][2], linewidth = 0.5)
                     
-                    ax.scatter(xshot[k], yshot[k], s = 0.1)
-                    ax.scatter(xnode[k], ynode[k], s = 5.0)
+                    ax.scatter(xshot[k], yshot[k], s = 8.0)
+                    ax.scatter(xnode[k], ynode[k], s = 8.0)
 
                     ax.tick_params(direction = xTickDirection[k], axis='x') 
                     ax.tick_params(direction = yTickDirection[k], axis='y') 
@@ -343,9 +326,6 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
  
                     ax.set_xlabel(xLabel[k])
                     ax.set_ylabel(yLabel[k])
-
-                    ax.plot(xSlices[k][0], xSlices[k][1], xSlices[k][2])
-                    ax.plot(ySlices[k][0], ySlices[k][1], ySlices[k][2])
                     
                     if yInvert[k]:
                        ax.invert_yaxis()

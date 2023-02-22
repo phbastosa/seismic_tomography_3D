@@ -1,83 +1,99 @@
+import sys
 import timeit
 import numpy as np
 import matplotlib.pyplot as plt
 
+from functions import *
+
 from scipy.signal import savgol_filter
 from scipy.ndimage import median_filter
 
-def readBinaryArray(n,filename):
-    return np.fromfile(filename, dtype = np.float32, count = n)
-
-def readBinaryMatrix(n1,n2,filename):
-    data = np.fromfile(filename, dtype = np.float32, count = n1*n2)    
-    return np.reshape(data, [n1,n2], order='F')
-
 #--------------------------------------------------------------------
-start = timeit.default_timer()
 
-nt = 3101
-traces = 100
-nodes_all = 441 
-shots_all = 10000
+parameters = sys.argv[1]    
 
-dt = 1e-3
+nt = int(catch_parameter(parameters,"nt"))
+traces = int(catch_parameter(parameters,"gather_traces"))
 
-fw = 11
+nodes_all = int(catch_parameter(parameters,"nodes_all")) 
+shots_all = int(catch_parameter(parameters,"shots_all"))
 
-for node in range(nodes_all): 
+pick_folder = catch_parameter(parameters,"pick_folder")[1:-1]
+data_folder = catch_parameter(parameters,"data_folder")[1:-1]
 
-    rawPicks_all = readBinaryArray(shots_all, f"../../inputs/picks/rawPicks_shot_{node+1}_{shots_all}_samples.bin")
-    output_picks = np.zeros(shots_all)
+dt = float(catch_parameter(parameters,"dt"))
 
-    for line in range(traces):
+fw = int(catch_parameter(parameters,"qc_filter_window"))
 
-        window = slice(int(line*shots_all/traces),int((line+1)*shots_all/traces))
+enable_qc = eval(catch_parameter(parameters,"enable_qc"))
 
-        rawPicks = rawPicks_all[window].copy()    
+if enable_qc:
+    start = timeit.default_timer()
 
-        rawPicks[int(fw):-int(fw)] = median_filter(rawPicks[int(fw):-int(fw)], fw)
+    for node in range(nodes_all): 
 
-        output_picks[window] = savgol_filter(rawPicks, fw, 2)     
+        rawPicks_all = readBinaryArray(shots_all,f"{pick_folder}rawPicks_shot_{node+1}_{shots_all}_samples.bin")
+        output_picks = np.zeros(shots_all)
 
-    print(f"File ../../inputs/picks/obsData_{shots_all}_samples_shot_{node+1}.bin was written successfully.")
-    output_picks.astype("float32", order = "F").tofile(f"../../inputs/picks/obsData_{shots_all}_samples_shot_{node+1}.bin")
+        for line in range(traces):
 
-stop = timeit.default_timer()
-print('Run time: ', stop - start)  
+            window = slice(int(line*shots_all/traces),int((line+1)*shots_all/traces))
+
+            rawPicks = rawPicks_all[window].copy()    
+
+            rawPicks[int(fw):-int(fw)] = median_filter(rawPicks[int(fw):-int(fw)], fw)
+
+            output_picks[window] = savgol_filter(rawPicks, fw, 2)     
+
+        print(f"File {pick_folder}obsData_{shots_all}_samples_shot_{node+1}.bin was written successfully.")
+        output_picks.astype("float32", order = "F").tofile(f"{pick_folder}obsData_{shots_all}_samples_shot_{node+1}.bin")
+
+    stop = timeit.default_timer()
+    print('Run time: ', stop - start)  
 
 # Quality control 
 
-tlag = 0.10
-tcut = 2.80
+check_data = eval(catch_parameter(parameters,"check_data"))
 
-updated_nt = 2.80
+if check_data: 
 
-times = slice(int(tlag/dt), int((tlag+tcut)/dt))
+    tlag = float(catch_parameter(parameters,"tlag"))
+    tcut = float(catch_parameter(parameters,"tcut"))
 
-tloc = np.linspace(0, int(updated_nt/dt)-1, 11, dtype = int)
-tlab = np.around(tloc * dt, decimals = 1)
+    updated_nt = int(tcut/dt)+1
 
-xloc = np.linspace(0, traces-1, 11, dtype = int)
-xlab = np.linspace(0, traces, 11, dtype = int)
+    times = slice(int(tlag/dt), int((tlag+tcut)/dt))
 
-for node in range(nodes_all):
-    seismic_all = readBinaryMatrix(nt, shots_all, f"../../inputs/seismograms/seismogram_{nt}x{shots_all}_shot_{node+1}.bin") 
-    rawPicks_all = readBinaryArray(shots_all, f"../../inputs/picks/rawPicks_shot_{node+1}_{shots_all}_samples.bin")
-    output_picks = readBinaryArray(shots_all, f"../../inputs/picks/obsData_{shots_all}_samples_shot_{node+1}.bin")
+    tloc = np.linspace(0, updated_nt-1, 11, dtype = int)
+    tlab = np.around(tloc * dt, decimals = 1)
 
-    seismic = seismic_all[times, :]    
+    xloc = np.linspace(0, traces-1, 11, dtype = int)
+    xlab = np.linspace(0, traces, 11, dtype = int)
 
-    scale = 0.5 * np.std(seismic)
+    igather = int(catch_parameter(parameters,"igather"))
+    fgather = int(catch_parameter(parameters,"fgather"))
+    dgather = int(catch_parameter(parameters,"dgather"))
 
-    plt.figure(1, figsize = (20, 5))
-    plt.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
-    plt.plot(rawPicks_all/dt, "o")
-    plt.plot(output_picks/dt, "o")
-    plt.title(f"Picked seismogram for node {node+1}", fontsize= 18)
-    plt.ylabel("Time [s]", fontsize = 15)
-    plt.xlabel("Trace index", fontsize = 15)
-    plt.yticks(tloc,tlab)
-    plt.xlim([0, shots_all])
-    plt.tight_layout()
-    plt.show()
+    gathers = np.arange(igather, fgather+dgather, dgather, dtype = int)
+
+    for gather in gathers:
+        seismic_all = readBinaryMatrix(nt, shots_all, f"{data_folder}seismogram_{nt}x{shots_all}_shot_{gather}.bin") 
+        rawPicks_all = readBinaryArray(shots_all, f"{pick_folder}rawPicks_shot_{gather}_{shots_all}_samples.bin")
+        output_picks = readBinaryArray(shots_all, f"{pick_folder}obsData_{shots_all}_samples_shot_{gather}.bin")
+
+        seismic = seismic_all[times, :]    
+
+        scale = 0.5 * np.std(seismic)
+
+        plt.figure(1, figsize = (15, 5))
+        plt.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
+        plt.plot(rawPicks_all/dt, "o")
+        plt.plot(output_picks/dt, "o")
+        plt.title(f"Picked seismogram for node {gather}", fontsize= 18)
+        plt.ylabel("Time [s]", fontsize = 15)
+        plt.xlabel("Trace index", fontsize = 15)
+        plt.yticks(tloc,tlab)
+        plt.xlim([0, shots_all])
+        plt.tight_layout()
+        plt.show()
 

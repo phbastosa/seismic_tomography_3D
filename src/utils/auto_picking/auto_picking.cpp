@@ -13,20 +13,22 @@ int main(int argc, char**argv)
 
     auto ti = std::chrono::system_clock::now();
 
-    int nt = std::stoi(fm.catch_parameter("nt"));
-    int nodes_all = std::stoi(fm.catch_parameter("nodes_all")); 
-    int shots_all = std::stoi(fm.catch_parameter("shots_all"));
+    std::string parameters = std::string(argv[1]);
 
-    float dt = std::stof(fm.catch_parameter("dt"));
-    float tlag = std::stof(fm.catch_parameter("tlag"));
-    float tcut = std::stof(fm.catch_parameter("tcut"));
+    int nt = std::stoi(fm.catch_parameter("nt", parameters));
+    int nodes_all = std::stoi(fm.catch_parameter("nodes_all", parameters)); 
+    int shots_all = std::stoi(fm.catch_parameter("shots_all", parameters));
+
+    float dt = std::stof(fm.catch_parameter("dt", parameters));
+    float tlag = std::stof(fm.catch_parameter("tlag", parameters));
+    float tcut = std::stof(fm.catch_parameter("tcut", parameters));
     
-    float window = std::stof(fm.catch_parameter("pick_window"));
-    float amp_cut = std::stof(fm.catch_parameter("amp_cut"));
-    float pick_lag = std::stof(fm.catch_parameter("pick_lag"));
+    float window = std::stof(fm.catch_parameter("pick_window", parameters));
+    float amp_cut = std::stof(fm.catch_parameter("amp_cut", parameters));
+    float pick_lag = std::stof(fm.catch_parameter("pick_lag", parameters));
 
-    std::string data_folder = fm.catch_parameter("data_folder");    
-    std::string pick_folder = fm.catch_parameter("pick_folder");
+    std::string data_folder = fm.catch_parameter("data_folder", parameters);    
+    std::string pick_folder = fm.catch_parameter("pick_folder", parameters);
 
     int updated_nt = (int)(tcut/dt)+1;
 

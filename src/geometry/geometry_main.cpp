@@ -22,10 +22,7 @@ int main(int argc, char **argv)
     bool reciprocity = fm.str2bool(fm.catch_parameter("reciprocity", std::string(argv[1])));
 
     geometry[shots_type]->set_parameters(std::string(argv[1]));
-    geometry[shots_type]->build_geometry(geometry[shots_type]->shots);
-    
     geometry[nodes_type]->set_parameters(std::string(argv[1]));
-    geometry[nodes_type]->build_geometry(geometry[nodes_type]->nodes);
 
     geometry[shots_type]->export_positions(geometry[shots_type]->shots, "xyz_shots.txt");
     geometry[nodes_type]->export_positions(geometry[nodes_type]->nodes, "xyz_nodes.txt");

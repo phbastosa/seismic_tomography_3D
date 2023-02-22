@@ -27,6 +27,44 @@ subplots = np.array([1, 1], dtype = int)
 slices = np.array([z_samples/2, x_samples/2, y_samples/2], dtype = int) 
 dh = np.array([x_spacing, y_spacing, z_spacing])
 
-check_geometry(vp, shots, nodes, dh, slices, subplots)
+unit_shape = (3,)
+
+unit_shots = np.zeros((1,3))
+unit_nodes = np.zeros((1,3))
+
+if np.shape(shots) == unit_shape and np.shape(nodes) != unit_shape:
+
+    unit_shots[:,0] = shots[0]
+    unit_shots[:,1] = shots[1]
+    unit_shots[:,2] = shots[2]
+
+    check_geometry(vp, unit_shots, nodes, dh, slices, subplots)
+
+elif np.shape(shots) != unit_shape and np.shape(nodes) == unit_shape:
+
+    unit_nodes[:,0] = nodes[0]
+    unit_nodes[:,1] = nodes[1]
+    unit_nodes[:,2] = nodes[2]
+    
+    check_geometry(vp, shots, unit_nodes, dh, slices, subplots)
+
+elif np.shape(shots) == unit_shape and np.shape(nodes) == unit_shape:
+
+    unit_shots[:,0] = shots[0]
+    unit_shots[:,1] = shots[1]
+    unit_shots[:,2] = shots[2]
+
+    unit_nodes[:,0] = nodes[0]
+    unit_nodes[:,1] = nodes[1]
+    unit_nodes[:,2] = nodes[2]
+    
+    check_geometry(vp, unit_shots, unit_nodes, dh, slices, subplots)
+
+else:
+
+    check_geometry(vp, shots, nodes, dh, slices, subplots)
+
 plt.show()
+
+
 
