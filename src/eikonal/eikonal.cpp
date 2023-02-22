@@ -95,7 +95,7 @@ void Eikonal::write_time_volume()
 void Eikonal::write_illumination()
 {
     if (export_illumination)
-        fm.write_binary_float(illumination_folder + "illumination_nz" + std::to_string(eiko_m.z_samples) + "_nx" + std::to_string(eiko_m.x_samples) + "_ny" + std::to_string(eiko_m.y_samples) + "_shot_" + std::to_string(shot_id+1) + ".bin", illumination, eiko_m.total_samples);
+        fm.write_binary_float(illumination_folder + "illumination_nz" + std::to_string(eiko_m.z_samples) + "_nx" + std::to_string(eiko_m.x_samples) + "_ny" + std::to_string(eiko_m.y_samples) + ".bin", illumination, eiko_m.total_samples);
 }
 
 void::Eikonal::write_first_arrival()
@@ -148,7 +148,7 @@ void Eikonal::ray_tracing()
     if (export_ray_position || export_illumination)
     {
         float * T = eiko_m.expand_fdm(travel_time);   
-    
+
         int nxx = eiko_m.x_samples_b;
         int nzz = eiko_m.z_samples_b;
 
@@ -160,11 +160,11 @@ void Eikonal::ray_tracing()
         float sy = geometry[shots_type]->shots.y[shot_id];
         float sz = geometry[shots_type]->shots.z[shot_id];
 
-        int sIdx = (int)(sx / dx) + 1;
-        int sIdy = (int)(sy / dy) + 1;
-        int sIdz = (int)(sz / dz) + 1;
+        int sIdx = (int)(sx / dx);
+        int sIdy = (int)(sy / dy);
+        int sIdz = (int)(sz / dz);
 
-        int sId = sIdz + sIdx*nzz + sIdy*nxx*nzz;     
+        int sId = sIdz + sIdx*eiko_m.z_samples + sIdy*eiko_m.x_samples*eiko_m.z_samples;     
         
         std::vector<float> xRay, yRay, zRay, iRay;
 
@@ -178,11 +178,11 @@ void Eikonal::ray_tracing()
             float xi = geometry[nodes_type]->nodes.x[rayId];
             float yi = geometry[nodes_type]->nodes.y[rayId];
 
-            im = (int)(zi / dz) + 1; 
-            jm = (int)(xi / dx) + 1; 
-            km = (int)(yi / dy) + 1; 
+            im = (int)(zi / dz); 
+            jm = (int)(xi / dx); 
+            km = (int)(yi / dy); 
 
-            rId = im + jm*nzz + km*nxx*nzz;
+            rId = im + jm*eiko_m.z_samples + km*eiko_m.x_samples*eiko_m.z_samples;
 
             if (export_illumination) 
                 illumination[rId] += rayStep;
@@ -211,11 +211,11 @@ void Eikonal::ray_tracing()
                 xi -= rayStep*dTx / norm; // x ray position update   
                 yi -= rayStep*dTy / norm; // y ray position update   
 
-                im = (int)(zi / dz) + 1; 
-                jm = (int)(xi / dx) + 1; 
-                km = (int)(yi / dy) + 1; 
+                im = (int)(zi / dz); 
+                jm = (int)(xi / dx); 
+                km = (int)(yi / dy); 
 
-                rId = im + jm*nzz + km*nxx*nzz;
+                rId = im + jm*eiko_m.z_samples + km*eiko_m.x_samples*eiko_m.z_samples;
 
                 if (rId == sId)
                 {

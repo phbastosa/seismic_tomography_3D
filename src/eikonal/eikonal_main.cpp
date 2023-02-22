@@ -48,9 +48,10 @@ int main(int argc, char **argv)
         eikonal[type]->write_first_arrival();
 
         eikonal[type]->ray_tracing();
-        eikonal[type]->write_illumination();
     }
-
+    
+    eikonal[type]->write_illumination();
+    
     tf = std::chrono::system_clock::now();
 
     elapsed_seconds = tf - ti;

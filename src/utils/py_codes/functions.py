@@ -331,3 +331,290 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
                        ax.invert_yaxis()
     
     return None
+
+def check_travel_time(models, ttmodel, shots, nodes, dh, slices, subplots):
+    
+    if np.sum(subplots) == 2:
+        modelShape = np.array(np.shape(models))
+        maxModelDistance = np.max(np.shape(models))
+        minModelDistance = np.min(np.shape(models))
+        
+        vmin = np.min(models)
+        vmax = np.max(models)
+
+    else:
+        modelShape = np.array(np.shape(models[0]))
+        maxModelDistance = np.max(np.shape(models[0]))
+        minModelDistance = np.min(np.shape(models[0]))
+        
+        vmin = np.min(models[0])
+        vmax = np.max(models[0])
+
+    nz, nx, ny = modelShape
+    [z, x, y] = 2.0 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
+
+    px = 1/plt.rcParams['figure.dpi']  
+    ticks = np.array([3,7,7], dtype = int)
+
+    fig = plt.figure(1, figsize=(910*px*subplots[1], 780*px*subplots[0]))
+
+    xloc = np.linspace(0,nx-1,ticks[1], dtype = int)
+    yloc = np.linspace(0,ny-1,ticks[2], dtype = int)
+    zloc = np.linspace(0,nz-1,ticks[0], dtype = int)
+
+    m2km = 1e-3
+
+    xlab = np.around(xloc * dh[0] * m2km, decimals = 1)
+    ylab = np.around(yloc * dh[1] * m2km, decimals = 1)
+    zlab = np.around(zloc * dh[2] * m2km, decimals = 1)
+
+    axes = np.array([[0.75 - x, 0.98 - y      , x, y], 
+                     [    0.75, 0.98 - y      , z, y],
+                     [0.75 - x, 0.98 - y - z  , x, z],
+                     [0.75 - x, 0.98 - y - 1.8*z, x, z]])
+
+    xTickDirection = ['out', 'out', 'out']
+    yTickDirection = ['out', 'in', 'out']
+
+    xTickLock = [xloc, zloc[1:], xloc]
+    yTickLock = [yloc, yloc, zloc[1:]]
+
+    xTickLabel = [[], zlab[1:], xlab]
+    yTickLabel = [ylab, [], zlab[1:]]
+
+    xLabel = ["X [km]", "Z [km]", "X [km]"]
+    yLabel = ["Y [km]", "      ", "Z [km]"]
+
+    yInvert = [ True, True, False]
+
+    xSlices = [[np.arange(modelShape[1]), np.ones(modelShape[1])*slices[1], "--g"],
+               [np.arange(modelShape[0]), np.ones(modelShape[0])*slices[1], "--g"],
+               [np.arange(modelShape[1]), np.ones(modelShape[1])*slices[0], "--r"]] 
+
+    ySlices = [[np.ones(modelShape[2])*slices[2], np.arange(modelShape[2]), "--m"],
+               [np.ones(modelShape[2])*slices[0], np.arange(modelShape[2]), "--r"],
+               [np.ones(modelShape[0])*slices[2], np.arange(modelShape[0]), "--m"]]
+
+    #--------------------------------------------------------------------------------    
+
+    subfigs = fig.subfigures(subplots[0], subplots[1])
+    
+    for i in range(subplots[0]):
+        for j in range(subplots[1]):
+
+            ind = i*subplots[0] + j 
+
+            if np.sum(subplots) == 2:
+                ims = [models[slices[0],:,:].T, models[:,slices[2],:].T, models[:,:,slices[1]]]
+                tts = [ttmodel[slices[0],:,:].T, ttmodel[:,slices[2],:].T, ttmodel[:,:,slices[1]]]
+            else:
+                ims = [models[ind, slices[0],:,:].T, models[ind,:,slices[2],:].T, models[ind,:,:,slices[1]]]
+                tts = [ttmodel[int,slices[0],:,:].T, ttmodel[ind,:,slices[2],:].T, ttmodel[ind,:,:,slices[1]]]
+
+            xshot = [shots[:,0]/dh[0],[],[]]
+            yshot = [shots[:,1]/dh[1],[],[]]
+
+            xnode = [nodes[:,0]/dh[0],[],[]]
+            ynode = [nodes[:,1]/dh[1],[],[]]
+
+            for k, axs in enumerate(axes):
+
+                # Adjusting acording subplot size      
+                if subplots[0] == 1:
+                    if subplots[1] == 1:
+                        ax = subfigs.add_axes(axs)                         
+                    else:
+                        ax = subfigs[j].add_axes(axs)
+
+                elif subplots[1] == 1:
+                    if subplots[0] == 1:
+                        ax = subfigs.add_axes(axs)        
+                    else:    
+                        ax = subfigs[i].add_axes(axs)
+                
+                else:
+                    ax = subfigs[i,j].add_axes(axs)
+
+                # Setting colorbar
+                if k == 3:
+
+                    ax.axis("off")
+
+                    cmap = mpl.colormaps["Greys"]
+                    norm = mpl.colors.Normalize(vmin*1e-3, vmax*1e-3)
+                    divider = make_axes_locatable(ax)
+                    cax = divider.append_axes("bottom", size="10%", pad=0)
+                    cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(vmin*1e-3, vmax*1e-3, 5), orientation = "horizontal")
+                    cbar.ax.set_xticklabels(np.around(np.linspace(vmin*1e-3, vmax*1e-3, 5), decimals = 1))
+                    cbar.set_label("Velocity [km/s]")
+                
+                # plotting model slices 
+                else:
+                    ax.contour(tts[k], levels = 15)                    
+                    ax.imshow(ims[k], aspect = 'auto', cmap = "Greys", vmin = vmin, vmax = vmax)    
+
+                    ax.plot(xSlices[k][0], xSlices[k][1], xSlices[k][2], linewidth = 0.5)
+                    ax.plot(ySlices[k][0], ySlices[k][1], ySlices[k][2], linewidth = 0.5)
+                    
+                    ax.scatter(xshot[k], yshot[k], s = 8.0)
+                    ax.scatter(xnode[k], ynode[k], s = 8.0)
+
+                    ax.tick_params(direction = xTickDirection[k], axis='x') 
+                    ax.tick_params(direction = yTickDirection[k], axis='y') 
+                    
+                    ax.set_xticks(xTickLock[k])
+                    ax.set_yticks(yTickLock[k])
+
+                    ax.set_xticklabels(xTickLabel[k])
+                    ax.set_yticklabels(yTickLabel[k])
+ 
+                    ax.set_xlabel(xLabel[k])
+                    ax.set_ylabel(yLabel[k])
+                    
+                    if yInvert[k]:
+                       ax.invert_yaxis()
+    
+    return None
+
+def check_illumination(models, shots, nodes, dh, slices, subplots):
+    
+    if np.sum(subplots) == 2:
+        modelShape = np.array(np.shape(models))
+        maxModelDistance = np.max(np.shape(models))
+        minModelDistance = np.min(np.shape(models))
+        
+        vmin = np.min(models)
+        vmax = np.max(models)
+
+    else:
+        modelShape = np.array(np.shape(models[0]))
+        maxModelDistance = np.max(np.shape(models[0]))
+        minModelDistance = np.min(np.shape(models[0]))
+        
+        vmin = np.min(models[0])
+        vmax = np.max(models[0])
+
+    nz, nx, ny = modelShape
+    [z, x, y] = 2.0 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
+
+    px = 1/plt.rcParams['figure.dpi']  
+    ticks = np.array([3,7,7], dtype = int)
+
+    fig = plt.figure(1, figsize=(910*px*subplots[1], 780*px*subplots[0]))
+
+    xloc = np.linspace(0,nx-1,ticks[1], dtype = int)
+    yloc = np.linspace(0,ny-1,ticks[2], dtype = int)
+    zloc = np.linspace(0,nz-1,ticks[0], dtype = int)
+
+    m2km = 1e-3
+
+    xlab = np.around(xloc * dh[0] * m2km, decimals = 1)
+    ylab = np.around(yloc * dh[1] * m2km, decimals = 1)
+    zlab = np.around(zloc * dh[2] * m2km, decimals = 1)
+
+    axes = np.array([[0.75 - x, 0.98 - y      , x, y], 
+                     [    0.75, 0.98 - y      , z, y],
+                     [0.75 - x, 0.98 - y - z  , x, z],
+                     [0.75 - x, 0.98 - y - 1.8*z, x, z]])
+
+    xTickDirection = ['out', 'out', 'out']
+    yTickDirection = ['out', 'in', 'out']
+
+    xTickLock = [xloc, zloc[1:], xloc]
+    yTickLock = [yloc, yloc, zloc[1:]]
+
+    xTickLabel = [[], zlab[1:], xlab]
+    yTickLabel = [ylab, [], zlab[1:]]
+
+    xLabel = ["X [km]", "Z [km]", "X [km]"]
+    yLabel = ["Y [km]", "      ", "Z [km]"]
+
+    yInvert = [ True, True, False]
+
+    xSlices = [[np.arange(modelShape[1]), np.ones(modelShape[1])*slices[1], "--g"],
+               [np.arange(modelShape[0]), np.ones(modelShape[0])*slices[1], "--g"],
+               [np.arange(modelShape[1]), np.ones(modelShape[1])*slices[0], "--r"]] 
+
+    ySlices = [[np.ones(modelShape[2])*slices[2], np.arange(modelShape[2]), "--m"],
+               [np.ones(modelShape[2])*slices[0], np.arange(modelShape[2]), "--r"],
+               [np.ones(modelShape[0])*slices[2], np.arange(modelShape[0]), "--m"]]
+
+    #--------------------------------------------------------------------------------    
+
+    subfigs = fig.subfigures(subplots[0], subplots[1])
+    
+    for i in range(subplots[0]):
+        for j in range(subplots[1]):
+
+            ind = i*subplots[0] + j 
+
+            if np.sum(subplots) == 2:
+                ims = [models[slices[0],:,:].T, models[:,slices[2],:].T, models[:,:,slices[1]]]
+            else:
+                ims = [models[ind, slices[0],:,:].T, models[ind,:,slices[2],:].T, models[ind,:,:,slices[1]]]
+
+            xshot = [shots[:,0]/dh[0],[],[]]
+            yshot = [shots[:,1]/dh[1],[],[]]
+
+            xnode = [nodes[:,0]/dh[0],[],[]]
+            ynode = [nodes[:,1]/dh[1],[],[]]
+
+            for k, axs in enumerate(axes):
+
+                # Adjusting acording subplot size      
+                if subplots[0] == 1:
+                    if subplots[1] == 1:
+                        ax = subfigs.add_axes(axs)                         
+                    else:
+                        ax = subfigs[j].add_axes(axs)
+
+                elif subplots[1] == 1:
+                    if subplots[0] == 1:
+                        ax = subfigs.add_axes(axs)        
+                    else:    
+                        ax = subfigs[i].add_axes(axs)
+                
+                else:
+                    ax = subfigs[i,j].add_axes(axs)
+
+                # Setting colorbar
+                if k == 3:
+
+                    ax.axis("off")
+
+                    cmap = mpl.colormaps["Greys"]
+                    norm = mpl.colors.Normalize(vmin*1e-3, vmax*1e-3)
+                    divider = make_axes_locatable(ax)
+                    cax = divider.append_axes("bottom", size="10%", pad=0)
+                    cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(vmin*1e-3, vmax*1e-3, 5), orientation = "horizontal")
+                    cbar.ax.set_xticklabels(np.around(np.linspace(vmin*1e-3, vmax*1e-3, 5), decimals = 1))
+                    cbar.set_label("Velocity [km/s]")
+                
+                # plotting model slices 
+                else:
+                    perc = 0.5 * np.std(ims[k])    
+
+                    ax.imshow(ims[k], aspect = 'auto', cmap = "Greys", vmin = -perc, vmax = perc)    
+
+                    ax.plot(xSlices[k][0], xSlices[k][1], xSlices[k][2], linewidth = 0.5)
+                    ax.plot(ySlices[k][0], ySlices[k][1], ySlices[k][2], linewidth = 0.5)
+                    
+                    ax.scatter(xshot[k], yshot[k], s = 8.0)
+                    ax.scatter(xnode[k], ynode[k], s = 8.0)
+
+                    ax.tick_params(direction = xTickDirection[k], axis='x') 
+                    ax.tick_params(direction = yTickDirection[k], axis='y') 
+                    
+                    ax.set_xticks(xTickLock[k])
+                    ax.set_yticks(yTickLock[k])
+
+                    ax.set_xticklabels(xTickLabel[k])
+                    ax.set_yticklabels(yTickLabel[k])
+ 
+                    ax.set_xlabel(xLabel[k])
+                    ax.set_ylabel(yLabel[k])
+                    
+                    if yInvert[k]:
+                       ax.invert_yaxis()
+    
+    return None

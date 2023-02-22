@@ -33,15 +33,15 @@ flags="-acc -fast -ta=tesla,cc60"
 USER_MESSAGE="
 Usage:
 
----------------------------------------------------------------------------------------------
-|         Inputs          |            Modeling           |            Inversion            |
---------------------------------------------------------------------------------------------|  
-| $ $0 \033[31m-build_all\033[m      | $ $0 -run_eikonal          | $ $0 -run_tomography         |
-| $ $0 -auto_picking   | $ $0 -check_ray_tracing    | $ $0 -check_recovered_model  |
-| $ $0 -check_data     | $ $0 -check_illumination   | $ $0 -check_convergence      |
-| $ $0 -check_model    | $ $0 -check_travel_times   | $ $0 -check_data_difference  |
-| $ $0 -check_geometry | $ $0 -check_first_arrivals | $ $0 -check_model_difference |
----------------------------------------------------------------------------------------------         
+--------------------------------------------------------------------------------------------
+|         Inputs          |           Modeling           |            Inversion            |
+-------------------------------------------------------------------------------------------|  
+| $ $0 \033[31m-build_all\033[m      | $ $0 -eikonal             | $ $0 -tomography             |
+| $ $0 -auto_picking   | $ $0 -check_travel_time   | $ $0 -check_recovered_model  |
+| $ $0 -check_data     | $ $0 -check_illumination  | $ $0 -check_convergence      |
+| $ $0 -check_model    | $ $0 -check_first_arrival | $ $0 -check_data_difference  |
+| $ $0 -check_geometry |                              | $ $0 -check_model_difference |
+--------------------------------------------------------------------------------------------         
 "
 
 # Check if user provide some parameter
@@ -108,9 +108,30 @@ case "$1" in
 	exit 0
 ;;
 
--run_eikonal) 
+-eikonal) 
 
     ./../bin/eikonal.exe parameters.txt
+
+	exit 0
+;;
+
+-check_travel_time) 
+
+    python3 ../src/utils/py_codes/check_travel_time.py parameters.txt
+
+	exit 0
+;;
+
+-check_illumination) 
+
+    python3 ../src/utils/py_codes/check_illumination.py parameters.txt
+
+	exit 0
+;;
+
+-check_first_arrival) 
+
+    python3 ../src/utils/py_codes/check_first_arrival.py parameters.txt
 
 	exit 0
 ;;
