@@ -34,13 +34,9 @@ typedef struct
     bool * h_listed;
     bool * h_listVol;
 
-    float * t_sol;
     float * h_sol;
     float * h_spd;
     bool * h_mask;
-
-    int * blockOrder;
-    int K;
 
 } CUDAMEMSTRUCT;
 

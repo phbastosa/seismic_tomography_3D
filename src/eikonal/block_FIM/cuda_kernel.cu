@@ -67,17 +67,17 @@ void block_FIM_solver(CUDAMEMSTRUCT &cmem)
     cuda_safe_call(cudaMemcpy(d_list, cmem.h_list, nActiveBlock*sizeof(uint), cudaMemcpyHostToDevice));
     cuda_safe_call(cudaMemcpy(d_listVol, cmem.h_listVol, blknum*sizeof(bool), cudaMemcpyHostToDevice));
 
-    int deviceID; 
-    cudaGetDevice(&deviceID);
-    cudaDeviceProp deviceProp;
-    cudaGetDeviceProperties(&deviceProp, deviceID);
+    // int deviceID; 
+    // cudaGetDevice(&deviceID);
+    // cudaDeviceProp deviceProp;
+    // cudaGetDeviceProperties(&deviceProp, deviceID);
 
-	size_t freeMem, totalMem;
-	cudaMemGetInfo(&freeMem, &totalMem);
+	// size_t freeMem, totalMem;
+	// cudaMemGetInfo(&freeMem, &totalMem);
 
-	std::cout << "\nDevice id : "<<deviceID<<", name : "<<deviceProp.name<<"\n";	
-    std::cout << "Total Memory : " << totalMem / (1024 * 1024) << "MB" << "\n";
-    std::cout << "Free Memory  : " << freeMem / (1024 * 1024) << "MB" << "\n";
+	// std::cout << "\nDevice id : "<<deviceID<<", name : "<<deviceProp.name<<"\n";	
+    // std::cout << "Total Memory : " << totalMem / (1024 * 1024) << "MB" << "\n";
+    // std::cout << "Free Memory  : " << freeMem / (1024 * 1024) << "MB" << "\n\n";
 
     // set dimension of block and entire grid size
     dim3 dimBlock(BLOCK_LENGTH,BLOCK_LENGTH,BLOCK_LENGTH);
@@ -256,8 +256,6 @@ __global__ void run_solver(float* spd, bool* mask, const float *sol_in, float *s
 		// retrieve actual block index from the active list
 		uint block_idx = list[list_idx];
 
-		float F;
-		bool isValid;
 		uint blocksize = BLOCK_LENGTH*BLOCK_LENGTH*BLOCK_LENGTH;
 		uint base_addr = block_idx*blocksize;
 
@@ -284,9 +282,9 @@ __global__ void run_solver(float* spd, bool* mask, const float *sol_in, float *s
 
 		SOL(idx.x,idx.y,idx.z) = sol_in[base_addr + tIdx];
 		
-        F = spd[base_addr + tIdx];
-		
-		isValid = mask[base_addr + tIdx];
+        float F = spd[base_addr + tIdx];
+
+		bool isValid = mask[base_addr + tIdx];
 
 		uint new_base_addr, new_tIdx;
 
@@ -401,7 +399,7 @@ __global__ void run_solver(float* spd, bool* mask, const float *sol_in, float *s
 				b = min(SOL(idx.x,ty,idx.z),SOL(idx.x,ty+2,idx.z));
 				c = min(SOL(idx.x,idx.y,tz),SOL(idx.x,idx.y,tz+2));
 
-				float tmp = (float) get_time_eikonal(a, b, c, dh, F);
+				float tmp = get_time_eikonal(a, b, c, dh, F);
 
 				newT = min(tmp,oldT);
 			}
@@ -464,9 +462,6 @@ __global__ void run_check_neighbor(float* spd, bool* mask, const float *sol_in, 
 
 	if(list_idx < nTotalBlock)
 	{
-		float F;
-		bool isValid;
-		
         __shared__ float _sol[BLOCK_LENGTH+2][BLOCK_LENGTH+2][BLOCK_LENGTH+2];
 
 		uint block_idx = list[list_idx];
@@ -499,11 +494,9 @@ __global__ void run_check_neighbor(float* spd, bool* mask, const float *sol_in, 
 			
             _sol[idx.x][idx.y][idx.z] = sol_in[base_addr + tIdx];
 			
-            F = spd[base_addr + tIdx];
+            float F = spd[base_addr + tIdx];
 			
-            if(F > 0) F = 1.0/F;
-			
-            isValid = mask[base_addr + tIdx];
+            bool isValid = mask[base_addr + tIdx];
 
 			uint new_base_addr, new_tIdx;
 
@@ -612,7 +605,7 @@ __global__ void run_check_neighbor(float* spd, bool* mask, const float *sol_in, 
 				b = min(_sol[idx.x][ty][idx.z],_sol[idx.x][ty+2][idx.z]);
 				c = min(_sol[idx.x][idx.y][tz],_sol[idx.x][idx.y][tz+2]);
 
-				float tmp = (float) get_time_eikonal(a, b, c, dh, F);
+				float tmp = get_time_eikonal(a, b, c, dh, F);
 				newT = min(tmp,oldT);
 
 				sol_out[base_addr + tIdx] = newT;

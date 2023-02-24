@@ -448,3 +448,9 @@ void Accurate_FSM::solve()
 
     travel_time = eiko_m.reduce_fdm(T);
 }
+
+void Accurate_FSM::destroy()
+{
+    delete[] S;
+    delete[] T;
+}

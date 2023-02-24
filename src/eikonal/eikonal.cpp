@@ -49,8 +49,6 @@ void Eikonal::set_parameters(std::string file)
     for (int index = 0; index < eiko_m.total_samples; index++)
         slowness[index] = 1.0f / slowness[index];
 
-    illumination = new float[eiko_m.total_samples]();
-
     export_time_volume = fm.str2bool(fm.catch_parameter("export_time_volume", file));
     export_illumination = fm.str2bool(fm.catch_parameter("export_illumination",file));
     export_ray_position = fm.str2bool(fm.catch_parameter("export_ray_position", file));
@@ -82,7 +80,9 @@ void Eikonal::set_parameters(std::string file)
 
         std::swap(geometry[shots_type]->shots.all, geometry[nodes_type]->nodes.all);
     }
-
+    
+    travel_time = new float[eiko_m.total_samples]();
+    illumination = new float[eiko_m.total_samples]();
     first_arrival = new float[geometry[nodes_type]->nodes.all]();
 }
 

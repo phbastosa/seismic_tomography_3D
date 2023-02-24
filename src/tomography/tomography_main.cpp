@@ -10,26 +10,26 @@ int main(int argc, char **argv)
     
     auto ti = std::chrono::system_clock::now();
     
-    tomo.parameters = std::string(argv[1]);
+    // tomo.parameters = std::string(argv[1]);
 
-    tomo.setParameters();
+    // tomo.setParameters();
 
-    tomo.importDobs();
+    // tomo.importDobs();
 
-    while (true)
-    {
-        tomo.forwardModeling();                
+    // while (true)
+    // {
+    //     tomo.forwardModeling();                
         
-        tomo.importDcal();
+    //     tomo.importDcal();
 
-        if (tomo.converged()) break;
+    //     if (tomo.converged()) break;
 
-        tomo.optimization();
+    //     tomo.optimization();
 
-        tomo.modelUpdate();
-    }
+    //     tomo.modelUpdate();
+    // }
 
-    tomo.exportConvergency();
+    // tomo.exportConvergency();
 
     auto tf = std::chrono::system_clock::now();
 

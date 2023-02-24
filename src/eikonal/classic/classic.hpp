@@ -18,7 +18,8 @@ private:
 public:
 
     void solve();
-    void prepare_volumes();    
+    void prepare_volumes();
+    void destroy();    
 };
 
 # endif

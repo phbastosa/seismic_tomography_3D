@@ -14,20 +14,14 @@ public:
     
     void solve();
     void prepare_volumes();
-
+    void destroy();
+    
 private:
 
-    int WARP = 32;
     int padx, pady, padz;
 
     float * S;
     float * T;
-    float * K;
-    float * nT;
-    float * nK;
-
-    void original_FIM();
-    void open_acc_FIM();
 
     void apply_model_mask();
     void extract_solution();

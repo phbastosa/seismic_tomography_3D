@@ -1,7 +1,6 @@
 # Usage and tests for eikonal class
 
-## eikonal.cpp
-    - 3D refraction travel times accuracy study in high contrasted media
+### Paper: 3D refraction travel times accuracy study in high contrasted media
     
     - Experiment shown as expanded abstract and oral presentation in SimBGf 2022
 
@@ -10,7 +9,7 @@
         Jeong & Whitaker (2008)
         Noble, Gesret and Belayouni (2014)
 
-    - Comparison with the analitical equation for refracted waves
+    - Comparison with the analytical equation for refracted waves
 
 ## Paper can be found on SBGf [website](https://sbgf.org.br/mysbgf/eventos/expanded_abstracts/IX_SimBGf/session/M%C3%A9todos%20Geof%C3%ADsicos%20e%20Geof%C3%ADsica%20Computacional/3D%20refraction%20travel%20times%20accuracy%20study%20in%20high%20contrasted%20media.pdf).  
 

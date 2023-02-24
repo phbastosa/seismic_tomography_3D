@@ -52,6 +52,8 @@ int main(int argc, char **argv)
     
     eikonal[type]->write_illumination();
     
+    eikonal[type]->destroy();
+
     tf = std::chrono::system_clock::now();
 
     elapsed_seconds = tf - ti;

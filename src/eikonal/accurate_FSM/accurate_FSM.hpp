@@ -33,6 +33,7 @@ public:
 
     void solve();
     void prepare_volumes();
+    void destroy();
 };
 
 # endif

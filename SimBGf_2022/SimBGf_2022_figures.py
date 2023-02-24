@@ -223,7 +223,7 @@ for s in range(nsrc):
         plt.plot(np.abs(tta - pod) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
         plt.xlim([0, nrec])
-        plt.ylim([0, 50])
+        plt.ylim([0, 60])
         plt.legend(loc="upper left", fontsize=10)
         plt.title(f"Podvin (1991) error comparison", fontsize=20)
         plt.xlabel("Trace number", fontsize=17)
@@ -259,7 +259,7 @@ for s in range(nsrc):
         plt.plot(np.abs(tta - fsm) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
         plt.xlim([0, nrec])
-        plt.ylim([0, 5])
+        plt.ylim([0, 6])
         plt.legend(loc="upper left", fontsize=10)
         plt.title(f"Noble (2014) error comparison - FSM", fontsize=20)
         plt.xlabel("Trace number", fontsize=17)

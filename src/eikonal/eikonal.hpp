@@ -58,7 +58,8 @@ public:
     void write_first_arrival();
 
     virtual void solve() = 0;
-    virtual void prepare_volumes() = 0;    
+    virtual void prepare_volumes() = 0;
+    virtual void destroy() = 0;    
 };
 
 # endif

@@ -1682,3 +1682,12 @@ void Classic::solve()
 
     travel_time = eiko_m.reduce_fdm(T);
 }
+
+void Classic::destroy()
+{
+    delete[] S;
+    delete[] T;
+    delete[] K;
+    delete[] nT;
+    delete[] nK;
+}

@@ -23,9 +23,9 @@ reciprocity = False
 # 1 - circular geometry
 
 shot_geometry_type = 0    
-node_geometry_type = 1     
+node_geometry_type = 0     
 
-shot_elevation = 10       # flat surface [m] <float>             
+shot_elevation = 10      # flat surface [m] <float>             
 node_elevation = 200      # flat surface [m] <float>
 
 shot_topography = False   
@@ -38,21 +38,21 @@ node_topography_file = "nodes_topography.txt"  #
 
 # Regular SHOTS geometry                        
 
-shot_n_xline = 2           
-shot_n_yline = 2           
+shot_n_xline = 1           
+shot_n_yline = 1           
 
-shot_SW = [1000, 1000]            # NW       # (x,y) [m] <float>    
-shot_NW = [1000, 4000]          #  |       # (x,y) [m] <float>    
-shot_SE = [4000, 1000]          # SW -- SE # (x,y) [m] <float>   
+shot_SW = [2500, 2500]            # NW       # (x,y) [m] <float>    
+shot_NW = [2500, 2500]          #  |       # (x,y) [m] <float>    
+shot_SE = [2500, 2500]          # SW -- SE # (x,y) [m] <float>   
 
 # Regular NODES geometry                        
 
-node_n_xline = 1            
-node_n_yline = 1            
+node_n_xline = 11            
+node_n_yline = 11            
 
-node_SW = [4000, 2500]         # NW       # (x,y) <float>     
-node_NW = [4000, 2500]         #  |       # (x,y) <float>   
-node_SE = [4000, 2500]         # SW -- SE # (x,y) <float>   
+node_SW = [1000, 1000]         # NW       # (x,y) <float>     
+node_NW = [1000, 4000]         #  |       # (x,y) <float>   
+node_SE = [4000, 1000]         # SW -- SE # (x,y) <float>   
 
 # Circular SHOT geometry
 
@@ -104,17 +104,17 @@ pick_folder = "../inputs/picks/"           #
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonal_type = 2    # Eikonal Type flag <int>          
+eikonal_type = 1    # Eikonal Type flag <int>          
 
 export_time_volume = True    # Travel times volume flag <bool> 
-export_illumination = True   # Illumination matrix flag <bool>
-export_ray_position = True   # Ray position flag <bool>
+export_illumination = False   # Illumination matrix flag <bool>
+export_ray_position = False   # Ray position flag <bool>
 export_first_arrival = True  # First arrivals flag <bool> 
 
 ray_folder = "../outputs/ray_positions/"             # Ray positions folder <string>
-time_volume_folder = "../outputs/travel_times/"      # Travel time volume folder <string>
+time_volume_folder = "../outputs/travel_times/fim_"      # Travel time volume folder <string>
 illumination_folder = "../outputs/illumination/"     # Illumination volume folder <string>
-first_arrival_folder = "../outputs/first_arrivals/"  # Eikonal volume folder <string>
+first_arrival_folder = "../outputs/first_arrivals/fim_"  # Eikonal volume folder <string>
 
 #-------------------------------------------------------------------------------------------------
 # Tomography parameters --------------------------------------------------------------------------
