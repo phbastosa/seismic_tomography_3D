@@ -27,8 +27,6 @@ private:
     void extract_solution();
     void apply_source_time();
 
-    float min(float v1, float v2);
-
     std::vector<std::vector<std::vector<float>>> speeds_;
     std::vector<std::vector<std::vector<float>>> answer_;
 

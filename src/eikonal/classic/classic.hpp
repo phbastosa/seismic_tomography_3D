@@ -13,8 +13,6 @@ private:
     float * nT;
     float * nK;
 
-    float min(float v1, float v2);
-
 public:
 
     void solve();

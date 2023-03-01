@@ -11,9 +11,16 @@ void Block_FIM::prepare_volumes()
     pady = (BLOCK_LENGTH - eiko_m.y_samples % BLOCK_LENGTH) % BLOCK_LENGTH;
     padz = (BLOCK_LENGTH - eiko_m.z_samples % BLOCK_LENGTH) % BLOCK_LENGTH;
 
-    S = eiko_m.expand_pad(slowness, padx, pady, padz);
+    eiko_m.x_samples_b = eiko_m.x_samples + padx;    
+    eiko_m.y_samples_b = eiko_m.y_samples + pady;    
+    eiko_m.z_samples_b = eiko_m.z_samples + padz;    
+    
+    eiko_m.total_samples_b = eiko_m.x_samples_b * eiko_m.y_samples_b * eiko_m.z_samples_b;
 
+    S = new float[eiko_m.total_samples_b]();
     T = new float[eiko_m.total_samples_b]();
+
+    eiko_m.expand_pad(slowness, S, padx, pady, padz);
 
 	auto volsize = eiko_m.total_samples_b;
 
@@ -204,7 +211,7 @@ void Block_FIM::extract_solution()
 		}
 	}
 
-    travel_time = eiko_m.reduce_pad(T, padx, pady, padz);
+    eiko_m.reduce_pad(T, travel_time, padx, pady, padz);
 }
 
 void Block_FIM::destroy()

@@ -1,20 +1,23 @@
 # include <cmath>
-# include <fstream>
-# include <iostream>
 # include <algorithm>
 
 # include "classic.hpp"
 
-float Classic::min(float v1, float v2) { return !(v2 < v1) ? v1 : v2; }
-
 void Classic::prepare_volumes()
 {
-    S = eiko_m.expand_fdm(slowness);
+    eiko_m.x_samples_b = eiko_m.x_samples + 2;    
+    eiko_m.y_samples_b = eiko_m.y_samples + 2;    
+    eiko_m.z_samples_b = eiko_m.z_samples + 2;    
+    
+    eiko_m.total_samples_b = eiko_m.x_samples_b * eiko_m.y_samples_b * eiko_m.z_samples_b;
 
+    S = new float[eiko_m.total_samples_b]();
     T = new float[eiko_m.total_samples_b]();
     K = new float[eiko_m.total_samples_b]();    
     nT = new float[eiko_m.total_samples_b]();    
     nK = new float[eiko_m.total_samples_b]();  
+
+    eiko_m.expand_fdm(slowness, S);
 }
 
 void Classic::solve()
@@ -147,39 +150,45 @@ void Classic::solve()
                         float Tijk, T1, T2, Sref, M, N, P, Q, hs2; 
 
                         /* 1D operator head wave: i,j-1,k -> i,j,k (x direction) */
-                        Tijk = T[index - nzz] + h * min(S[index - nzz], 
-                                                                     min(S[index - 1 - nzz], 
-                                                                     min(S[index - nzz - nxx*nzz], S[index - 1 - nzz - nxx*nzz]))); 
+                        Tijk = T[index - nzz] + h * std::min(S[index - nzz], 
+                                                    std::min(S[index - 1 - nzz], 
+                                                    std::min(S[index - nzz - nxx*nzz], S[index - 1 - nzz - nxx*nzz]))); 
+                        
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i,j+1,k -> i,j,k (x direction) */
-                        Tijk = T[index + nzz] + h * min(S[index], 
-                                                                     min(S[index - 1], 
-                                                                     min(S[index - nxx*nzz], S[index - 1 - nxx*nzz])));
+                        Tijk = T[index + nzz] + h * std::min(S[index], 
+                                                    std::min(S[index - 1], 
+                                                    std::min(S[index - nxx*nzz], S[index - 1 - nxx*nzz])));
+                        
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i,j,k-1 -> i,j,k (y direction) */
-                        Tijk = T[index - nxx*nzz] + h * min(S[index - nxx*nzz], 
-                                                                         min(S[index - nzz - nxx*nzz], 
-                                                                         min(S[index - 1 - nxx*nzz], S[index - 1 - nzz - nxx*nzz]))); 
+                        Tijk = T[index - nxx*nzz] + h * std::min(S[index - nxx*nzz], 
+                                                        std::min(S[index - nzz - nxx*nzz], 
+                                                        std::min(S[index - 1 - nxx*nzz], S[index - 1 - nzz - nxx*nzz]))); 
+                        
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i,j,k+1 -> i,j,k (y direction) */
-                        Tijk = T[index + nxx*nzz] + h * min(S[index],
-                                                                         min(S[index - 1], 
-                                                                         min(S[index - nzz], S[index - 1 - nzz]))); 
+                        Tijk = T[index + nxx*nzz] + h * std::min(S[index],
+                                                        std::min(S[index - 1], 
+                                                        std::min(S[index - nzz], S[index - 1 - nzz]))); 
+                        
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i-1,j,k -> i,j,k (z direction) */
-                        Tijk = T[index - 1] + h * min(S[index - 1], 
-                                                                   min(S[index - 1 - nzz], 
-                                                                   min(S[index - 1 - nxx*nzz], S[index - 1 - nzz - nxx*nzz]))); 
+                        Tijk = T[index - 1] + h * std::min(S[index - 1], 
+                                                  std::min(S[index - 1 - nzz], 
+                                                  std::min(S[index - 1 - nxx*nzz], S[index - 1 - nzz - nxx*nzz]))); 
+                        
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator head wave: i+1,j,k -> i,j,k (z direction) */
-                        Tijk = T[index + 1] + h * min(S[index], 
-                                                                   min(S[index - nzz], 
-                                                                   min(S[index - nxx*nzz], S[index - nzz - nxx*nzz]))); 
+                        Tijk = T[index + 1] + h * std::min(S[index], 
+                                                  std::min(S[index - nzz], 
+                                                  std::min(S[index - nxx*nzz], S[index - nzz - nxx*nzz]))); 
+                        
                         if (Tijk < lowest) lowest = Tijk;
                     
                         /* 1D operator diffraction XZ plane */
@@ -1680,7 +1689,7 @@ void Classic::solve()
     # pragma acc exit data delete(S[0:nPoints], this[0:1])
     # pragma acc exit data copyout(T[0:nPoints], this[0:1])
 
-    travel_time = eiko_m.reduce_fdm(T);
+    eiko_m.reduce_fdm(T, travel_time);
 }
 
 void Classic::destroy()

@@ -146,8 +146,16 @@ void::Eikonal::write_first_arrival()
 void Eikonal::ray_tracing()
 {
     if (export_ray_position || export_illumination)
-    {
-        float * T = eiko_m.expand_fdm(travel_time);   
+    {        
+        eiko_m.x_samples_b = eiko_m.x_samples + 2;    
+        eiko_m.y_samples_b = eiko_m.y_samples + 2;    
+        eiko_m.z_samples_b = eiko_m.z_samples + 2;    
+    
+        eiko_m.total_samples_b = eiko_m.x_samples_b * eiko_m.y_samples_b * eiko_m.z_samples_b;
+    
+        float * T = new float[eiko_m.total_samples_b];
+
+        eiko_m.expand_fdm(travel_time, T);   
 
         int nxx = eiko_m.x_samples_b;
         int nzz = eiko_m.z_samples_b;

@@ -44,10 +44,10 @@ int main(int argc, char **argv)
         std::cout<<"Solving eikonal equation with the \033[32m"<<formulation[type]<<"\033[0;0m formulation\n\n";
         
         eikonal[type]->solve();
-        eikonal[type]->write_time_volume();
-        eikonal[type]->write_first_arrival();
+        // eikonal[type]->write_time_volume();
+        // eikonal[type]->write_first_arrival();
 
-        eikonal[type]->ray_tracing();
+        // eikonal[type]->ray_tracing();
     }
     
     eikonal[type]->write_illumination();

@@ -7,9 +7,16 @@
 
 void Accurate_FSM::prepare_volumes()
 {
-    S = eiko_m.expand_fdm(slowness);
+    eiko_m.x_samples_b = eiko_m.x_samples + 2;    
+    eiko_m.y_samples_b = eiko_m.y_samples + 2;    
+    eiko_m.z_samples_b = eiko_m.z_samples + 2;    
+    
+    eiko_m.total_samples_b = eiko_m.x_samples_b * eiko_m.y_samples_b * eiko_m.z_samples_b;
 
+    S = new float[eiko_m.total_samples_b]();
     T = new float[eiko_m.total_samples_b]();
+
+    eiko_m.expand_fdm(slowness, S);
 }
 
 void Accurate_FSM::inner_sweep()
@@ -446,7 +453,7 @@ void Accurate_FSM::solve()
     init_sweep();
     full_sweep();
 
-    travel_time = eiko_m.reduce_fdm(T);
+    eiko_m.reduce_fdm(T, travel_time);
 }
 
 void Accurate_FSM::destroy()
