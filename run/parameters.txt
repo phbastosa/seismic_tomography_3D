@@ -104,7 +104,7 @@ data_folder = "../inputs/seismic_data/"    # Folder to write seismograms <string
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonal_type = 2    # Eikonal Type flag <int>          
+eikonal_type = 0    # Eikonal Type flag <int>          
 
 export_time_volume = False    # Travel times volume flag <bool> 
 export_illumination = False   # Illumination matrix flag <bool>
@@ -114,7 +114,7 @@ export_first_arrival = True   # First arrivals flag <bool>
 ray_folder = "../outputs/ray_positions/"                 # Ray positions folder <string>
 time_volume_folder = "../outputs/travel_times/"          # Travel time volume folder <string>
 illumination_folder = "../outputs/illumination/"         # Illumination volume folder <string>
-first_arrival_folder = "../outputs/first_arrivals/fsm_"  # First arrivals folder <string>
+first_arrival_folder = "../outputs/first_arrivals/"      # First arrivals folder <string>
 
 #-------------------------------------------------------------------------------------------------
 # Tomography parameters --------------------------------------------------------------------------

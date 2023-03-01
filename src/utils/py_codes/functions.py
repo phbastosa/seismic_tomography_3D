@@ -255,37 +255,37 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
 
     # picking geometry     
 
-    zx_plane_shot_x = np.array([])
-    zx_plane_shot_z = np.array([]) 
-    
-    for i in range(len(shots)):
-        if slices[1] - 1 < shots[i,0]/dh[0] < slices[1] + 1:
-            zx_plane_shot_x = np.append(zx_plane_shot_x, shots[i,1]/dh[1])        
-            zx_plane_shot_z = np.append(zx_plane_shot_z, shots[i,2]/dh[2])        
-
     zy_plane_shot_y = np.array([])
     zy_plane_shot_z = np.array([])
 
     for i in range(len(shots)):
-        if slices[2] - 1 < shots[i,1]/dh[1] < slices[2] + 1:
-            zy_plane_shot_y = np.append(zy_plane_shot_y, shots[i,0]/dh[0])        
+        if int(slices[2]) == int(shots[i,0]/dh[0]):
+            zy_plane_shot_y = np.append(zy_plane_shot_y, shots[i,1]/dh[1])        
             zy_plane_shot_z = np.append(zy_plane_shot_z, shots[i,2]/dh[2])        
 
-    zx_plane_node_x = np.array([])
-    zx_plane_node_z = np.array([]) 
+    zx_plane_shot_x = np.array([])
+    zx_plane_shot_z = np.array([]) 
 
-    for i in range(len(nodes)):
-        if slices[1] - 1 < nodes[i,0]/dh[0] < slices[1] + 1:
-            zx_plane_node_x = np.append(zx_plane_node_x, nodes[i,1]/dh[1])        
-            zx_plane_node_z = np.append(zx_plane_node_z, nodes[i,2]/dh[2])        
+    for i in range(len(shots)):
+        if int(slices[1]) == int(shots[i,1]/dh[1]):
+            zx_plane_shot_x = np.append(zx_plane_shot_x, shots[i,0]/dh[0])        
+            zx_plane_shot_z = np.append(zx_plane_shot_z, shots[i,2]/dh[2])        
 
     zy_plane_node_y = np.array([])
     zy_plane_node_z = np.array([])
 
     for i in range(len(nodes)):
-        if slices[2] - 1 < nodes[i,1]/dh[1] < slices[2] + 1:
-            zy_plane_node_y = np.append(zy_plane_node_y, nodes[i,0]/dh[0])        
+        if int(slices[2]) == int(nodes[i,0]/dh[0]):
+            zy_plane_node_y = np.append(zy_plane_node_y, nodes[i,1]/dh[1])        
             zy_plane_node_z = np.append(zy_plane_node_z, nodes[i,2]/dh[2])        
+
+    zx_plane_node_x = np.array([])
+    zx_plane_node_z = np.array([]) 
+
+    for i in range(len(nodes)):
+        if int(slices[1]) == int(nodes[i,1]/dh[1]):
+            zx_plane_node_x = np.append(zx_plane_node_x, nodes[i,0]/dh[0])        
+            zx_plane_node_z = np.append(zx_plane_node_z, nodes[i,2]/dh[2])        
     
     #--------------------------------------------------------------------------------    
 
@@ -303,7 +303,7 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
 
             xshot = [shots[:,0]/dh[0],zy_plane_shot_z,zx_plane_shot_x]
             yshot = [shots[:,1]/dh[1],zy_plane_shot_y,zx_plane_shot_z]
-
+            
             xnode = [nodes[:,0]/dh[0],zy_plane_node_z,zx_plane_node_x]
             ynode = [nodes[:,1]/dh[1],zy_plane_node_y,zx_plane_node_z]
 
@@ -336,7 +336,7 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
                     cax = divider.append_axes("bottom", size="10%", pad=0)
                     cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(vmin*1e-3, vmax*1e-3, 5), orientation = "horizontal")
                     cbar.ax.set_xticklabels(np.around(np.linspace(vmin*1e-3, vmax*1e-3, 5), decimals = 1))
-                    cbar.set_label("Velocity [km/s]")
+                    cbar.set_label("Velocidade [km/s]")
                 
                 # plotting model slices 
                 else:
@@ -429,6 +429,40 @@ def check_travel_time(models, ttmodel, shots, nodes, dh, slices, subplots):
                [np.ones(modelShape[2])*slices[0], np.arange(modelShape[2]), "--r"],
                [np.ones(modelShape[0])*slices[2], np.arange(modelShape[0]), "--m"]]
 
+    # picking geometry     
+
+    zy_plane_shot_y = np.array([])
+    zy_plane_shot_z = np.array([])
+
+    for i in range(len(shots)):
+        if int(slices[2]) == int(shots[i,0]/dh[0]):
+            zy_plane_shot_y = np.append(zy_plane_shot_y, shots[i,1]/dh[1])        
+            zy_plane_shot_z = np.append(zy_plane_shot_z, shots[i,2]/dh[2])        
+
+    zx_plane_shot_x = np.array([])
+    zx_plane_shot_z = np.array([]) 
+
+    for i in range(len(shots)):
+        if int(slices[1]) == int(shots[i,1]/dh[1]):
+            zx_plane_shot_x = np.append(zx_plane_shot_x, shots[i,0]/dh[0])        
+            zx_plane_shot_z = np.append(zx_plane_shot_z, shots[i,2]/dh[2])        
+
+    zy_plane_node_y = np.array([])
+    zy_plane_node_z = np.array([])
+
+    for i in range(len(nodes)):
+        if int(slices[2]) == int(nodes[i,0]/dh[0]):
+            zy_plane_node_y = np.append(zy_plane_node_y, nodes[i,1]/dh[1])        
+            zy_plane_node_z = np.append(zy_plane_node_z, nodes[i,2]/dh[2])        
+
+    zx_plane_node_x = np.array([])
+    zx_plane_node_z = np.array([]) 
+
+    for i in range(len(nodes)):
+        if int(slices[1]) == int(nodes[i,1]/dh[1]):
+            zx_plane_node_x = np.append(zx_plane_node_x, nodes[i,0]/dh[0])        
+            zx_plane_node_z = np.append(zx_plane_node_z, nodes[i,2]/dh[2])        
+
     #--------------------------------------------------------------------------------    
 
     subfigs = fig.subfigures(subplots[0], subplots[1])
@@ -445,11 +479,11 @@ def check_travel_time(models, ttmodel, shots, nodes, dh, slices, subplots):
                 ims = [models[ind, slices[0],:,:].T, models[ind,:,slices[2],:].T, models[ind,:,:,slices[1]]]
                 tts = [ttmodel[int,slices[0],:,:].T, ttmodel[ind,:,slices[2],:].T, ttmodel[ind,:,:,slices[1]]]
 
-            xshot = [shots[:,0]/dh[0],[],[]]
-            yshot = [shots[:,1]/dh[1],[],[]]
-
-            xnode = [nodes[:,0]/dh[0],[],[]]
-            ynode = [nodes[:,1]/dh[1],[],[]]
+            xshot = [shots[:,0]/dh[0],zy_plane_shot_z,zx_plane_shot_x]
+            yshot = [shots[:,1]/dh[1],zy_plane_shot_y,zx_plane_shot_z]
+            
+            xnode = [nodes[:,0]/dh[0],zy_plane_node_z,zx_plane_node_x]
+            ynode = [nodes[:,1]/dh[1],zy_plane_node_y,zx_plane_node_z]
 
             for k, axs in enumerate(axes):
 
@@ -573,6 +607,40 @@ def check_illumination(models, shots, nodes, dh, slices, subplots):
                [np.ones(modelShape[2])*slices[0], np.arange(modelShape[2]), "--r"],
                [np.ones(modelShape[0])*slices[2], np.arange(modelShape[0]), "--m"]]
 
+    # picking geometry     
+
+    zy_plane_shot_y = np.array([])
+    zy_plane_shot_z = np.array([])
+
+    for i in range(len(shots)):
+        if int(slices[2]) == int(shots[i,0]/dh[0]):
+            zy_plane_shot_y = np.append(zy_plane_shot_y, shots[i,1]/dh[1])        
+            zy_plane_shot_z = np.append(zy_plane_shot_z, shots[i,2]/dh[2])        
+
+    zx_plane_shot_x = np.array([])
+    zx_plane_shot_z = np.array([]) 
+
+    for i in range(len(shots)):
+        if int(slices[1]) == int(shots[i,1]/dh[1]):
+            zx_plane_shot_x = np.append(zx_plane_shot_x, shots[i,0]/dh[0])        
+            zx_plane_shot_z = np.append(zx_plane_shot_z, shots[i,2]/dh[2])        
+
+    zy_plane_node_y = np.array([])
+    zy_plane_node_z = np.array([])
+
+    for i in range(len(nodes)):
+        if int(slices[2]) == int(nodes[i,0]/dh[0]):
+            zy_plane_node_y = np.append(zy_plane_node_y, nodes[i,1]/dh[1])        
+            zy_plane_node_z = np.append(zy_plane_node_z, nodes[i,2]/dh[2])        
+
+    zx_plane_node_x = np.array([])
+    zx_plane_node_z = np.array([]) 
+
+    for i in range(len(nodes)):
+        if int(slices[1]) == int(nodes[i,1]/dh[1]):
+            zx_plane_node_x = np.append(zx_plane_node_x, nodes[i,0]/dh[0])        
+            zx_plane_node_z = np.append(zx_plane_node_z, nodes[i,2]/dh[2])        
+
     #--------------------------------------------------------------------------------    
 
     subfigs = fig.subfigures(subplots[0], subplots[1])
@@ -587,11 +655,11 @@ def check_illumination(models, shots, nodes, dh, slices, subplots):
             else:
                 ims = [models[ind, slices[0],:,:].T, models[ind,:,slices[2],:].T, models[ind,:,:,slices[1]]]
 
-            xshot = [shots[:,0]/dh[0],[],[]]
-            yshot = [shots[:,1]/dh[1],[],[]]
-
-            xnode = [nodes[:,0]/dh[0],[],[]]
-            ynode = [nodes[:,1]/dh[1],[],[]]
+            xshot = [shots[:,0]/dh[0],zy_plane_shot_z,zx_plane_shot_x]
+            yshot = [shots[:,1]/dh[1],zy_plane_shot_y,zx_plane_shot_z]
+            
+            xnode = [nodes[:,0]/dh[0],zy_plane_node_z,zx_plane_node_x]
+            ynode = [nodes[:,1]/dh[1],zy_plane_node_y,zx_plane_node_z]
 
             for k, axs in enumerate(axes):
 
