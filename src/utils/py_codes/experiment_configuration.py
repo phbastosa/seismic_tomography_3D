@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from all_functions import buildModel3D, createGaussianSurface, multiBoxPlot
+from functions import *
 #------------------------------------------------------------------------------------
 
 dx = 12.5
@@ -51,21 +51,30 @@ for i in range(node_yline):
     for j in range(node_xline):
         node_z[i + node_yline*j] = dz*waterBottom[int(node_y[i]/dy),int(node_x[j]/dx)]
 
-node_z.astype("float32", order = "F").tofile(f"../../inputs/geometry/nodesTopography.bin")
+topo_file = open("../../../inputs/geometry/nodesTopography.txt", 'w')
+
+for k in range(len(node_z)):
+    topo_file.write(f"{node_z[k]}\n")
+    
+topo_file.close()
 
 node_x, node_y = np.meshgrid(node_x, node_y)
+
 node_x = np.reshape(node_x, [node_all])
 node_y = np.reshape(node_y, [node_all])
 
 shot_xline = 100
 shot_yline = 100
+
 shot_all = shot_xline * shot_yline
 
 shot_x = np.linspace(25, 4975, shot_xline)
 shot_y = np.linspace(25, 4975, shot_yline)
+
 shot_z = np.ones(shot_all) * 25.0
 
 shot_x, shot_y = np.meshgrid(shot_x, shot_y)
+
 shot_x = np.reshape(shot_x, [shot_all])
 shot_y = np.reshape(shot_y, [shot_all])
 
@@ -103,7 +112,7 @@ cbar.set_label("Depth [m]", fontsize = 15)
 ax.legend(loc = "upper right", fontsize = 12)
 
 plt.tight_layout()
-plt.savefig("../../figures/2_waterBottomSurface.png", dpi = 200)
+plt.savefig("water_bottom_surface.png", dpi = 200)
 plt.show()
 
 #----------------------------------------------------------------------------
@@ -163,7 +172,7 @@ cbar.set_label("Depth [m]", fontsize = 15)
 ax.legend(loc = "upper right", fontsize = 12)
 
 plt.tight_layout()
-plt.savefig("../../figures/3_anomalySurface.png", dpi = 200)
+plt.savefig("target_surface.png", dpi = 200)
 plt.show()
 
 #----------------------------------------------------------------------------
@@ -197,7 +206,7 @@ models = np.zeros((2,nz,nx,ny))
 models[0,:,:,:] = model
 models[1,:,:,:] = initModel
 
-dh = dx
+dh = np.array([dx, dy, dz])
 
 shots = np.zeros((shot_all, 3))
 nodes = np.zeros((node_all, 3))
@@ -210,14 +219,14 @@ nodes[:, 0] = node_x
 nodes[:, 1] = node_y
 nodes[:, 2] = node_z
 
-slices = np.array([int(3*nz / 5), int(ny / 2), int(nx / 2)], dtype = int) # [xy, zx, zy]
+slices = np.array([int(50), int(200), int(200)], dtype = int) 
 subplots = np.array([1, 2], dtype = int)
 
-multiBoxPlot(models, shots, nodes, dh, slices, subplots)
-plt.savefig("../../figures/4_benchmark_models.png")
+check_geometry(models, shots, nodes, dh, slices, subplots)
+plt.savefig("benchmark_models.png")
 plt.show()
 
 # Low frequency initial model
-initModel[::2,::2,::2].flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/initModel_{int(nz//2+1)}x{int(nx//2+1)}x{int(ny//2+1)}_{2*dx:.0f}m.bin")
-model.flatten("F").astype("float32", order = "F").tofile(f"../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
+initModel[::2,::2,::2].flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/initModel_{int(nz//2+1)}x{int(nx//2+1)}x{int(ny//2+1)}_{2*dx:.0f}m.bin")
+model.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
 

@@ -79,7 +79,7 @@ def check_model(models, dh, slices, subplots):
         vmax = np.max(models[0])
 
     nz, nx, ny = modelShape
-    [z, x, y] = 0.6 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
+    [z, x, y] = 2.0 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
 
     px = 1/plt.rcParams['figure.dpi']  
     ticks = np.array([3,7,7], dtype = int)
@@ -209,7 +209,7 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
         vmax = np.max(models[0])
 
     nz, nx, ny = modelShape
-    [z, x, y] = 0.6 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
+    [z, x, y] = 2.0 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
 
     px = 1/plt.rcParams['figure.dpi']  
     ticks = np.array([3,7,7], dtype = int)
@@ -243,7 +243,7 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
     xLabel = ["X [km]", "Z [km]", "X [km]"]
     yLabel = ["Y [km]", "      ", "Z [km]"]
 
-    yInvert = [ True, True, False]
+    yInvert = [True, True, False]
 
     xSlices = [[np.arange(modelShape[1]), np.ones(modelShape[1])*slices[1], "--g"],
                [np.arange(modelShape[0]), np.ones(modelShape[0])*slices[1], "--g"],
@@ -253,6 +253,40 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
                [np.ones(modelShape[2])*slices[0], np.arange(modelShape[2]), "--r"],
                [np.ones(modelShape[0])*slices[2], np.arange(modelShape[0]), "--m"]]
 
+    # picking geometry     
+
+    zx_plane_shot_x = np.array([])
+    zx_plane_shot_z = np.array([]) 
+    
+    for i in range(len(shots)):
+        if slices[1] - 1 < shots[i,0]/dh[0] < slices[1] + 1:
+            zx_plane_shot_x = np.append(zx_plane_shot_x, shots[i,1]/dh[1])        
+            zx_plane_shot_z = np.append(zx_plane_shot_z, shots[i,2]/dh[2])        
+
+    zy_plane_shot_y = np.array([])
+    zy_plane_shot_z = np.array([])
+
+    for i in range(len(shots)):
+        if slices[2] - 1 < shots[i,1]/dh[1] < slices[2] + 1:
+            zy_plane_shot_y = np.append(zy_plane_shot_y, shots[i,0]/dh[0])        
+            zy_plane_shot_z = np.append(zy_plane_shot_z, shots[i,2]/dh[2])        
+
+    zx_plane_node_x = np.array([])
+    zx_plane_node_z = np.array([]) 
+
+    for i in range(len(nodes)):
+        if slices[1] - 1 < nodes[i,0]/dh[0] < slices[1] + 1:
+            zx_plane_node_x = np.append(zx_plane_node_x, nodes[i,1]/dh[1])        
+            zx_plane_node_z = np.append(zx_plane_node_z, nodes[i,2]/dh[2])        
+
+    zy_plane_node_y = np.array([])
+    zy_plane_node_z = np.array([])
+
+    for i in range(len(nodes)):
+        if slices[2] - 1 < nodes[i,1]/dh[1] < slices[2] + 1:
+            zy_plane_node_y = np.append(zy_plane_node_y, nodes[i,0]/dh[0])        
+            zy_plane_node_z = np.append(zy_plane_node_z, nodes[i,2]/dh[2])        
+    
     #--------------------------------------------------------------------------------    
 
     subfigs = fig.subfigures(subplots[0], subplots[1])
@@ -267,11 +301,11 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
             else:
                 ims = [models[ind, slices[0],:,:].T, models[ind,:,slices[2],:].T, models[ind,:,:,slices[1]]]
 
-            xshot = [shots[:,0]/dh[0],[],[]]
-            yshot = [shots[:,1]/dh[1],[],[]]
+            xshot = [shots[:,0]/dh[0],zy_plane_shot_z,zx_plane_shot_x]
+            yshot = [shots[:,1]/dh[1],zy_plane_shot_y,zx_plane_shot_z]
 
-            xnode = [nodes[:,0]/dh[0],[],[]]
-            ynode = [nodes[:,1]/dh[1],[],[]]
+            xnode = [nodes[:,0]/dh[0],zy_plane_node_z,zx_plane_node_x]
+            ynode = [nodes[:,1]/dh[1],zy_plane_node_y,zx_plane_node_z]
 
             for k, axs in enumerate(axes):
 
@@ -312,7 +346,7 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
                     ax.plot(xSlices[k][0], xSlices[k][1], xSlices[k][2], linewidth = 0.5)
                     ax.plot(ySlices[k][0], ySlices[k][1], ySlices[k][2], linewidth = 0.5)
                     
-                    ax.scatter(xshot[k], yshot[k], s = 8.0)
+                    ax.scatter(xshot[k], yshot[k], s = 1.0)
                     ax.scatter(xnode[k], ynode[k], s = 8.0)
 
                     ax.tick_params(direction = xTickDirection[k], axis='x') 

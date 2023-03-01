@@ -51,7 +51,7 @@ void File_manager::write_binary_float(std::string path, float *array, int n)
     file.close();
 }
 
-void File_manager::read_text_file(std::string path, std::vector<std::string> elements)
+void File_manager::read_text_file(std::string path, std::vector<std::string> &elements)
 {
     std::ifstream file(path, std::ios::in);
     

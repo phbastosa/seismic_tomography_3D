@@ -13,7 +13,7 @@ public:
     void read_binary_float(std::string path, float * array, int n);
     void write_binary_float(std::string path, float *array, int n);
 
-    void read_text_file(std::string path, std::vector<std::string> elements); 
+    void read_text_file(std::string path, std::vector<std::string> &elements); 
 
     std::string catch_parameter(std::string target, std::string file);
 

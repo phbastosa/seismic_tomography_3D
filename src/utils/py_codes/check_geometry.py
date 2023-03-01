@@ -24,7 +24,7 @@ shots = np.loadtxt(geometry_folder + "xyz_shots.txt", delimiter = ',')
 nodes = np.loadtxt(geometry_folder + "xyz_nodes.txt", delimiter = ',')
 
 subplots = np.array([1, 1], dtype = int)
-slices = np.array([z_samples/2, x_samples/2, y_samples/2], dtype = int) 
+slices = np.array([z_samples/2, x_samples/2, y_samples/2], dtype = int) # [xy, zy, zx]
 dh = np.array([x_spacing, y_spacing, z_spacing])
 
 unit_shape = (3,)

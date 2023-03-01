@@ -1,5 +1,3 @@
-# include <iostream>
-
 # include "geometry.hpp"
 # include "regular/regular.hpp"
 # include "circular/circular.hpp"

@@ -2,57 +2,57 @@
 # Model paramenters ---------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------
  
-x_samples = 501           
-y_samples = 501           
-z_samples = 301           
+x_samples = 401           
+y_samples = 401           
+z_samples = 105           
 
-x_spacing = 50          # in meters [m] 
-y_spacing = 50          # in meters [m]  
-z_spacing = 50          # in meters [m]  
+x_spacing = 12.5          # in meters [m] 
+y_spacing = 12.5          # in meters [m]  
+z_spacing = 12.5          # in meters [m]  
 
-vp_file = "../inputs/models/performance_model_301x501x501_50m.bin"   
+vp_file = "../inputs/models/trueModel_105x401x401_12.5m.bin"   
 
 #---------------------------------------------------------------------------------------------------
 # Geometry parameters ------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------
 
-reciprocity = False           
+reciprocity = True           
 
 # Geoemtry type:
 # 0 - regular geometry
 # 1 - circular geometry
 
 shot_geometry_type = 0    
-node_geometry_type = 1     
+node_geometry_type = 0     
 
-shot_elevation = 8.4     # flat surface [m] <float>             
-node_elevation = 2433.7  # flat surface [m] <float>
+shot_elevation = 25      # flat surface [m] <float>
+node_elevation = 0       # flat surface [m] <float>
 
 shot_topography = False   
-node_topography = False   
+node_topography = True   
 
 geometry_folder = "../inputs/geometry/"        #
 
-shot_topography_file = "shots_topography.txt"  #     
-node_topography_file = "nodes_topography.txt"  #      
+shot_topography_file = "shotsTopography.txt"  #     
+node_topography_file = "nodesTopography.txt"   #      
 
 # Regular SHOTS geometry                        
 
-shot_n_xline = 1           
-shot_n_yline = 1           
+shot_n_xline = 100           
+shot_n_yline = 100           
 
-shot_SW = [12500, 12500]          # NW       # (x,y) [m] <float>    
-shot_NW = [12500, 12500]          #  |       # (x,y) [m] <float>    
-shot_SE = [12500, 12500]          # SW -- SE # (x,y) [m] <float>   
+shot_SW = [25, 25]            # NW       # (x,y) [m] <float>    
+shot_NW = [25, 4975]          #  |       # (x,y) [m] <float>    
+shot_SE = [4975, 25]          # SW -- SE # (x,y) [m] <float>   
 
 # Regular NODES geometry                        
 
-node_n_xline = 11            
-node_n_yline = 11            
+node_n_xline = 21            
+node_n_yline = 21            
 
-node_SW = [1000, 1000]         # NW       # (x,y) <float>     
-node_NW = [1000, 4000]         #  |       # (x,y) <float>   
-node_SE = [4000, 1000]         # SW -- SE # (x,y) <float>   
+node_SW = [500, 500]          # NW       # (x,y) <float>     
+node_NW = [500, 4500]         #  |       # (x,y) <float>   
+node_SE = [4500, 500]         # SW -- SE # (x,y) <float>   
 
 # Circular SHOT geometry
 
@@ -104,7 +104,7 @@ data_folder = "../inputs/seismic_data/"    # Folder to write seismograms <string
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonal_type = 2    # Eikonal Type flag <int>          
+eikonal_type = 1    # Eikonal Type flag <int>          
 
 export_time_volume = False    # Travel times volume flag <bool> 
 export_illumination = False   # Illumination matrix flag <bool>

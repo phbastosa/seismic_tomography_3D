@@ -8,7 +8,7 @@ void Geometry::set_topography(Coordinates &obj)
     {    
         std::vector<std::string> aux_topo;
 
-        fm.read_text_file(topography_file, aux_topo);
+        fm.read_text_file(folder + topography_file, aux_topo);
 
         for (int i = 0; i < obj.all; i++)
         {
