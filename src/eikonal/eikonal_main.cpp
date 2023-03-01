@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     {
         eikonal[type]->info_message();
 
-        std::cout<<"Solving eikonal equation with the "<<formulation[type]<<" formulation\n";
+        std::cout<<"Solving eikonal equation with the \033[32m"<<formulation[type]<<"\033[0;0m formulation\n\n";
         
         eikonal[type]->solve();
         eikonal[type]->write_time_volume();
