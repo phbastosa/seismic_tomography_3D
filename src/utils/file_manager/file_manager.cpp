@@ -1,4 +1,3 @@
-# include <vector>
 # include <string>
 # include <sstream>
 # include <fstream>
@@ -7,7 +6,7 @@
 
 # include "file_manager.hpp"
 
-bool File_manager::str2bool(std::string s)
+bool str2bool(std::string s)
 {
     bool b;
 
@@ -17,7 +16,7 @@ bool File_manager::str2bool(std::string s)
     return b;
 }
 
-void File_manager::read_binary_float(std::string path, float * array, int n)
+void read_binary_float(std::string path, float * array, int n)
 {
     std::ifstream file(path, std::ios::in);
 
@@ -33,7 +32,7 @@ void File_manager::read_binary_float(std::string path, float * array, int n)
     file.close();    
 }
 
-void File_manager::write_binary_float(std::string path, float *array, int n)
+void write_binary_float(std::string path, float *array, int n)
 {
     std::ofstream file(path, std::ios::out);
     
@@ -51,7 +50,7 @@ void File_manager::write_binary_float(std::string path, float *array, int n)
     file.close();
 }
 
-void File_manager::read_text_file(std::string path, std::vector<std::string> &elements)
+void read_text_file(std::string path, std::vector<std::string> &elements)
 {
     std::ifstream file(path, std::ios::in);
     
@@ -72,7 +71,7 @@ void File_manager::read_text_file(std::string path, std::vector<std::string> &el
     file.close();
 }
 
-std::string File_manager::catch_parameter(std::string target, std::string file)
+std::string catch_parameter(std::string target, std::string file)
 {
     char spaces = ' ';
     char comment = '#';
@@ -120,7 +119,7 @@ std::string File_manager::catch_parameter(std::string target, std::string file)
     return variable;
 }
 
-std::vector<std::string> File_manager::split(std::string s, char delimiter)
+std::vector<std::string> split(std::string s, char delimiter)
 {
     std::string token;
     std::vector<std::string> tokens;

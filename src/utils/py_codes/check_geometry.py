@@ -18,10 +18,11 @@ vp_location = catch_parameter(filename, "vp_file")[1:-1]
 
 vp = readBinaryVolume(z_samples, x_samples, y_samples, vp_location)
 
-geometry_folder = catch_parameter(filename, "geometry_folder")[1:-1]
+shots_file = catch_parameter(filename, "shots_output_file")[1:-1]
+nodes_file = catch_parameter(filename, "nodes_output_file")[1:-1]
 
-shots = np.loadtxt(geometry_folder + "xyz_shots.txt", delimiter = ',')
-nodes = np.loadtxt(geometry_folder + "xyz_nodes.txt", delimiter = ',')
+shots = np.loadtxt(shots_file, delimiter = ',')
+nodes = np.loadtxt(nodes_file, delimiter = ',')
 
 subplots = np.array([1, 1], dtype = int)
 slices = np.array([z_samples/2, x_samples/2, y_samples/2], dtype = int) # [xy, zy, zx]

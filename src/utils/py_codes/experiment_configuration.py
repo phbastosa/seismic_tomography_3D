@@ -8,22 +8,22 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from functions import *
 #------------------------------------------------------------------------------------
 
-dx = 12.5
-dy = 12.5
-dz = 12.5
+dx = 10
+dy = 10
+dz = 10
 
-nx = 561
-ny = 401
-nz = 161
+nx = 701
+ny = 501
+nz = 101
 
 #----------------------------------------------------------------------------
 
 waterBottom = np.zeros((ny,nx))
 
 top = 200      
-base = 500
+base = 300
 
-A = np.array([100, -200, -200])
+A = np.array([100, -50, -50])
 xc = np.array([100, 5000, 5000])
 yc = np.array([2500, 100, 4900])
 sigx = np.array([2000, 2000, 2000])
@@ -132,18 +132,20 @@ plt.savefig("water_bottom_surface_with_nodes.png", dpi = 200)
 plt.show()
 #----------------------------------------------------------------------------
 
-top = 800
-base = 1800
+top = 350
+base = 950
 
 model = np.zeros((nz,nx,ny))
 
 surface = np.zeros((ny, nx))
 
-A = np.array([900, 800, -700, 800, 900])
-xc = np.array([3000, 4000, 3500, 3000, 4000])
-yc = np.array([2000, 2000, 2500, 3000, 3000])
-sigx = np.array([500, 400, 400, 500, 400])
-sigy = np.array([400, 500, 400, 400, 500])
+A = np.array([550, 600, -300, 450, 400])
+
+xc = np.array([2500, 2500, 3500, 4500, 4500])
+yc = np.array([2000, 3000, 2500, 2000, 3000])
+
+sigx = np.array([800, 800, 500, 800, 800])
+sigy = np.array([500, 500, 300, 600, 600])
 
 for k in range(len(A)):
     surface += createGaussianSurface(nx,ny,dx,dy,A[k],xc[k],yc[k],sigx[k],sigy[k])
@@ -195,7 +197,7 @@ plt.show()
 v0 = 1650.0 # m/s
 dv = 10.0   # m/s
 
-wb = 350
+wb = 250
 
 v = np.array([1500, 2000, 3500])
 z = np.array([wb, base, nz*dz])
@@ -230,18 +232,46 @@ nodes[:, 0] = node_x
 nodes[:, 1] = node_y
 nodes[:, 2] = node_z
 
-slices = np.array([int(1250/dz), int(2500/dy), int(3300/dx)], dtype = int) # xy, zx, zy
-subplots = np.array([1, 1], dtype = int)
+i,j,k = np.where(model <= 1500)
 
-check_geometry(model, shots, nodes, dh, slices, subplots)
-plt.savefig("true_model.png")
+vp = model.copy()
+vs = model / 1.7
+rho = 310 * model ** 0.25
+
+vs[i,j,k] = 0.0
+rho[i,j,k] = 1000
+
+plt.figure(5, figsize = (18, 5))
+plt.subplot(131)
+plt.imshow(vp[:,:,250], aspect = "auto")
+
+plt.subplot(132)
+plt.imshow(vs[:,:,250], aspect = "auto")
+
+plt.subplot(133)
+plt.imshow(rho[:,:,250], aspect = "auto")
+
+plt.tight_layout()
 plt.show()
 
-check_geometry(initModel, shots, nodes, dh, slices, subplots)
-plt.savefig("init_model.png")
-plt.show()
+vp.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/vp_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
+vs.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/vs_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
+rho.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/rho_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
+
+initModel.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/initModel_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
+
+
+#slices = np.array([int(600/dz), int(2500/dy), int(3300/dx)], dtype = int) # xy, zx, zy
+#subplots = np.array([1, 1], dtype = int)
+
+#check_geometry(model, shots, nodes, dh, slices, subplots)
+#plt.savefig("true_model.png")
+#plt.show()
+
+#check_geometry(initModel, shots, nodes, dh, slices, subplots)
+#plt.savefig("init_model.png")
+#plt.show()
 
 # Low frequency initial model
-initModel[::2,::2,::2].flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/initModel_{int(nz//2+1)}x{int(nx//2+1)}x{int(ny//2+1)}_{2*dx:.0f}m.bin")
-model.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
+#model.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
 

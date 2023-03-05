@@ -1,3 +1,6 @@
+# include <fstream>
+# include <iostream>
+
 # include "regular.hpp"
 
 std::vector<float> Regular::linspace(float xi, float xf, int n)
@@ -23,47 +26,66 @@ std::vector<float> Regular::linspace(float xi, float xf, int n)
     return linspaced;
 }
 
-void Regular::set_parameters(std::string file)
+void Regular::set_geometry(std::string parameters, std::string name)
 {
-    folder = fm.catch_parameter("geometry_folder", file);
+    std::vector<std::string> splitted;
 
-    int max_coordinate_objects = 2;
-    
-    std::vector<std::string> coord = {"shot", "node"};
+    elevation = std::stof(catch_parameter(name + "_elevation", parameters));
+    topography = str2bool(catch_parameter(name + "_topography", parameters));
+    topo_file = catch_parameter(name + "_topography_file", parameters);
+    output_file = catch_parameter(name + "_output_file", parameters);
 
-    for (int i = 0; i < max_coordinate_objects; i++)
+    n_xline = std::stoi(catch_parameter(name + "_n_xline", parameters));
+    n_yline = std::stoi(catch_parameter(name + "_n_yline", parameters));
+
+    splitted = split(catch_parameter(name + "_SW", parameters),',');
+    SW.x = std::stof(splitted[0]);
+    SW.y = std::stof(splitted[1]);
+
+    splitted = split(catch_parameter(name + "_NW", parameters),',');
+    NW.x = std::stof(splitted[0]);
+    NW.y = std::stof(splitted[1]);
+
+    splitted = split(catch_parameter(name + "_SE", parameters),',');
+    SE.x = std::stof(splitted[0]);
+    SE.y = std::stof(splitted[1]);
+        
+    build_geometry();
+    set_topography();
+    write_geometry();
+}
+
+void Regular::set_topography()
+{
+    if (topography) 
+    {    
+        std::vector<std::string> aux_topo;
+
+        read_text_file(topo_file, aux_topo);
+
+        for (int i = 0; i < all; i++)
+        {
+            z[i] = std::stof(aux_topo[i]);
+        }
+
+        std::vector < std::string >().swap(aux_topo);
+    }
+    else
     {
-        elevation = std::stof(fm.catch_parameter(coord[i] + "_elevation", file));
-        topography = fm.str2bool(fm.catch_parameter(coord[i] + "_topography", file));
-        topography_file = fm.catch_parameter(coord[i] + "_topography_file", file);
-    
-        n_xline = std::stoi(fm.catch_parameter(coord[i] + "_n_xline", file));
-        n_yline = std::stoi(fm.catch_parameter(coord[i] + "_n_yline", file));
-
-        splitted = fm.split(fm.catch_parameter(coord[i] + "_SW", file),',');
-        SW.x = std::stof(splitted[0]);
-        SW.y = std::stof(splitted[1]);
-
-        splitted = fm.split(fm.catch_parameter(coord[i] + "_NW", file),',');
-        NW.x = std::stof(splitted[0]);
-        NW.y = std::stof(splitted[1]);
-
-        splitted = fm.split(fm.catch_parameter(coord[i] + "_SE", file),',');
-        SE.x = std::stof(splitted[0]);
-        SE.y = std::stof(splitted[1]);
-
-        if (i == 0) build_geometry(shots);
-        if (i == 1) build_geometry(nodes);
+        for (int i = 0; i < all; i++)
+        {
+            z[i] = elevation;
+        }
     }
 }
 
-void Regular::build_geometry(Coordinates &obj)
+void Regular::build_geometry()
 {
-    obj.all = n_xline * n_yline;
+    all = n_xline * n_yline;
 
-    obj.x = new float[obj.all];
-    obj.y = new float[obj.all];
-    obj.z = new float[obj.all];
+    x = new float[all]();
+    y = new float[all]();
+    z = new float[all]();
 
     std::vector<float> x_tmp = linspace(SW.x, SE.x, n_xline);
     std::vector<float> y_tmp = linspace(SW.y, NW.y, n_yline);
@@ -72,18 +94,33 @@ void Regular::build_geometry(Coordinates &obj)
     {
         for (int j = 0; j < x_tmp.size(); j++)
         {
-            obj.x[j + k*x_tmp.size()] = x_tmp[j];
-            obj.y[j + k*y_tmp.size()] = y_tmp[k];
+            x[k + j*n_yline] = x_tmp[j];
+            y[k + j*n_yline] = y_tmp[k];
         }
     }    
-
-    set_topography(obj);
 
     std::vector< float >().swap(x_tmp);
     std::vector< float >().swap(y_tmp);
 }
 
+void Regular::write_geometry()
+{
+    std::ofstream file(output_file, std::ios::out);        
 
+    if (file.is_open()) 
+    {    
+        for (int i = 0; i < all; i++)        
+        {   
+            file <<x[i]<<", "<<y[i]<<", "<<z[i]<<std::endl;    
+        }
+    }
+    else
+    {
+        throw std::invalid_argument("Error: file could not be opened!");
+    }
 
+    std::cout<<"Geometry file " + output_file + " was succesfully written."<<std::endl;
 
+    file.close();
+}
 

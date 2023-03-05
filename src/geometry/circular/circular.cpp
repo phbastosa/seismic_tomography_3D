@@ -1,42 +1,39 @@
 # include <cmath>
+# include <fstream>
+# include <iostream>
 
 # include "circular.hpp"
 
-void Circular::set_parameters(std::string file)
+void Circular::set_geometry(std::string parameters, std::string name)
 {
-    folder = fm.catch_parameter("geometry_folder", file);
+    std::vector<std::string> splitted;
 
-    int max_coordinate_objects = 2;
+    elevation = std::stof(catch_parameter(name + "_elevation", parameters));
+    topo_file = catch_parameter(name + "_topography_file", parameters);
+    topography = str2bool(catch_parameter(name + "_topography", parameters));
+    output_file = catch_parameter(name + "_output_file", parameters);
 
-    std::vector<std::string> coord = {"shot", "node"};
+    xcenter = std::stof(catch_parameter(name + "_xcenter", parameters));
+    ycenter = std::stof(catch_parameter(name + "_ycenter", parameters));
+    spacing = std::stof(catch_parameter(name + "_spacing", parameters));
 
-    for (int i = 0; i < max_coordinate_objects; i++)
-    {
-        elevation = std::stof(fm.catch_parameter(coord[i] + "_elevation", file));
-        topography = fm.str2bool(fm.catch_parameter(coord[i] + "_topography", file));
-        topography_file = fm.catch_parameter(coord[i] + "_topography_file", file);
+    splitted = split(catch_parameter(name + "_offsets", parameters),',');
 
-        xcenter = std::stof(fm.catch_parameter(coord[i] + "_x_center", file));
-        ycenter = std::stof(fm.catch_parameter(coord[i] + "_y_center", file));
-        spacing = std::stof(fm.catch_parameter(coord[i] + "_spacing", file));
-
-        splitted = fm.split(fm.catch_parameter(coord[i] + "_offsets", file),',');
-
-        for (auto offset : splitted)
-            offsets.push_back(std::stof(offset));
-
-        if (i == 0) build_geometry(shots);
-        if (i == 1) build_geometry(nodes);
+    for (auto offset : splitted)
+        offsets.push_back(std::stof(offset));
+        
+    build_geometry();
+    set_topography();
+    write_geometry();
  
-        std::vector<float>().swap(offsets);    
-    }
+    std::vector<float>().swap(offsets);    
 }
 
-void Circular::build_geometry(Coordinates &obj)
+void Circular::build_geometry()
 {
     std::vector<float> x_tmp, y_tmp;
 
-    obj.all = 0;
+    all = 0;
 
     for (float radius : offsets)
     {
@@ -49,22 +46,65 @@ void Circular::build_geometry(Coordinates &obj)
 
             theta += acos(1.0f - powf(spacing, 2.0f) / (2.0f * powf(radius, 2.0f)));    
 
-            obj.all += 1;
+            all += 1;
         }
     }
 
-    obj.x = new float[obj.all]();
-    obj.y = new float[obj.all]();
-    obj.z = new float[obj.all]();
+    x = new float[all]();
+    y = new float[all]();
+    z = new float[all]();
 
-    for (int i = 0; i < obj.all; i++)
+    for (int i = 0; i < all; i++)
     {
-        obj.x[i] = x_tmp[i]; 
-        obj.y[i] = y_tmp[i];
+        x[i] = x_tmp[i]; 
+        y[i] = y_tmp[i];
     }
-
-    set_topography(obj);
 
     std::vector< float >().swap(x_tmp);
     std::vector< float >().swap(y_tmp);
+}
+
+void Circular::set_topography()
+{
+    if (topography) 
+    {    
+        std::vector<std::string> aux_topo;
+
+        read_text_file(topo_file, aux_topo);
+
+        for (int i = 0; i < all; i++)
+        {
+            z[i] = std::stof(aux_topo[i]);
+        }
+
+        std::vector < std::string >().swap(aux_topo);
+    }
+    else
+    {
+        for (int i = 0; i < all; i++)
+        {
+            z[i] = elevation;
+        }
+    }
+}
+
+void Circular::write_geometry()
+{
+    std::ofstream file(output_file, std::ios::out);        
+
+    if (file.is_open()) 
+    {    
+        for (int i = 0; i < all; i++)        
+        {   
+            file <<x[i]<<", "<<y[i]<<", "<<z[i]<<std::endl;    
+        }
+    }
+    else
+    {
+        throw std::invalid_argument("Error: file could not be opened!");
+    }
+
+    std::cout<<"Geometry file " + output_file + " was succesfully written."<<std::endl;
+
+    file.close();
 }

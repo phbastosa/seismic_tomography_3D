@@ -13,10 +13,13 @@ private:
 
     std::vector<float> offsets;  
 
+    void set_topography();
+    void build_geometry();
+    void write_geometry();
+
 public:  
 
-    void build_geometry(Coordinates &obj);
-    void set_parameters(std::string file);
+    void set_geometry(std::string parameters, std::string name);
 };
 
 # endif

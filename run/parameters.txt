@@ -2,15 +2,16 @@
 # Model paramenters ---------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------
  
-x_samples = 401           
-y_samples = 401           
-z_samples = 105           
+x_samples = 701           
+y_samples = 501           
+z_samples = 101           
 
-x_spacing = 12.5          # in meters [m] 
-y_spacing = 12.5          # in meters [m]  
-z_spacing = 12.5          # in meters [m]  
+x_spacing = 10          # in meters [m] 
+y_spacing = 10          # in meters [m]  
+z_spacing = 10          # in meters [m]  
 
-vp_file = "../inputs/models/trueModel_105x401x401_12.5m.bin"   
+# vp_file = "../inputs/models/trueModel_161x561x401_12.5m.bin"   
+vp_file = "../inputs/models/initModel_101x701x501_10m.bin"   
 
 #---------------------------------------------------------------------------------------------------
 # Geometry parameters ------------------------------------------------------------------------------
@@ -22,51 +23,52 @@ reciprocity = True
 # 0 - regular geometry
 # 1 - circular geometry
 
-shot_geometry_type = 0    
-node_geometry_type = 0     
+shots_geometry_type = 1    
+nodes_geometry_type = 1     
 
-shot_elevation = 25      # flat surface [m] <float>
-node_elevation = 0       # flat surface [m] <float>
+shots_elevation = 300      # flat surface [m] <float>
+nodes_elevation = 200       # flat surface [m] <float>
 
-shot_topography = False   
-node_topography = True   
+shots_topography = False   
+nodes_topography = False   
 
-geometry_folder = "../inputs/geometry/"        #
+shots_topography_file = "../inputs/geometry/shots_topography.txt"  #     
+nodes_topography_file = "../inputs/geometry/nodes_topography.txt"  #      
 
-shot_topography_file = "shotsTopography.txt"  #     
-node_topography_file = "nodesTopography.txt"   #      
+shots_output_file = "../inputs/geometry/xyz_shots.txt"             #
+nodes_output_file = "../inputs/geometry/xyz_nodes.txt"             #
 
 # Regular SHOTS geometry                        
 
-shot_n_xline = 100           
-shot_n_yline = 100           
+shots_n_xline = 140           
+shots_n_yline = 100           
 
-shot_SW = [25, 25]            # NW       # (x,y) [m] <float>    
-shot_NW = [25, 4975]          #  |       # (x,y) [m] <float>    
-shot_SE = [4975, 25]          # SW -- SE # (x,y) [m] <float>   
+shots_SW = [25, 25]            # NW       # (x,y) [m] <float>    
+shots_NW = [25, 4975]          #  |       # (x,y) [m] <float>    
+shots_SE = [6975, 25]          # SW -- SE # (x,y) [m] <float>   
 
 # Regular NODES geometry                        
 
-node_n_xline = 21            
-node_n_yline = 21            
+nodes_n_xline = 16            
+nodes_n_yline = 11            
 
-node_SW = [500, 500]          # NW       # (x,y) <float>     
-node_NW = [500, 4500]         #  |       # (x,y) <float>   
-node_SE = [4500, 500]         # SW -- SE # (x,y) <float>   
+nodes_SW = [500, 500]          # NW       # (x,y) <float>     
+nodes_NW = [500, 4500]         #  |       # (x,y) <float>   
+nodes_SE = [6500, 500]         # SW -- SE # (x,y) <float>   
 
 # Circular SHOT geometry
 
-shot_x_center = 100          
-shot_y_center = 100          
-shot_spacing = 100            
-shot_offsets = [80, 100, 120]    # array <float>
+shots_xcenter = 1750          
+shots_ycenter = 2500          
+shots_spacing = 50            
+shots_offsets = [500, 1000, 1500]    # array <float>
 
 # Circular NODE geometry
 
-node_x_center = 12500          
-node_y_center = 12500         
-node_spacing = 100            
-node_offsets = [8000, 10000, 12000]    # array <float>
+nodes_xcenter = 5250          
+nodes_ycenter = 2500         
+nodes_spacing = 50            
+nodes_offsets = [500, 1000, 1500]    # array <float>
 
 #-------------------------------------------------------------------------------------------------
 # Data and auto picking parameters ---------------------------------------------------------------

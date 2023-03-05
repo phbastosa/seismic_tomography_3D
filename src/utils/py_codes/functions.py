@@ -209,7 +209,7 @@ def check_geometry(models, shots, nodes, dh, slices, subplots):
         vmax = np.max(models[0])
 
     nz, nx, ny = modelShape
-    [z, x, y] = 2.0 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
+    [z, x, y] = 4 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
 
     px = 1/plt.rcParams['figure.dpi']  
     ticks = np.array([3,7,7], dtype = int)
