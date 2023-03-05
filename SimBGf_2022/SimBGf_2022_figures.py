@@ -34,13 +34,13 @@ yzPlane = int(nx / 2)
 xyPlane = int(nz / 2)
 
 model = readBinaryVolume(nz,nx,ny,"outputs/refractiveModel_45x881x881_25m.bin")
-times = readBinaryVolume(nz,nx,ny,"outputs/eikonal_nz45_nx881_ny881_shot_1.bin")
+times = readBinaryVolume(nz,nx,ny,"outputs/pod_eikonal_nz45_nx881_ny881_shot_1.bin")
 
 nsrc = 5
 nrec = 5048
 
-sx = np.array([1000, 21000,  1000, 21000, 11000])
-sy = np.array([1000,  1000, 21000, 21000, 11000])
+sx = np.array([1000, 1000,  21000, 21000, 11000])
+sy = np.array([1000, 21000,  1000, 21000, 11000])
 sz = np.array([   0,     0,     0,     0,     0])
 
 rx, ry, rz = np.loadtxt("outputs/xyz_nodes.txt", delimiter = ",", unpack = True)
@@ -185,13 +185,13 @@ for s in range(nsrc):
 
     for n in range(len(dh)):
         if s == 4:
-            pod = readBinaryArray(nrec,f"outputs/central_pod_{dh[n]:.0f}m_times_nr{nrec}_shot_1.bin")
-            fim = readBinaryArray(nrec,f"outputs/central_fim_{dh[n]:.0f}m_times_nr{nrec}_shot_1.bin")
-            fsm = readBinaryArray(nrec,f"outputs/central_fsm_{dh[n]:.0f}m_times_nr{nrec}_shot_1.bin")
+            pod = readBinaryArray(nrec,f"outputs/central_{dh[n]:.0f}m_pod_times_nr{nrec}_shot_1.bin")
+            fim = readBinaryArray(nrec,f"outputs/central_{dh[n]:.0f}m_fim_times_nr{nrec}_shot_1.bin")
+            fsm = readBinaryArray(nrec,f"outputs/central_{dh[n]:.0f}m_fsm_times_nr{nrec}_shot_1.bin")
         else:
-            pod = readBinaryArray(nrec,f"outputs/externs_pod_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
-            fim = readBinaryArray(nrec,f"outputs/externs_fim_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
-            fsm = readBinaryArray(nrec,f"outputs/externs_fsm_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
+            pod = readBinaryArray(nrec,f"outputs/externs_{dh[n]:.0f}m_pod_times_nr{nrec}_shot_{s+1}.bin")
+            fim = readBinaryArray(nrec,f"outputs/externs_{dh[n]:.0f}m_fim_times_nr{nrec}_shot_{s+1}.bin")
+            fsm = readBinaryArray(nrec,f"outputs/externs_{dh[n]:.0f}m_fsm_times_nr{nrec}_shot_{s+1}.bin")
 
         plt.plot(pod, label = f"Podvin (1991) {dh[n]:.0f} m spacing")
         plt.plot(fim, label = f"Jeong (2008) {dh[n]:.0f} m spacing")
@@ -216,9 +216,9 @@ for s in range(nsrc):
     ax2 = plt.subplot(G[4:6,:])
     for n in range(len(dh)):
         if s == 4:
-            pod = readBinaryArray(nrec,f"outputs/central_pod_{dh[n]:.0f}m_times_nr{nrec}_shot_1.bin")
+            pod = readBinaryArray(nrec,f"outputs/central_{dh[n]:.0f}m_pod_times_nr{nrec}_shot_1.bin")
         else:
-            pod = readBinaryArray(nrec,f"outputs/externs_pod_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
+            pod = readBinaryArray(nrec,f"outputs/externs_{dh[n]:.0f}m_pod_times_nr{nrec}_shot_{s+1}.bin")
 
         plt.plot(np.abs(tta - pod) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
@@ -234,9 +234,9 @@ for s in range(nsrc):
     ax3 = plt.subplot(G[6:8,:])
     for n in range(len(dh)):
         if s == 4:
-            fim = readBinaryArray(nrec,f"outputs/central_fim_{dh[n]:.0f}m_times_nr{nrec}_shot_1.bin")
+            fim = readBinaryArray(nrec,f"outputs/central_{dh[n]:.0f}m_fim_times_nr{nrec}_shot_1.bin")
         else:
-            fim = readBinaryArray(nrec,f"outputs/externs_fim_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
+            fim = readBinaryArray(nrec,f"outputs/externs_{dh[n]:.0f}m_fim_times_nr{nrec}_shot_{s+1}.bin")
 
         plt.plot(np.abs(tta - fim) * 1e3, label = f"{dh[n]:.0f} m spacing")
 
@@ -252,9 +252,9 @@ for s in range(nsrc):
     ax4 = plt.subplot(G[8:,:])
     for n in range(len(dh)):
         if s == 4:
-            fsm = readBinaryArray(nrec,f"outputs/central_fsm_{dh[n]:.0f}m_times_nr{nrec}_shot_1.bin")
+            fsm = readBinaryArray(nrec,f"outputs/central_{dh[n]:.0f}m_fsm_times_nr{nrec}_shot_1.bin")
         else:
-            fsm = readBinaryArray(nrec,f"outputs/externs_fsm_{dh[n]:.0f}m_times_nr{nrec}_shot_{s+1}.bin")
+            fsm = readBinaryArray(nrec,f"outputs/externs_{dh[n]:.0f}m_fsm_times_nr{nrec}_shot_{s+1}.bin")
 
         plt.plot(np.abs(tta - fsm) * 1e3, label = f"{dh[n]:.0f} m spacing")
 

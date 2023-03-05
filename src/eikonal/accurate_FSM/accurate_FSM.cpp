@@ -521,7 +521,7 @@ void Accurate_FSM::info_message()
     if (reciprocity)
         std::cout<<"Reciprocity = True\n\n";
     else
-        std::cout<<"Shots reciprocity = False\n\n";
+        std::cout<<"Reciprocity = False\n\n";
 
     std::cout<<"Shot "<<shot_id+1<<" of "<<shots->all<<"\n";
 

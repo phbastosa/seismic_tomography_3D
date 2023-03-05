@@ -22,51 +22,52 @@ reciprocity = False
 # 0 - regular geometry
 # 1 - circular geometry
 
-shot_geometry_type = 0    
-node_geometry_type = 1     
+shots_geometry_type = 0    
+nodes_geometry_type = 1     
 
-shot_elevation = 0        # flat surface [m] <float>             
-node_elevation = 0        # flat surface [m] <float>
+shots_elevation = 0        # flat surface [m] <float>             
+nodes_elevation = 0        # flat surface [m] <float>
 
-shot_topography = False   
-node_topography = False   
+shots_topography = False   
+nodes_topography = False   
 
-geometry_folder = "outputs/"                    #
+shots_topography_file = "shots_topography.txt"   #     
+nodes_topography_file = "nodes_topography.txt"   #      
 
-shot_topography_file = "shots_topography.txt"   #     
-node_topography_file = "nodes_topography.txt"   #      
+shots_output_file = "outputs/xyz_shots.txt"      #
+nodes_output_file = "outputs/xyz_nodes.txt"      #
 
 # Regular SHOTS geometry                        
 
-shot_n_xline = 1           
-shot_n_yline = 1           
+shots_n_xline = 1           
+shots_n_yline = 1           
 
-shot_SW = [11000, 11000]          # NW       # (x,y) [m] <float>    
-shot_NW = [11000, 11000]          #  |       # (x,y) [m] <float>    
-shot_SE = [11000, 11000]          # SW -- SE # (x,y) [m] <float>   
+shots_SW = [11000, 11000]          # NW       # (x,y) [m] <float>    
+shots_NW = [11000, 11000]          #  |       # (x,y) [m] <float>    
+shots_SE = [11000, 11000]          # SW -- SE # (x,y) [m] <float>   
 
 # Regular NODES geometry                        
 
-node_n_xline = 1            
-node_n_yline = 1            
+nodes_n_xline = 1            
+nodes_n_yline = 1            
 
-node_SW = [11000, 11000]         # NW       # (x,y) <float>     
-node_NW = [11000, 11000]         #  |       # (x,y) <float>   
-node_SE = [11000, 11000]         # SW -- SE # (x,y) <float>   
+nodes_SW = [11000, 11000]         # NW       # (x,y) <float>     
+nodes_NW = [11000, 11000]         #  |       # (x,y) <float>   
+nodes_SE = [11000, 11000]         # SW -- SE # (x,y) <float>   
 
 # Circular SHOT geometry
 
-shot_x_center = 11000          
-shot_y_center = 11000          
-shot_spacing = 12.5            
-shot_offsets = [10000]           # array [m] <float>
+shots_xcenter = 11000          
+shots_ycenter = 11000          
+shots_spacing = 12.5            
+shots_offsets = [10000]           # array [m] <float>
 
 # Circular NODE geometry
 
-node_x_center = 11000          
-node_y_center = 11000         
-node_spacing = 12.5            
-node_offsets = [10000]           # array [m] <float>
+nodes_xcenter = 11000          
+nodes_ycenter = 11000         
+nodes_spacing = 12.5            
+nodes_offsets = [10000]           # array [m] <float>
 
 #-------------------------------------------------------------------------------------------------
 # Eikonal parameters -----------------------------------------------------------------------------
@@ -78,13 +79,9 @@ node_offsets = [10000]           # array [m] <float>
 
 eikonal_type = 0    # Eikonal Type flag <int>          
 
-export_time_volume = True    # Travel times volume flag <bool> 
-export_illumination = False   # Illumination matrix flag <bool>
-export_ray_position = False   # Ray position flag <bool>
+export_time_volume = True     # Travel times volume flag <bool> 
 export_first_arrival = True   # First arrivals flag <bool> 
 
-ray_folder = "outputs/"                            # Ray positions folder <string>
-time_volume_folder = "outputs/"                    # Travel time volume folder <string>
-illumination_folder = "outputs/"                   # Illumination volume folder <string>
-first_arrival_folder = "outputs/central_pod_25m_"  # Eikonal volume folder <string>
+time_volume_folder = "outputs/"                # Travel time volume folder <string>
+first_arrival_folder = "outputs/central_25m_"  # Eikonal volume folder <string>
 
