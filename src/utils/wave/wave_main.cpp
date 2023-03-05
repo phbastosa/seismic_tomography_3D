@@ -80,7 +80,7 @@ int main (int argc, char**argv)
     float * ry = new float[n_nodes];
     float * rz = new float[n_nodes];
 
-    for (int i = 0; i < n_shots; i++)
+    for (int i = 0; i < n_nodes; i++)
     {
         splitted = split(elements[i],',');
 
