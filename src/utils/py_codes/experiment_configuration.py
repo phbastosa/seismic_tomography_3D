@@ -232,32 +232,7 @@ nodes[:, 0] = node_x
 nodes[:, 1] = node_y
 nodes[:, 2] = node_z
 
-i,j,k = np.where(model <= 1500)
-
-vp = model.copy()
-vs = model / 1.7
-rho = 310 * model ** 0.25
-
-vs[i,j,k] = 0.0
-rho[i,j,k] = 1000
-
-plt.figure(5, figsize = (18, 5))
-plt.subplot(131)
-plt.imshow(vp[:,:,250], aspect = "auto")
-
-plt.subplot(132)
-plt.imshow(vs[:,:,250], aspect = "auto")
-
-plt.subplot(133)
-plt.imshow(rho[:,:,250], aspect = "auto")
-
-plt.tight_layout()
-plt.show()
-
-vp.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/vp_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
-vs.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/vs_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
-rho.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/rho_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
-
+model.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
 initModel.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/initModel_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
 
 

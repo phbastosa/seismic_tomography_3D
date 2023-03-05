@@ -11,9 +11,6 @@ regular="../src/geometry/regular/regular.cpp"
 circular="../src/geometry/circular/circular.cpp"
 geometry_main="../src/geometry/geometry_main.cpp"
 
-picking="../src/utils/auto_picking/auto_picking.cpp"
-qc_picks="../src/utils/auto_picking/qc_picking.py"
-
 classic="../src/eikonal/classic/classic.cpp"
 block_FIM="../src/eikonal/block_FIM/block_FIM.cpp"
 kernel_FIM="../src/eikonal/block_FIM/cuda_kernel.cu"
@@ -28,15 +25,12 @@ flags="-acc -fast -ta=tesla,cc60"
 USER_MESSAGE="
 Usage:
 
---------------------------------------------------------------------------------------------
-|         Inputs          |           Modeling           |            Inversion            |
--------------------------------------------------------------------------------------------|  
-| $ $0 \033[31m-build_all\033[m      | $ $0 -eikonal             | $ $0 -tomography             |
-| $ $0 -auto_picking   | $ $0 -check_travel_time   | $ $0 -check_recovered_model  |
-| $ $0 -check_data     | $ $0 -check_illumination  | $ $0 -check_convergence      |
-| $ $0 -check_model    | $ $0 -check_first_arrival | $ $0 -check_data_difference  |
-| $ $0 -check_geometry |                              | $ $0 -check_model_difference |
---------------------------------------------------------------------------------------------         
+    $ $0 -build_all             #        
+    $ $0 -check_model           # 
+    $ $0 -check_geometry        # 
+    $ $0 -tomography            # 
+    $ $0 -check_output_model    # 
+    $ $0 -check_convergence     # 
 "
 
 # Check if user provide some parameter
@@ -73,21 +67,6 @@ case "$1" in
 	exit 0
 ;;
 
--auto_picking) 
-
-    g++ $file_manager $picking -lm -O3 -o ../bin/auto_picking.exe
-    ./../bin/auto_picking.exe parameters.txt
-
-	exit 0
-;;
-
--check_data) 
-
-    python3 ../src/utils/py_codes/check_picking.py parameters.txt 
-
-	exit 0
-;;
-
 -check_model) 
     
     python3 ../src/utils/py_codes/check_model.py parameters.txt
@@ -103,38 +82,20 @@ case "$1" in
 	exit 0
 ;;
 
--eikonal) 
-
-    ./../bin/eikonal.exe parameters.txt
-
-	exit 0
-;;
-
--check_travel_time) 
-
-    python3 ../src/utils/py_codes/check_travel_time.py parameters.txt
-
-	exit 0
-;;
-
--check_illumination) 
-
-    python3 ../src/utils/py_codes/check_illumination.py parameters.txt
-
-	exit 0
-;;
-
--check_first_arrival) 
-
-    python3 ../src/utils/py_codes/check_first_arrival.py parameters.txt
-
-	exit 0
-;;
-
 -tomography) 
 
 
 	exit 0
+;;
+
+-check_output_model)
+
+    exit 0
+;;
+
+-check_convergence)
+
+    exit 0
 ;;
 
 * ) ## Message for bad parameter
@@ -145,24 +106,3 @@ case "$1" in
 ;;
 
 esac
-
-
-
-# cgls="../../src/cgls/cgls.cu"
-# utils="../../src/essentials/utils.cpp"
-# model="../../src/essentials/model.cpp"
-# eikonal="../../src/eikonal/eikonal.cpp"
-# geometry="../../src/essentials/geometry.cpp"
-# tomography="../../src/tomography/tomography.cpp"
-
-# library="/usr/local/cuda/lib64/"
-# include="/usr/local/cuda/include/"
-
-# flags="-acc -fast -ta=tesla,cc60 -std=c++11 -g -lm -lcusparse -lcublas"
-
-# pgc++ $cgls $utils $model $geometry $eikonal $tomography tomography_main.cpp $flags -I $include -L $library -o tomography_main.exe
-
-# ./tomography_main.exe ../parameters.txt
-
-# # Clean it up
-# rm *.o *.exe 

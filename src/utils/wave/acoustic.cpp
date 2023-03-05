@@ -4,35 +4,6 @@
 
 # include "acoustic.hpp"
 
-float * readBinaryFloat(std::string path, int n)
-{
-    std::ifstream file(path, std::ios::in);
-    
-    float * array = new float[n];
-    file.read((char *) array, n * sizeof(float));
-    file.close();    
-
-    return array;
-}
-
-void writeBinaryFloat(std::string path, float *array, int n)
-{
-    std::ofstream file(path, std::ios::out);
-    
-    if (file.is_open()) 
-    {    
-        file.write((char *) array, n * sizeof(float));
-    }
-    else
-    {
-        throw std::invalid_argument("Error: file could not be opened!");
-    }
-
-    std::cout<<"Binary file " + path + " was successfully written."<<std::endl;
-
-    file.close();
-}
-
 void progressMessage(int timeStep, int nt, float dt, int sId, float sx, float sy, float sz)
 {
     if (timeStep % (nt/10) == 0)
@@ -187,7 +158,6 @@ void wavePropagation(float * V, float * U_pas, float * U_pre, float * U_fut, flo
 {
     int nPoints = nxx*nyy*nzz;
 
-    float alpha1, alpha2;
     float d2_Px2, d2_Py2, d2_Pz2;
 
     # pragma acc parallel loop present(V[0:nPoints],U_pas[0:nPoints],U_pre[0:nPoints],U_fut[0:nPoints],damp1D[0:nb],damp2D[0:nb*nb],damp3D[0:nb*nb*nb])

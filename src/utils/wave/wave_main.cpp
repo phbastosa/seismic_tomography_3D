@@ -25,7 +25,9 @@ int main (int argc, char**argv)
 
     int nPoints = nxx*nyy*nzz;
 
-    float * V = readBinaryFloat("model/vp_101x701x501_10m.bin", nx*ny*nz);
+    float * V = new float[nx*ny*nz]();
+
+    read_binary_float("../../../inputs/models/initModel_101x701x501_10m.bin", V, nx*ny*nz);
     
     V = expand(V, nx, ny, nz, nb);
 
@@ -47,16 +49,47 @@ int main (int argc, char**argv)
 
     // Geometry
 
-    int n_shots = 441;
-    int n_nodes = 10000; 
+    int n_shots = 11*16;
+    int n_nodes = 140*100;
 
-    float * sx = readBinaryFloat("geometry/x_nodes_441_positions.bin", n_shots);
-    float * sy = readBinaryFloat("geometry/y_nodes_441_positions.bin", n_shots);
-    float * sz = readBinaryFloat("geometry/z_nodes_441_positions.bin", n_shots);
-    
-    float * rx = readBinaryFloat("geometry/x_shots_10000_positions.bin", n_nodes);
-    float * ry = readBinaryFloat("geometry/y_shots_10000_positions.bin", n_nodes);
-    float * rz = readBinaryFloat("geometry/z_shots_10000_positions.bin", n_nodes);
+    std::vector<std::string> splitted;
+    std::vector<std::string> elements;
+
+    read_text_file("../../../inputs/geometry/xyz_nodes.txt", elements);
+
+    float * sx = new float[n_shots];
+    float * sy = new float[n_shots];
+    float * sz = new float[n_shots];
+
+    for (int i = 0; i < n_shots; i++)
+    {
+        splitted = split(elements[i],',');
+
+        sx[i] = std::stof(splitted[0]);
+        sy[i] = std::stof(splitted[1]);
+        sz[i] = std::stof(splitted[2]);
+
+        std::vector<std::string>().swap(splitted);
+    }    
+
+    std::vector<std::string>().swap(elements);
+
+    read_text_file("../../../inputs/geometry/xyz_shots.txt", elements);
+
+    float * rx = new float[n_nodes];
+    float * ry = new float[n_nodes];
+    float * rz = new float[n_nodes];
+
+    for (int i = 0; i < n_shots; i++)
+    {
+        splitted = split(elements[i],',');
+
+        rx[i] = std::stof(splitted[0]);
+        ry[i] = std::stof(splitted[1]);
+        rz[i] = std::stof(splitted[2]);
+
+        std::vector<std::string>().swap(splitted);
+    }    
 
     // Boundaries compensation on integer geometry grid points
 
@@ -75,16 +108,14 @@ int main (int argc, char**argv)
 
     int nt = 3001;
     float dt = 0.001f;
-    // float fmax = 30;
-    // float delay = 0.1f;
 
-    // float * wavelet = rickerGeneration(delay, fmax, dt, nt);
+    float * wavelet = new float[nt];
 
-    float * wavelet = readBinaryFloat("src/ricker_min_phase_3001_1ms.bin", nt);
+    read_binary_float("ricker_min_phase_3001_1ms.bin", wavelet, nt);
 
     float * seismogram = new float[nt * n_nodes]();
     
-    for (int shotId = 250; shotId < 251; shotId++)
+    for (int shotId = 0; shotId < 1; shotId++)
     {
         float source_x = sx[shotId];
         float source_y = sy[shotId];
@@ -131,7 +162,7 @@ int main (int argc, char**argv)
         # pragma acc exit data delete(damp3D[0:nb*nb*nb])
         # pragma acc exit data copyout(seismogram[0:nt*n_nodes])
 
-        writeBinaryFloat("seismogram_" + std::to_string(nt) + "x" + std::to_string(n_nodes) + "_shot_" + std::to_string(shotId+1) + ".bin", seismogram, nt*n_nodes);
+        write_binary_float("../../../inputs/seismic_data/seismogram_" + std::to_string(nt) + "x" + std::to_string(n_nodes) + "_shot_" + std::to_string(shotId+1) + ".bin", seismogram, nt*n_nodes);
     }
 
     auto tf = std::chrono::system_clock::now();

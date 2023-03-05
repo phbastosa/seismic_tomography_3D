@@ -1,11 +1,10 @@
 # ifndef PML_ACOUSTIC_3D_HPP
 # define PML_ACOUSTIC_3D_HPP
 
+# include <vector>
 # include <string>
 
-float * readBinaryFloat(std::string path, int n);
-
-void writeBinaryFloat(std::string path, float *array, int n);
+# include "../file_manager/file_manager.hpp"
 
 float * expand(float * volume, int nx, int ny, int nz, int nb);
 
