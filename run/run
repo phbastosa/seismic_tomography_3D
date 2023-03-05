@@ -7,10 +7,6 @@ gaussian="../src/utils/smoothing/gaussian.cpp"
 trilinear="../src/utils/interpolation/trilinear.cpp"
 file_manager="../src/utils/file_manager/file_manager.cpp"
 
-eiko_m="../src/model/eikonal_model/eikonal_model.cpp"
-tomo_m=""
-
-geometry="../src/geometry/geometry.cpp"
 regular="../src/geometry/regular/regular.cpp"
 circular="../src/geometry/circular/circular.cpp"
 geometry_main="../src/geometry/geometry_main.cpp"
@@ -18,7 +14,6 @@ geometry_main="../src/geometry/geometry_main.cpp"
 picking="../src/utils/auto_picking/auto_picking.cpp"
 qc_picks="../src/utils/auto_picking/qc_picking.py"
 
-eikonal="../src/eikonal/eikonal.cpp"
 classic="../src/eikonal/classic/classic.cpp"
 block_FIM="../src/eikonal/block_FIM/block_FIM.cpp"
 kernel_FIM="../src/eikonal/block_FIM/cuda_kernel.cu"
@@ -65,10 +60,10 @@ case "$1" in
     echo -e "Compiling stand-alone executables!"
 
     echo -e "\n../bin/\033[31mgeometry.exe\033[m: \n" 
-    pgc++ $file_manager $geometry $circular $regular $geometry_main -lm -o ../bin/geometry.exe
+    pgc++ $file_manager $circular $regular $geometry_main -lm -o ../bin/geometry.exe
 
     echo -e "\n../bin/\033[31meikonal.exe\033[m: \n" 
-    pgc++ $file_manager $trilinear $gaussian $eiko_m $geometry $regular $circular $eikonal $classic $kernel_FIM $block_FIM $accurate_FSM $eikonal_main $flags -I $include -L $library -lm -o ../bin/eikonal.exe 
+    pgc++ $file_manager $trilinear $regular $circular $classic $kernel_FIM $block_FIM $accurate_FSM $eikonal_main $flags -I $include -L $library --diag_suppress bad_macro_redef -lm -o ../bin/eikonal.exe
     
     echo -e "\n../bin/\033[31mtomography.exe\033[m: \n" 
     # tomography_main

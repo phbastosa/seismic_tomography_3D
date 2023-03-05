@@ -3,63 +3,59 @@
 
 # include <string>
 
-# include "../model/model.hpp"
-# include "../model/eikonal_model/eikonal_model.hpp"
-
 # include "../geometry/geometry.hpp"
 # include "../geometry/regular/regular.hpp"
 # include "../geometry/circular/circular.hpp"
+// # include "../geometry/streamer/streamer.hpp"
+// # include "../geometry/crosswell/crosswell.hpp"
 
 # include "../utils/file_manager/file_manager.hpp"
 # include "../utils/interpolation/trilinear.hpp"
 
 class Eikonal 
 {   
-private:
-
-    File_manager fm;
-    Trilinear interpolate;
-
 protected:
 
-    bool reciprocity;
+    int nx, ny, nz;
+    int nxx, nyy, nzz;
+    int nPoints, nPointsB;
+    int total_nodes;
+
+    float dx, dy, dz;
 
     float * slowness;
-    float * travel_time;
-    float * illumination;      
+    float * travel_time;    
     float * first_arrival;
 
+    bool reciprocity;
     bool export_time_volume;  
-    bool export_illumination; 
-    bool export_ray_position; 
     bool export_first_arrival;
 
-    std::string ray_folder;         
-    std::string time_volume_folder; 
-    std::string illumination_folder; 
+    std::string time_volume_folder;          
     std::string first_arrival_folder;
+
+    Geometry * shots;
+    Geometry * nodes; 
+
+    virtual void expand_model() = 0;
+    virtual void reduce_model() = 0;
 
 public:
 
-    Eikonal_model eiko_m;
-
-    Geometry * geometry[2];
+    std::string parameters;
 
     int shot_id;
-    int shots_type;
-    int nodes_type;
+    int total_shots;
 
-    void info_message();
-    void set_parameters(std::string file);
-
-    void ray_tracing();
-    void write_time_volume();
-    void write_illumination();
-    void write_first_arrival();
-
-    virtual void solve() = 0;
+    virtual void set_parameters() = 0;
     virtual void prepare_volumes() = 0;
-    virtual void destroy() = 0;    
+
+    virtual void info_message() = 0;
+    virtual void eikonal_equation() = 0;
+    virtual void write_time_volume() = 0;
+    virtual void write_first_arrival() = 0;
+
+    virtual void destroy_volumes() = 0;    
 };
 
 # endif

@@ -5,18 +5,153 @@
 
 # include "accurate_FSM.hpp"
 
+void Accurate_FSM::expand_model()
+{
+    // Centering
+    for (int z = 1; z < nzz - 1; z++)
+    {
+        for (int y = 1; y < nyy - 1; y++)
+        {
+            for (int x = 1; x < nxx - 1; x++)
+            {
+                S[z + x*nzz + y*nxx*nzz] = slowness[(z - 1) + (x - 1)*nz + (y - 1)*nx*nz];
+            }
+        }
+    }
+
+    // Z direction
+    for (int z = 0; z < 1; z++)
+    {
+        for (int y = 1; y < nyy - 1; y++)
+        {
+            for (int x = 1; x < nxx - 1; x++)
+            {
+                S[z + x*nzz + y*nxx*nzz] = slowness[0 + (x - 1)*nz + (y - 1)*nx*nz];
+                S[(nzz - z - 1) + x*nzz + y*nxx*nzz] = slowness[(nz - 1) + (x - 1)*nz + (y - 1)*nx*nz];
+            }
+        }
+    }
+
+    // X direction
+    for (int x = 0; x < 1; x++)
+    {
+        for (int z = 0; z < nzz; z++)
+        {
+            for (int y = 1; y < nyy - 1; y++)
+            {
+                S[z + x*nzz + y*nxx*nzz] = S[z + 1*nzz + y*nxx*nzz];
+                S[z + (nxx - x - 1)*nzz + y*nxx*nzz] = S[z + (nxx - 1 - 1)*nzz + y*nxx*nzz];
+            }
+        }
+    }
+
+    // Y direction
+    for (int y = 0; y < 1; y++)
+    {
+        for (int z = 0; z < nzz; z++)
+        {
+            for (int x = 0; x < nxx; x++)
+            {
+                S[z + x*nzz + y*nxx*nzz] = S[z + x*nzz + 1*nxx*nzz];
+                S[z + x*nzz + (nyy - y - 1)*nxx*nzz] = S[z + x*nzz + (nyy - 1 - 1)*nxx*nzz];
+            }
+        }
+    }
+}
+
+void Accurate_FSM::reduce_model()
+{
+    for (int index = 0; index < nPoints; index++)
+    {
+        int y = (int) (index / (nx*nz));         
+        int x = (int) (index - y*nx*nz) / nz;    
+        int z = (int) (index - x*nz - y*nx*nz);  
+
+        travel_time[z + x*nz + y*nx*nz] = T[(z + 1) + (x + 1)*nzz + (y + 1)*nxx*nzz];
+    }
+}
+
+void Accurate_FSM::set_parameters()
+{
+    nx = std::stoi(catch_parameter("x_samples", parameters));
+    ny = std::stoi(catch_parameter("y_samples", parameters));
+    nz = std::stoi(catch_parameter("z_samples", parameters));
+
+    nPoints = nx * ny * nz;
+
+    dx = std::stof(catch_parameter("x_spacing", parameters));    
+    dy = std::stof(catch_parameter("y_spacing", parameters));    
+    dz = std::stof(catch_parameter("z_spacing", parameters));    
+
+    slowness = new float[nPoints]();    
+
+    std::string vp_file = catch_parameter("vp_file", parameters);
+    read_binary_float(vp_file, slowness, nPoints);
+
+    for (int index = 0; index < nPoints; index++)
+        slowness[index] = 1.0f / slowness[index];
+
+    Geometry * stype[] = 
+    {
+        new Regular(),
+        new Circular()
+        // new Streamer(),
+        // new Crosswell()
+    };
+
+    Geometry * ntype[] = 
+    {
+        new Regular(),
+        new Circular()
+        // new Streamer(),
+        // new Crosswell()
+    };
+
+    int shots_type = std::stoi(catch_parameter("shots_geometry_type", parameters)); 
+    int nodes_type = std::stoi(catch_parameter("nodes_geometry_type", parameters)); 
+
+    shots = stype[shots_type];
+    nodes = ntype[nodes_type];
+
+    shots->set_geometry(parameters, "shots");
+    nodes->set_geometry(parameters, "nodes");
+
+    reciprocity = str2bool(catch_parameter("reciprocity", parameters)); 
+
+    if (reciprocity)
+    {
+        std::swap(shots->x, nodes->x); 
+        std::swap(shots->y, nodes->y); 
+        std::swap(shots->z, nodes->z); 
+
+        std::swap(shots->all, nodes->all);
+    }
+
+    total_shots = shots->all;
+    total_nodes = nodes->all;
+
+    export_time_volume = str2bool(catch_parameter("export_time_volume", parameters));
+    export_first_arrival = str2bool(catch_parameter("export_first_arrival", parameters));    
+
+    time_volume_folder = catch_parameter("time_volume_folder", parameters);
+    first_arrival_folder = catch_parameter("first_arrival_folder", parameters);
+
+    travel_time = new float[nPoints]();
+    first_arrival = new float[total_nodes]();
+}
+
 void Accurate_FSM::prepare_volumes()
 {
-    eiko_m.x_samples_b = eiko_m.x_samples + 2;    
-    eiko_m.y_samples_b = eiko_m.y_samples + 2;    
-    eiko_m.z_samples_b = eiko_m.z_samples + 2;    
+    nxx = nx + 2;    
+    nyy = ny + 2;    
+    nzz = nz + 2;    
     
-    eiko_m.total_samples_b = eiko_m.x_samples_b * eiko_m.y_samples_b * eiko_m.z_samples_b;
+    nPointsB = nxx * nyy * nzz;
 
-    S = new float[eiko_m.total_samples_b]();
-    T = new float[eiko_m.total_samples_b]();
+    S = new float[nPointsB]();
+    T = new float[nPointsB]();
 
-    eiko_m.expand_fdm(slowness, S);
+    expand_model();
 }
 
 void Accurate_FSM::inner_sweep()
@@ -373,21 +508,77 @@ void Accurate_FSM::full_sweep()
     }
 }
 
-void Accurate_FSM::solve()
+void Accurate_FSM::info_message()
 {
-    nxx = eiko_m.x_samples_b;
-    nyy = eiko_m.y_samples_b;
-    nzz = eiko_m.z_samples_b;
+    system("clear");
 
-    dx = eiko_m.x_spacing;
-    dy = eiko_m.y_spacing;
-    dz = eiko_m.z_spacing;
+    std::cout<<"3D eikonal equation solver\n\n";
+    
+    std::cout<<"Total x model length = "<<(nx-1)*dx<<" m\n";
+    std::cout<<"Total Y model length = "<<(ny-1)*dy<<" m\n";
+    std::cout<<"Total Z model length = "<<(nz-1)*dz<<" m\n\n";
+    
+    if (reciprocity)
+        std::cout<<"Reciprocity = True\n\n";
+    else
+        std::cout<<"Shots reciprocity = False\n\n";
 
-    float sx = geometry[shots_type]->shots.x[shot_id];
-    float sy = geometry[shots_type]->shots.y[shot_id];
-    float sz = geometry[shots_type]->shots.z[shot_id];
+    std::cout<<"Shot "<<shot_id+1<<" of "<<shots->all<<"\n";
 
+    std::cout<<"Position (x,y,z) = ("<<shots->x[shot_id]<<", "<<shots->y[shot_id]<<", "<<shots->z[shot_id]<<") m\n\n";
+
+    std::cout<<"Solving eikonal equation with the \033[32mNoble, Gesret and Belayouni (2014)\033[0;0m formulation\n\n";
+}
+
+void Accurate_FSM::write_time_volume()
+{
+    if (export_time_volume)        
+        write_binary_float(time_volume_folder + "fsm_eikonal_nz" + std::to_string(nz) + "_nx" + std::to_string(nx) + "_ny" + std::to_string(ny) + "_shot_" + std::to_string(shot_id+1) + ".bin", travel_time, nPoints);
+}
+
+void Accurate_FSM::write_first_arrival()
+{
+    if (export_first_arrival) 
+    {   
+        for (int r = 0; r < total_nodes; r++)
+        {
+            float x = nodes->x[r];
+            float y = nodes->y[r];
+            float z = nodes->z[r];
+
+            float x0 = floorf(x / dx) * dx;
+            float y0 = floorf(y / dy) * dy;
+            float z0 = floorf(z / dz) * dz;
+
+            float x1 = floorf(x / dx) * dx + dx;
+            float y1 = floorf(y / dy) * dy + dy;
+            float z1 = floorf(z / dz) * dz + dz;
+
+            int id = ((int)(z / dz)) + ((int)(x / dx))*nz + ((int)(y / dy))*nx*nz;
+
+            float c000 = travel_time[id];
+            float c001 = travel_time[id + 1];
+            float c100 = travel_time[id + nz]; 
+            float c101 = travel_time[id + 1 + nz]; 
+            float c010 = travel_time[id + nx*nz]; 
+            float c011 = travel_time[id + 1 + nx*nz]; 
+            float c110 = travel_time[id + nz + nx*nz]; 
+            float c111 = travel_time[id + 1 + nz + nx*nz];
+
+            first_arrival[r] = trilinear(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);        
+        }
+
+        write_binary_float(first_arrival_folder + "fsm_times_nr" + std::to_string(total_nodes) + "_shot_" + std::to_string(shot_id+1) + ".bin", first_arrival, total_nodes);
+    }
+}
+
+void Accurate_FSM::eikonal_equation()
+{
     int nb = 1;
+
+    float sx = shots->x[shot_id];
+    float sy = shots->y[shot_id];
+    float sz = shots->z[shot_id];
 
     sidx = (int)(sx / dx) + nb; 
     sidy = (int)(sy / dy) + nb;
@@ -395,7 +586,7 @@ void Accurate_FSM::solve()
     
     int sId = sidz + sidx*nzz + sidy*nxx*nzz;     
 
-    for (int index = 0; index < eiko_m.total_samples_b; index++)
+    for (int index = 0; index < nPointsB; index++)
         T[index] = 1e6f;
 
     // Neighboring source points initialization with analitical traveltime
@@ -453,10 +644,10 @@ void Accurate_FSM::solve()
     init_sweep();
     full_sweep();
 
-    eiko_m.reduce_fdm(T, travel_time);
+    reduce_model();
 }
 
-void Accurate_FSM::destroy()
+void Accurate_FSM::destroy_volumes()
 {
     delete[] S;
     delete[] T;

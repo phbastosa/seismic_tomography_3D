@@ -1,5 +1,5 @@
-# include "geometry/regular/regular.hpp"
-# include "geometry/circular/circular.hpp"
+# include "regular/regular.hpp"
+# include "circular/circular.hpp"
 
 int main(int argc, char **argv)
 {

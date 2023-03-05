@@ -10,7 +10,6 @@ x_spacing = 10          # in meters [m]
 y_spacing = 10          # in meters [m]  
 z_spacing = 10          # in meters [m]  
 
-# vp_file = "../inputs/models/trueModel_161x561x401_12.5m.bin"   
 vp_file = "../inputs/models/initModel_101x701x501_10m.bin"   
 
 #---------------------------------------------------------------------------------------------------
@@ -23,14 +22,14 @@ reciprocity = True
 # 0 - regular geometry
 # 1 - circular geometry
 
-shots_geometry_type = 1    
-nodes_geometry_type = 1     
+shots_geometry_type = 0    
+nodes_geometry_type = 0     
 
-shots_elevation = 300      # flat surface [m] <float>
-nodes_elevation = 200       # flat surface [m] <float>
+shots_elevation = 10      # flat surface [m] <float>
+nodes_elevation = 0       # flat surface [m] <float>
 
 shots_topography = False   
-nodes_topography = False   
+nodes_topography = True   
 
 shots_topography_file = "../inputs/geometry/shots_topography.txt"  #     
 nodes_topography_file = "../inputs/geometry/nodes_topography.txt"  #      
@@ -71,34 +70,6 @@ nodes_spacing = 50
 nodes_offsets = [500, 1000, 1500]    # array <float>
 
 #-------------------------------------------------------------------------------------------------
-# Data and auto picking parameters ---------------------------------------------------------------
-#-------------------------------------------------------------------------------------------------
-
-nt = 3101                # Total samples in time domain <int>
-dt = 0.001               # Sample spacing in time domain [s] <float>
-tlag = 0.1               #
-tcut = 3.0               #
-
-amp_cut = 1e-9           #
-pick_lag = 4             # 
-pick_window = 0.02       #
-
-nodes_all = 441          #
-shots_all = 10000        #
-
-enable_qc = False        #
-gather_traces = 100      #
-qc_filter_window = 11    #
-
-check_data = True        #
-igather = 400            #
-fgather = 420            #
-dgather = 5              #
-
-pick_folder = "../inputs/picks/"           #
-data_folder = "../inputs/seismic_data/"    # Folder to write seismograms <string>
-
-#-------------------------------------------------------------------------------------------------
 # Eikonal parameters -----------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
@@ -106,16 +77,12 @@ data_folder = "../inputs/seismic_data/"    # Folder to write seismograms <string
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonal_type = 0    # Eikonal Type flag <int>          
+eikonal_type = 2    # Eikonal Type flag <int>          
 
-export_time_volume = False    # Travel times volume flag <bool> 
-export_illumination = False   # Illumination matrix flag <bool>
-export_ray_position = False   # Ray position flag <bool>
+export_time_volume = True    # Travel times volume flag <bool> 
 export_first_arrival = True   # First arrivals flag <bool> 
 
-ray_folder = "../outputs/ray_positions/"                 # Ray positions folder <string>
 time_volume_folder = "../outputs/travel_times/"          # Travel time volume folder <string>
-illumination_folder = "../outputs/illumination/"         # Illumination volume folder <string>
 first_arrival_folder = "../outputs/first_arrivals/"      # First arrivals folder <string>
 
 #-------------------------------------------------------------------------------------------------

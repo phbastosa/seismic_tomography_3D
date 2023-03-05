@@ -7,10 +7,6 @@ class Accurate_FSM : public Eikonal
 {
 private:
 
-    void init_sweep();
-    void full_sweep();
-    void inner_sweep();        
-
     int i, j, k;
 
     int sgntz, sgntx, sgnty; 
@@ -21,19 +17,29 @@ private:
     float dx2i, dy2i, dz2i; 
     float dx2dy2, dz2dx2, dz2dy2;
 
-    int nxx, nyy, nzz;
     int sidx, sidy, sidz;
-
-    float dx, dy, dz;
 
     float * S;
     float * T;
 
+    void init_sweep();
+    void full_sweep();
+    void inner_sweep();        
+
+    void expand_model();
+    void reduce_model();
+
 public:
 
-    void solve();
+    void set_parameters();
     void prepare_volumes();
-    void destroy();
+
+    void info_message();
+    void eikonal_equation();
+    void write_time_volume();
+    void write_first_arrival();
+
+    void destroy_volumes();    
 };
 
 # endif

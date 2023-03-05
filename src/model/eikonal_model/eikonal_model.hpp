@@ -6,7 +6,6 @@
 class Eikonal_model : public Model
 {
 public:
-
     void expand_fdm(float * input, float * output);
     void reduce_fdm(float * input, float * output);
     void expand_pad(float * input, float * output, int padx, int pady, int padz);

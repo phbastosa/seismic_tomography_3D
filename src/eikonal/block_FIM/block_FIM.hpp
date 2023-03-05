@@ -10,12 +10,6 @@
 
 class Block_FIM : public Eikonal
 {
-public:
-    
-    void solve();
-    void prepare_volumes();
-    void destroy();
-    
 private:
 
     int padx, pady, padz;
@@ -23,14 +17,25 @@ private:
     float * S;
     float * T;
 
+    void expand_model();
+    void reduce_model();
     void apply_model_mask();
     void extract_solution();
     void apply_source_time();
 
-    std::vector<std::vector<std::vector<float>>> speeds_;
-    std::vector<std::vector<std::vector<float>>> answer_;
-
     CUDAMEMSTRUCT memoryStruct_;
+
+public:
+
+    void set_parameters();
+    void prepare_volumes();
+
+    void info_message();
+    void eikonal_equation();
+    void write_time_volume();
+    void write_first_arrival();
+
+    void destroy_volumes();    
 };
 
 # endif
