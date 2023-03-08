@@ -32,6 +32,7 @@ cd ../SimBGf_2022
 ./../bin/eikonal.exe parameters/central_25m_fsm.txt
 ./../bin/eikonal.exe parameters/externs_25m_fsm.txt
 
-# python3 SimBGf_2022_figures.py
+python3 SimBGf_2022_figures.py
 
-# rm outputs/*
+rm outputs/*.bin
+rm outputs/*.txt

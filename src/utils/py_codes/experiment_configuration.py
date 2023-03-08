@@ -103,9 +103,9 @@ smax = np.max(-dz*waterBottom)
 
 ax.contour(-dz*waterBottom, levels = 10)
 ax.imshow(-dz*waterBottom, aspect = "auto", cmap=cmap)
-ax.scatter(node_x/dx, node_y/dy, c = "black", s = 8.0, label = "Posição dos receptores")
+# ax.scatter(node_x/dx, node_y/dy, c = "black", s = 8.0, label = "Posição dos receptores")
 # ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.1, label = "Shots position")
-# ax.scatter(xc/dx, yc/dy, c = "black", s = 30, label = "Centros das funções gaussianas")
+ax.scatter(xc/dx, yc/dy, c = "black", s = 30, label = "Centros das funções gaussianas")
 
 ax.set_title("Topografia do fundo marinho", fontsize = 18)
 ax.set_xlabel("X [m]", fontsize = 15)
@@ -128,7 +128,7 @@ cbar.set_label("Profundidade [m]", fontsize = 15)
 ax.legend(loc = "lower left", fontsize = 12)
 
 plt.tight_layout()
-plt.savefig("water_bottom_surface_with_nodes.png", dpi = 200)
+plt.savefig("water_bottom_surface_gaussian.png", dpi = 200)
 plt.show()
 #----------------------------------------------------------------------------
 
@@ -164,9 +164,9 @@ smax = np.max(-dz*surface)
 
 ax.contour(-dz*surface, levels = 10)
 ax.imshow(-dz*surface, aspect = "auto", cmap=cmap)
-# ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Posição dos receptores")
+ax.scatter(node_x/dx, node_y/dy, c = "black", s = 5.0, label = "Posição dos receptores")
 # ax.scatter(shot_x/dx, shot_y/dy, c = "green", s = 0.1, label = "Posição dos tiros")
-ax.scatter(xc/dx, yc/dy, c = "black", s = 30, label = "Centros das funções gaussianas")
+# ax.scatter(xc/dx, yc/dy, c = "black", s = 30, label = "Centros das funções gaussianas")
 
 ax.set_xticks(np.linspace(0,nx-1,9, dtype = int))
 ax.set_xticklabels(np.array(np.linspace(0,nx-1,9)*dx, dtype = int))
@@ -189,7 +189,7 @@ cbar.set_label("Profundidade [m]", fontsize = 15)
 ax.legend(loc = "upper right", fontsize = 12)
 
 plt.tight_layout()
-plt.savefig("target_surface_gaussians.png", dpi = 200)
+plt.savefig("target_surface_with_nodes.png", dpi = 200)
 plt.show()
 
 # sys.exit()
@@ -235,18 +235,13 @@ nodes[:, 2] = node_z
 model.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
 initModel.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/initModel_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
 
+slices = np.array([int(600/dz), int(2500/dy), int(3300/dx)], dtype = int) # xy, zx, zy
+subplots = np.array([1, 1], dtype = int)
 
-#slices = np.array([int(600/dz), int(2500/dy), int(3300/dx)], dtype = int) # xy, zx, zy
-#subplots = np.array([1, 1], dtype = int)
+check_model(model, dh, slices, subplots)
+plt.savefig("true_model.png")
+plt.show()
 
-#check_geometry(model, shots, nodes, dh, slices, subplots)
-#plt.savefig("true_model.png")
-#plt.show()
-
-#check_geometry(initModel, shots, nodes, dh, slices, subplots)
-#plt.savefig("init_model.png")
-#plt.show()
-
-# Low frequency initial model
-#model.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.1f}m.bin")
-
+check_model(initModel, dh, slices, subplots)
+plt.savefig("init_model.png")
+plt.show()

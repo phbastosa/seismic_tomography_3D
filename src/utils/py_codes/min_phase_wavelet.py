@@ -128,7 +128,7 @@ output = np.insert(m_ricker, nt-1, np.zeros(3001 - nt))
 
 output *= 1e6
 
-output.astype("float32", order = "F").tofile(f"ricker_min_phase_{len(output)}_{dt*1e3:.0f}ms.bin")
+output.astype("float32", order = "F").tofile(f"../wave/ricker_min_phase_{fmax}Hz_{dt*1e3:.0f}ms.bin")
 
 t = np.arange(nt) * dt
 lag = 0.5 * (nt-1) * dt
@@ -141,10 +141,12 @@ plt.xlim([-lag, lag])
 plt.title("Ricker de fase zero", fontsize = 18)
 plt.xlabel("Tempo [s]", fontsize = 14)
 plt.ylabel("Amplitude", fontsize = 14)
+plt.text(-0.074,0.9,"a)", fontsize = 20)
 
 z, p, k = signal.tf2zpk(z_ricker[::10], [1])
 zplane(z, p, k, 222)
 plt.title("Diagrama de polos e zeros", fontsize = 18)
+plt.text(-4,1.25,"b)", fontsize = 20)
 
 plt.subplot(223)
 w, dft_z_ricker = dtft((t - lag)/dt, z_ricker)
@@ -154,6 +156,7 @@ plt.xticks(np.linspace(0,fmax/180, 7), np.linspace(0,fmax, 7, dtype = int))
 plt.title("Espectro de amplitudes", fontsize = 18)
 plt.xlabel("Frequência [Hz]", fontsize = 14)
 plt.ylabel("Amplitude", fontsize = 14)
+plt.text(0.002,29.5,"c)", fontsize = 20)
 
 plt.subplot(224)
 plt.plot(w, np.angle(dft_z_ricker, deg = True), "o")
@@ -164,8 +167,10 @@ plt.ylim([-180, 180])
 plt.title("Espectro de fase", fontsize = 18)
 plt.xlabel("Frequência [Hz]", fontsize = 14)
 plt.ylabel("Ângulo [°]", fontsize = 14)
+plt.text(0.002,150,"d)", fontsize = 20)
 
 plt.tight_layout()
+plt.savefig("ricker_zero_phase.png", dpi=200)
 
 #--------------------------------------------------------------
 
@@ -177,10 +182,12 @@ plt.xlim([0, 2*lag])
 plt.title("Ricker de fase mínima", fontsize = 18)
 plt.xlabel("Tempo [s]", fontsize = 14)
 plt.ylabel("Amplitude", fontsize = 14)
+plt.text(0.001,0.70,"a)", fontsize = 20)
 
 z, p, k = signal.tf2zpk(m_ricker[::10], [1])
 zplane(z, p, k, 222)
 plt.title("Diagrama de polos e zeros", fontsize = 18)
+plt.text(-4,1.25,"b)", fontsize = 20)
 
 plt.subplot(223)
 w, dft_m_ricker = dtft((t - lag)/dt, m_ricker)
@@ -190,6 +197,7 @@ plt.xticks(np.linspace(0,fmax/180, 7), np.linspace(0,fmax, 7, dtype = int))
 plt.title("Espectro de amplitudes", fontsize = 18)
 plt.xlabel("Frequência [Hz]", fontsize = 14)
 plt.ylabel("Amplitude", fontsize = 14)
+plt.text(0.002,32,"c)", fontsize = 20)
 
 plt.subplot(224)
 plt.plot(w, np.angle(dft_m_ricker, deg = True), "o")
@@ -200,6 +208,8 @@ plt.ylim([-180, 180])
 plt.title("Espectro de fase", fontsize = 18)
 plt.xlabel("Frequência [Hz]", fontsize = 14)
 plt.ylabel("Ângulo [°]", fontsize = 14)
+plt.text(0.002,150,"d)", fontsize = 20)
 
 plt.tight_layout()
+plt.savefig("ricker_min_phase.png", dpi=200)
 plt.show()

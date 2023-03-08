@@ -341,55 +341,55 @@ void Classic::eikonal_equation()
                         /* 1D operator diffraction XZ plane */
                         
                         // i-1,j-1,k -> i,j,k
-                        Tijk = T[index - 1 - nzz] + h*sqrt2*S[index - 1 - nzz]; 
+                        Tijk = T[index - 1 - nzz] + h*sqrt2*std::min(S[index - 1 - nzz], S[index - 1 - nzz - nxx*nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i-1,j+1,k -> i,j,k
-                        Tijk = T[index - 1 + nzz] + h*sqrt2*S[index - 1]; 
+                        Tijk = T[index - 1 + nzz] + h*sqrt2*std::min(S[index - 1], S[index - 1 - nxx*nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j-1,k -> i,j,k
-                        Tijk = T[index + 1 - nzz] + h*sqrt2*S[index - nzz]; 
+                        Tijk = T[index + 1 - nzz] + h*sqrt2*std::min(S[index - nzz], S[index - nzz - nxx*nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j+1,k -> i,j,k
-                        Tijk = T[index + 1 + nzz] + h*sqrt2*S[index]; 
+                        Tijk = T[index + 1 + nzz] + h*sqrt2*std::min(S[index], S[index - nxx*nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator diffraction YZ plane */
 
                         // i-1,j,k-1 -> i,j,k
-                        Tijk = T[index - 1 - nxx*nzz] + h*sqrt2*S[index - 1 - nxx*nzz]; 
+                        Tijk = T[index - 1 - nxx*nzz] + h*sqrt2*std::min(S[index - 1 - nxx*nzz], S[index - 1 - nzz - nxx*nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i-1,j,k+1 -> i,j,k
-                        Tijk = T[index - 1 + nxx*nzz] + h*sqrt2*S[index - 1]; 
+                        Tijk = T[index - 1 + nxx*nzz] + h*sqrt2*std::min(S[index - 1], S[index - 1 - nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j,k-1 -> i,j,k
-                        Tijk = T[index + 1 - nxx*nzz] + h*sqrt2*S[index - nxx*nzz]; 
+                        Tijk = T[index + 1 - nxx*nzz] + h*sqrt2*std::min(S[index - nxx*nzz], S[index - nzz - nxx*nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
                         
                         // i+1,j,k+1 -> i,j,k
-                        Tijk = T[index + 1 + nxx*nzz] + h*sqrt2*S[index]; 
+                        Tijk = T[index + 1 + nxx*nzz] + h*sqrt2*std::min(S[index], S[index - nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator diffraction XY plane */
                         
                         // i,j-1,k-1 -> i,j,k
-                        Tijk = T[index - nzz - nxx*nzz] + h*sqrt2*S[index - nzz - nxx*nzz]; 
+                        Tijk = T[index - nzz - nxx*nzz] + h*sqrt2*std::min(S[index - nzz - nxx*nzz], S[index - 1 - nzz - nxx*nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i,j-1,k+1 -> i,j,k
-                        Tijk = T[index - nzz + nxx*nzz] + h*sqrt2*S[index - nzz]; 
+                        Tijk = T[index - nzz + nxx*nzz] + h*sqrt2*std::min(S[index - nzz], S[index - 1 - nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i,j+1,k-1 -> i,j,k
-                        Tijk = T[index + nzz - nxx*nzz] + h*sqrt2*S[index - nxx*nzz]; 
+                        Tijk = T[index + nzz - nxx*nzz] + h*sqrt2*std::min(S[index - nxx*nzz], S[index - 1 - nxx*nzz]); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         // i,j+1,k+1 -> i,j,k
-                        Tijk = T[index + nzz + nxx*nzz] + h*sqrt2*S[index]; 
+                        Tijk = T[index + nzz + nxx*nzz] + h*sqrt2*std::min(S[index], S[index - 1]); 
                         if (Tijk < lowest) lowest = Tijk;
 
                         /* 1D operator corner diffractions */
@@ -428,7 +428,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator XZ plane: First Quadrant*/
 
-                        Sref = S[index - 1 - nzz];
+                        Sref = std::min(S[index - 1 - nzz], S[index - 1 - nzz - nxx*nzz]);
 
                         // i,j-1,k - i-1,j-1,k -> i,j,k
                         T1 = T[index - nzz];
@@ -456,7 +456,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator XZ plane: Second Quadrant*/                        
 
-                        Sref = S[index - nzz];
+                        Sref = std::min(S[index - nzz], S[index - nzz - nxx*nzz]);
 
                         // i,j-1,k - i+1,j-1,k -> i,j,k
                         T1 = T[index - nzz];
@@ -484,7 +484,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator XZ plane: Third Quadrant*/                        
 
-                        Sref = S[index];
+                        Sref = std::min(S[index], S[index - nxx*nzz]);
 
                         // i+1,j,k - i+1,j+1,k -> i,j,k
                         T1 = T[index + 1];
@@ -512,7 +512,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator XZ plane: Fourth Quadrant*/                        
 
-                        Sref = S[index - 1];
+                        Sref = std::min(S[index - 1], S[index - 1 - nxx*nzz]);
 
                         // i,j+1,k - i-1,j+1,k -> i,j,k
                         T1 = T[index + nzz];
@@ -540,7 +540,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator YZ plane: First Quadrant */                        
 
-                        Sref = S[index - 1 - nxx*nzz];
+                        Sref = std::min(S[index - 1 - nxx*nzz], S[index - 1 - nzz - nxx*nzz]);
 
                         // i,j,k-1 - i-1,j,k-1 -> i,j,k
                         T1 = T[index - nxx*nzz];
@@ -568,7 +568,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator YZ plane: Second Quadrant */                        
 
-                        Sref = S[index - nxx*nzz];
+                        Sref = std::min(S[index - nxx*nzz], S[index - nzz - nxx*nzz]);
 
                         // i,j,k-1 - i+1,j,k-1 -> i,j,k
                         T1 = T[index - nxx*nzz];
@@ -596,7 +596,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator YZ plane: Third Quadrant*/                        
 
-                        Sref = S[index];
+                        Sref = std::min(S[index], S[index - nzz]);
 
                         // i+1,j,k - i+1,j,k+1 -> i,j,k
                         T1 = T[index + 1];
@@ -624,7 +624,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator YZ plane: Fourth Quadrant*/                        
 
-                        Sref = S[index - 1];
+                        Sref = std::min(S[index - 1], S[index - 1 - nzz]);
 
                         // i,j,k+1 - i-1,j,k+1 -> i,j,k
                         T1 = T[index + nxx*nzz];
@@ -652,7 +652,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator XY plane: First Quadrant*/                        
 
-                        Sref = S[index - nzz - nxx*nzz];
+                        Sref = std::min(S[index - nzz - nxx*nzz], S[index - 1 - nzz - nxx*nzz]);
 
                         // i,j-1,k - i,j-1,k-1 -> i,j,k
                         T1 = T[index - nzz];
@@ -680,7 +680,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator XY plane: Second Quadrant*/                        
 
-                        Sref = S[index - nzz];
+                        Sref = std::min(S[index - nzz], S[index - 1 - nzz]);
 
                         // i,j-1,k - i,j-1,k+1 -> i,j,k
                         T1 = T[index - nzz];
@@ -708,7 +708,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator XY plane: Third Quadrant*/                        
 
-                        Sref = S[index];
+                        Sref = std::min(S[index], S[index - 1]);
 
                         // i,j,k+1 - i,j+1,k+1 -> i,j,k
                         T1 = T[index + nxx*nzz];
@@ -736,7 +736,7 @@ void Classic::eikonal_equation()
 
                         /* 2D operator XY plane: Fourth Quadrant*/                        
 
-                        Sref = S[index - nxx*nzz];
+                        Sref = std::min(S[index - nxx*nzz], S[index - 1 - nxx*nzz]);
 
                         // i,j+1,k - i,j+1,k-1 -> i,j,k
                         T1 = T[index + nzz];

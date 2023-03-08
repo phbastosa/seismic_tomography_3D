@@ -79,7 +79,7 @@ def check_model(models, dh, slices, subplots):
         vmax = np.max(models[0])
 
     nz, nx, ny = modelShape
-    [z, x, y] = 2.0 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
+    [z, x, y] = 4.0 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
 
     px = 1/plt.rcParams['figure.dpi']  
     ticks = np.array([3,7,7], dtype = int)
@@ -164,7 +164,7 @@ def check_model(models, dh, slices, subplots):
                     cax = divider.append_axes("bottom", size="10%", pad=0)
                     cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax = cax, ticks = np.linspace(vmin*1e-3, vmax*1e-3, 5), orientation = "horizontal")
                     cbar.ax.set_xticklabels(np.around(np.linspace(vmin*1e-3, vmax*1e-3, 5), decimals = 1))
-                    cbar.set_label("Velocity [km/s]")
+                    cbar.set_label("Velocidade [km/s]")
                 
                 else:
                     
