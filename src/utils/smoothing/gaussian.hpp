@@ -1,20 +1,6 @@
 # ifndef GAUSSIAN_HPP
 # define GAUSSIAN_HPP
 
-class Gaussian
-{
-public:
-
-    int xdim;
-    int ydim;
-    int zdim;
-
-    float stdv;           
-    int samples;         
-
-    float * volume;    
-
-    void gaussian();
-};
+void gaussian(float * input, float * output, int nx, int ny, int nz, int samples, float stdv);
 
 # endif

@@ -2,19 +2,18 @@
 
 # include "gaussian.hpp"
 
-void Gaussian::gaussian()
+void gaussian(float * input, float * output, int nx, int ny, int nz, int samples, float stdv)
 {
     int init = samples / 2;
-    int nPoints = xdim * ydim * zdim;
+    int nPoints = nx * ny * nz;
     int nKernel = samples * samples * samples;
 
     float pi = 4.0f * atanf(1.0f); 
 
     float * kernel = new float[nKernel]();
-    float * smoothed = new float[nPoints]();
 
     for (int i = 0; i < nPoints; i++) 
-        smoothed[i] = volume[i];
+        output[i] = input[i];
 
     int mid = (int)(samples / 2); 
 
@@ -43,11 +42,11 @@ void Gaussian::gaussian()
             kernel[i] /= sum;
     }
         
-    for (int k = init; k < ydim - init; k++)
+    for (int k = init; k < ny - init; k++)
     {   
-        for (int j = init; j < xdim - init; j++)
+        for (int j = init; j < nx - init; j++)
         {
-            for (int i = init; i < zdim - init; i++)
+            for (int i = init; i < nz - init; i++)
             {       
                 float accum = 0.0f;
                 
@@ -58,20 +57,17 @@ void Gaussian::gaussian()
                         for (int zk = 0; zk < samples; zk++)
                         {   
                             int index = zk + xk*samples + yk*samples*samples;   
-                            int partial = (i-init+zk) + (j-init+xk)*zdim + (k-init+yk)*xdim*zdim; 
+                            int partial = (i-init+zk) + (j-init+xk)*nz + (k-init+yk)*nx*nz; 
 
-                            accum += volume[partial] * kernel[index];
+                            accum += input[partial] * kernel[index];
                         }        
                     }
                 }
                 
-                smoothed[i + j*zdim + k*xdim*zdim] = accum;
+                output[i + j*nz + k*nx*nz] = accum;
             }
         }   
     }
 
-    std::swap(volume, smoothed);
-
     delete[] kernel;
-    delete[] smoothed;
 }

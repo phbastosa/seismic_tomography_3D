@@ -2,34 +2,25 @@
 # include <chrono>
 # include <iostream>
 
-# include "../../src/tomography/tomography.hpp"
+# include "least_squares/least_squares.hpp"
 
 int main(int argc, char **argv)
 {
-    auto tomo = Tomography();
-    
     auto ti = std::chrono::system_clock::now();
-    
-    // tomo.parameters = std::string(argv[1]);
 
-    // tomo.setParameters();
+    Tomography * tomography = new Least_squares();
 
-    // tomo.importDobs();
+    tomography->parameters = std::string(argv[1]);
 
-    // while (true)
-    // {
-    //     tomo.forwardModeling();                
-        
-    //     tomo.importDcal();
+    tomography->set_parameters();
 
-    //     if (tomo.converged()) break;
 
-    //     tomo.optimization();
 
-    //     tomo.modelUpdate();
-    // }
 
-    // tomo.exportConvergency();
+
+
+
+
 
     auto tf = std::chrono::system_clock::now();
 

@@ -15,10 +15,10 @@ classic="../src/eikonal/classic/classic.cpp"
 block_FIM="../src/eikonal/block_FIM/block_FIM.cpp"
 kernel_FIM="../src/eikonal/block_FIM/cuda_kernel.cu"
 accurate_FSM="../src/eikonal/accurate_FSM/accurate_FSM.cpp"
-eikonal_main="../src/eikonal/eikonal_main.cpp"
 
-tomography=""
-classical_approach=""
+adjoint_state=""
+least_squares="../src/tomography/least_squares/least_squares.cpp"
+tomography_main="../src/tomography/tomography_main.cpp"
 
 flags="-acc -fast -ta=tesla,cc60"
 
@@ -56,12 +56,9 @@ case "$1" in
     echo -e "\n../bin/\033[31mgeometry.exe\033[m: \n" 
     pgc++ $file_manager $circular $regular $geometry_main -lm -o ../bin/geometry.exe
 
-    echo -e "\n../bin/\033[31meikonal.exe\033[m: \n" 
-    pgc++ $file_manager $trilinear $regular $circular $classic $kernel_FIM $block_FIM $accurate_FSM $eikonal_main $flags -I $include -L $library --diag_suppress bad_macro_redef -lm -o ../bin/eikonal.exe
-    
     echo -e "\n../bin/\033[31mtomography.exe\033[m: \n" 
-    # tomography_main
-
+    pgc++ $file_manager $trilinear $gaussian $regular $circular $classic $kernel_FIM $block_FIM $accurate_FSM $adjoint_state $least_squares $tomography_main $flags -I $include -L $library --diag_suppress bad_macro_redef -lm -o ../bin/tomography.exe
+    
     rm *.o
 
 	exit 0
@@ -84,6 +81,7 @@ case "$1" in
 
 -tomography) 
 
+    ./../bin/tomography.exe parameters.txt
 
 	exit 0
 ;;

@@ -1,93 +1,121 @@
-# include <cmath>
-# include <limits>
-# include <string>
-# include <iomanip>
-# include <fstream>
 # include <iostream>
-# include <algorithm>
 
-# include "tomography.hpp"
+# include "least_squares.hpp"
+
+# include "../../eikonal/classic/classic.hpp"
+# include "../../eikonal/block_FIM/block_FIM.hpp"
+# include "../../eikonal/accurate_FSM/accurate_FSM.hpp"
+
+void Least_squares::info_message()
+{
+    eikonal->info_message();
+
+    if (iteration == max_iteration)
+    { 
+        std::cout<<"------- Checking final residuo ------------\n\n";
+    }
+    else
+        std::cout<<"------- Computing iteration "<<iteration+1<<" of "<<max_iteration<<" ------------\n\n";
+
+    if (iteration > 0) std::cout<<"Previous iteration residuo: "<<residuo.back()<<"\n\n";
+}
+
+void Least_squares::set_parameters()
+{
+    int type = std::stoi(catch_parameter("eikonal_type", parameters));    
+
+    Eikonal * eikonal_types[] = 
+    {
+        new Classic(),
+        new Block_FIM(),
+        new Accurate_FSM()
+    };
+
+    eikonal = eikonal_types[type];
+    
+    eikonal->parameters = parameters;
+
+    eikonal->set_parameters();
+
+    // mTomo.nx = std::stoi(catchParameter("nxTomo", parameters));
+    // mTomo.ny = std::stoi(catchParameter("nyTomo", parameters));
+    // mTomo.nz = std::stoi(catchParameter("nzTomo", parameters));
+
+    // mTomo.dx = std::stof(catchParameter("dxTomo", parameters));
+    // mTomo.dy = std::stof(catchParameter("dyTomo", parameters));
+    // mTomo.dz = std::stof(catchParameter("dzTomo", parameters));
+
+    // mTomo.nPoints = mTomo.nx * mTomo.ny * mTomo.nz;
+
+    // lambda = std::stof(catchParameter("regParam", parameters));
+    // tkOrder = std::stof(catchParameter("regOrder", parameters));
+    // maxIteration = std::stoi(catchParameter("maxIteration", parameters));
+
+    // smooth = str2bool(catchParameter("smooth", parameters)); 
+    // filterSamples = std::stoi(catchParameter("filterSamples", parameters));
+    // standardDeviation = std::stof(catchParameter("standardDeviation",parameters));
+
+    // dobsPath = catchParameter("dobsPath", parameters);
+    // residuoPath = catchParameter("convergencyFolder", parameters);
+    // estimatedPath = catchParameter("estimatedModelsFolder", parameters);
+
+    // iteration = 0;
+
+    // residuo.reserve(maxIteration);
+
+    // dobs = new float[shots.all * nodes.all]();
+    // dcal = new float[shots.all * nodes.all]();    
+
+    // dm = new float [mTomo.nPoints]();
+}
+
+void Least_squares::import_obs_data()
+{
 
 
+}
 
-// void sparse_cgls_cpu(int * iA, int * jA, float * vA, float * B, float * x, int N, int M, int NNZ, int NIT, float TOL)
-// {
-//     float a, b, qTq, rTr, rd;
+void Least_squares::forward_modeling()
+{
 
-//     float * s = new float[N]();
-//     float * q = new float[N]();
-//     float * r = new float[M]();
-//     float * p = new float[M]();
 
-//     // s = d - A * x
-//     for (int row = 0; row < N; row++) 
-//         s[row] = B[row]; 
+}
 
-//     // r = A' * s    
-//     for (int ind = 0; ind < NNZ; ind++) 
-//         r[jA[ind]] += vA[ind] * s[iA[ind]];        
+void Least_squares::import_cal_data()
+{
 
-//     // p = r and x = 0
-//     for (int col = 0; col < M; col++) 
-//     {
-//         x[col] = 0.0f;
-//         p[col] = r[col]; 
-//     }
 
-//     // q = A * p
-//     for (int ind = 0; ind < NNZ; ind++) 
-//         q[iA[ind]] += vA[ind] * p[jA[ind]];        
+}
 
-//     // Iterations loop
-//     for (int iteration = 0; iteration < NIT; iteration++)
-//     {
-//         qTq = 0.0f;
-//         for (int row = 0; row < N; row++)             // q inner product
-//             qTq += q[row] * q[row];                   // qTq = q' * q
+bool Least_squares::converged()
+{
 
-//         rTr = 0.0f;
-//         for (int col = 0; col < M; col++)             // r inner product
-//             rTr += r[col] * r[col];                   // rTr = r' * r 
+    return true;
+}
 
-//         a = rTr / qTq;                                // a = (r' * r) / (q' * q)                    
+void Least_squares::optimization()
+{
 
-//         for (int col = 0; col < M; col++)             // model atualization
-//             x[col] += a * p[col];                     // x = x + a * p
 
-//         for (int row = 0; row < N; row++)             // s atualization  
-//             s[row] -= a * q[row];                     // s = s - a * q 
+}
 
-//         rd = 0.0f;
-//         for (int col = 0; col < M; col++)             // r inner product for division 
-//             rd += r[col] * r[col];                    // rd = r' * r
+void Least_squares::model_update()
+{
 
-//         if (sqrtf(rd) < TOL) break;                   // Convergence condition
 
-//         for (int col = 0; col < M; col++)             // Zeroing r 
-//             r[col] = 0.0f;                            // r = 0, for multiplication
+}
 
-//         for (int index = 0; index < NNZ; index++)     // r atualization 
-//             r[jA[index]] += vA[index] * s[iA[index]]; // r = G' * s    
-                
-//         rTr = 0.0f;    
-//         for (int col = 0; col < M; col++)             // r inner product
-//             rTr += r[col] * r[col];                   // rTr = r' * r
-        
-//         b = rTr / rd;                                 // b = (r' * r) / rd
+void Least_squares::export_convergency()
+{
 
-//         for (int col = 0; col < M; col++)
-//             p[col] = r[col] + b * p[col];             // p = r + b * p 
 
-//         for (int row = 0; row < N; row++) 
-//             q[row] = 0.0f;                            // q = 0, for multiplication
+}
 
-//         for (int index = 0; index < NNZ; index++) 
-//             q[iA[index]] += vA[index] * p[jA[index]]; // q = G * p           
-//     }
+void Least_squares::export_estimated_model()
+{
 
-//     delete[] s; delete[] q; delete[] r; delete[] p;
-// }
 
+}
 
 // void Tomography::infoMessage()
 // {
@@ -116,42 +144,6 @@
 
 //     if (iteration > 0) std::cout<<"Previous iteration residuous: "<<residuo.back()<<"\n\n";
 // } 
-
-// void Tomography::setParameters()
-// {
-//     setEikonalParameters();
-
-//     mTomo.nx = std::stoi(catchParameter("nxTomo", parameters));
-//     mTomo.ny = std::stoi(catchParameter("nyTomo", parameters));
-//     mTomo.nz = std::stoi(catchParameter("nzTomo", parameters));
-
-//     mTomo.dx = std::stof(catchParameter("dxTomo", parameters));
-//     mTomo.dy = std::stof(catchParameter("dyTomo", parameters));
-//     mTomo.dz = std::stof(catchParameter("dzTomo", parameters));
-
-//     mTomo.nPoints = mTomo.nx * mTomo.ny * mTomo.nz;
-
-//     lambda = std::stof(catchParameter("regParam", parameters));
-//     tkOrder = std::stof(catchParameter("regOrder", parameters));
-//     maxIteration = std::stoi(catchParameter("maxIteration", parameters));
-
-//     smooth = str2bool(catchParameter("smooth", parameters)); 
-//     filterSamples = std::stoi(catchParameter("filterSamples", parameters));
-//     standardDeviation = std::stof(catchParameter("standardDeviation",parameters));
-
-//     dobsPath = catchParameter("dobsPath", parameters);
-//     residuoPath = catchParameter("convergencyFolder", parameters);
-//     estimatedPath = catchParameter("estimatedModelsFolder", parameters);
-
-//     iteration = 0;
-
-//     residuo.reserve(maxIteration);
-
-//     dobs = new float[shots.all * nodes.all]();
-//     dcal = new float[shots.all * nodes.all]();    
-
-//     dm = new float [mTomo.nPoints]();
-// }
 
 // void Tomography::importDobs()
 // {       

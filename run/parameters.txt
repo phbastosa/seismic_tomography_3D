@@ -26,10 +26,10 @@ shots_geometry_type = 0
 nodes_geometry_type = 0     
 
 shots_elevation = 10      # flat surface [m] <float>
-nodes_elevation = 0       # flat surface [m] <float>
+nodes_elevation = 10      # flat surface [m] <float>
 
 shots_topography = False   
-nodes_topography = True   
+nodes_topography = False   
 
 shots_topography_file = "../inputs/geometry/shots_topography.txt"  #     
 nodes_topography_file = "../inputs/geometry/nodes_topography.txt"  #      
@@ -77,7 +77,7 @@ nodes_offsets = [500, 1000, 1500]    # array <float>
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonal_type = 2    # Eikonal Type flag <int>          
+eikonal_type = 0    # Eikonal Type flag <int>          
 
 export_time_volume = True    # Travel times volume flag <bool> 
 export_first_arrival = True   # First arrivals flag <bool> 
@@ -89,19 +89,20 @@ first_arrival_folder = "../outputs/first_arrivals/"      # First arrivals folder
 # Tomography parameters --------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
 
-nxTomo = 26     # Resized x sample dimension of model <int>
-nyTomo = 26     # Resized y sample dimension of model <int>
-nzTomo = 14     # Resized z sample dimension of model <int>
+# 0 - Least squares 
+# 1 - Adjoint state  
 
-dxTomo = 200    # Resized model sample spacing [m] of x dimension <float> 
-dyTomo = 200    # Resized model sample spacing [m] of y dimension <float>
-dzTomo = 100     # Resized model sample spacing [m] of z dimension <float>
+tomography_type = 0
 
 # Inversion parameters 
 
 regOrder = 2       # Tikhonov regularization order <int>
 regParam = 1e5     # Regularization parameter <float>
 maxIteration = 1   # Tomography max iteration <int>                   
+
+dxTomo = 200    # Resized model sample spacing [m] of x dimension <float> 
+dyTomo = 200    # Resized model sample spacing [m] of y dimension <float>
+dzTomo = 100    # Resized model sample spacing [m] of z dimension <float>
 
 # Smoothing model per iteration 
 
