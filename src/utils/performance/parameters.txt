@@ -1,0 +1,87 @@
+#----------------------------------------------------------------------------------------------------
+# Model paramenters ---------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
+ 
+x_samples = 256          
+y_samples = 256           
+z_samples = 256           
+
+x_spacing = 1          # in meters [m] 
+y_spacing = 1          # in meters [m]  
+z_spacing = 1          # in meters [m]  
+
+vp_file = "input_model.bin"   
+
+#---------------------------------------------------------------------------------------------------
+# Geometry parameters ------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
+
+reciprocity = False           
+
+# Geoemtry type:
+# 0 - regular geometry
+# 1 - circular geometry
+
+shots_geometry_type = 0    
+nodes_geometry_type = 1     
+
+shots_elevation = 0       # flat surface [m] <float>
+nodes_elevation = 0       # flat surface [m] <float>
+
+shots_topography = False   
+nodes_topography = False   
+
+shots_topography_file = "../inputs/geometry/shots_topography.txt"  #     
+nodes_topography_file = "../inputs/geometry/nodes_topography.txt"  #      
+
+shots_output_file = "xyz_shots.txt"             #
+nodes_output_file = "xyz_nodes.txt"             #
+
+# Regular SHOTS geometry                        
+
+shots_n_xline = 1           
+shots_n_yline = 1           
+
+shots_SW = [128, 128]            # NW       # (x,y) [m] <float>    
+shots_NW = [128, 128]          #  |       # (x,y) [m] <float>    
+shots_SE = [128, 128]          # SW -- SE # (x,y) [m] <float>   
+
+# Regular NODES geometry                        
+
+nodes_n_xline = 16            
+nodes_n_yline = 11            
+
+nodes_SW = [500, 500]          # NW       # (x,y) <float>     
+nodes_NW = [500, 4500]         #  |       # (x,y) <float>   
+nodes_SE = [6500, 500]         # SW -- SE # (x,y) <float>   
+
+# Circular SHOT geometry
+
+shots_xcenter = 1750          
+shots_ycenter = 2500          
+shots_spacing = 50            
+shots_offsets = [500, 1000, 1500]    # array <float>
+
+# Circular NODE geometry
+
+nodes_xcenter = 128          
+nodes_ycenter = 128         
+nodes_spacing = 5            
+nodes_offsets = [50, 70, 100]    # array <float>
+
+#-------------------------------------------------------------------------------------------------
+# Eikonal parameters -----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
+
+# 0 - Podvin & Lecomte (1991); 
+# 1 - Jeong & Whitaker (2008); 
+# 2 - Noble, Gesret and Belayouni (2014); 
+
+eikonal_type = 2    # Eikonal Type flag <int>          
+
+export_time_volume = False     # Travel times volume flag <bool> 
+export_first_arrival = False   # First arrivals flag <bool> 
+
+time_volume_folder = "teste_"        # Travel time volume folder <string>
+first_arrival_folder = "teste_"      # First arrivals folder <string>
+
