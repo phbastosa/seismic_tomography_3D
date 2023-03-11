@@ -14,9 +14,18 @@ int main(int argc, char **argv)
 
     tomography->set_parameters();
 
+    tomography->import_obs_data();
+
+    while (true)
+    {
+        tomography->forward_modeling();
+
+        tomography->import_cal_data();
+
+        tomography->converged();
 
 
-
+    }
 
 
 

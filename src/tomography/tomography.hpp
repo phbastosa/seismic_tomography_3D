@@ -20,8 +20,9 @@ protected:
     float * dm;      
     float * dobs;     
     float * dcal;    
-    
-    Eikonal * eikonal;
+
+    int n_data;
+    int n_model;
 
     std::string obs_data_folder;
     std::string cal_data_folder;
@@ -29,6 +30,8 @@ protected:
     std::string estimated_model_folder; 
 
     std::vector<float> residuo; 
+
+    Eikonal * eikonal;
 
     virtual void info_message() = 0;
 

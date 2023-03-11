@@ -27,7 +27,7 @@ int main (int argc, char**argv)
 
     float * V = new float[nx*ny*nz]();
 
-    read_binary_float("../../../inputs/models/initModel_101x701x501_10m.bin", V, nx*ny*nz);
+    read_binary_float("../../../inputs/models/trueModel_101x701x501_10m.bin", V, nx*ny*nz);
     
     V = expand(V, nx, ny, nz, nb);
 
@@ -111,11 +111,11 @@ int main (int argc, char**argv)
 
     float * wavelet = new float[nt];
 
-    read_binary_float("ricker_min_phase_3001_1ms.bin", wavelet, nt);
+    read_binary_float("ricker_min_phase_40Hz_1ms.bin", wavelet, nt);
 
     float * seismogram = new float[nt * n_nodes]();
     
-    for (int shotId = 0; shotId < 1; shotId++)
+    for (int shotId = 0; shotId < n_shots; shotId++)
     {
         float source_x = sx[shotId];
         float source_y = sy[shotId];

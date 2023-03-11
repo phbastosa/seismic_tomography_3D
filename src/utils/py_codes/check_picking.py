@@ -1,4 +1,3 @@
-import sys
 import timeit
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,90 +9,74 @@ from scipy.ndimage import median_filter
 
 #--------------------------------------------------------------------
 
-parameters = sys.argv[1]    
+nt = 3001
+traces = 140
 
-nt = int(catch_parameter(parameters,"nt"))
-traces = int(catch_parameter(parameters,"gather_traces"))
+nodes_all = 11 * 16 
+shots_all = 100 * 140
 
-nodes_all = int(catch_parameter(parameters,"nodes_all")) 
-shots_all = int(catch_parameter(parameters,"shots_all"))
+pick_folder = "../../../inputs/picks/"
+data_folder = "../../../inputs/seismic_data/"
 
-pick_folder = catch_parameter(parameters,"pick_folder")[1:-1]
-data_folder = catch_parameter(parameters,"data_folder")[1:-1]
+dt = 0.001
 
-dt = float(catch_parameter(parameters,"dt"))
+fw = 11
 
-fw = int(catch_parameter(parameters,"qc_filter_window"))
+start = timeit.default_timer()
 
-enable_qc = eval(catch_parameter(parameters,"enable_qc"))
+for node in range(nodes_all): 
 
-if enable_qc:
-    start = timeit.default_timer()
+    rawPicks_all = readBinaryArray(shots_all,f"{pick_folder}rawPicks_shot_{node+1}_{shots_all}_samples.bin")
+    output_picks = np.zeros(shots_all)
 
-    for node in range(nodes_all): 
+    diff = rawPicks_all[1:] - rawPicks_all[:-1]  
 
-        rawPicks_all = readBinaryArray(shots_all,f"{pick_folder}rawPicks_shot_{node+1}_{shots_all}_samples.bin")
-        output_picks = np.zeros(shots_all)
+    outliers = np.where(diff > 0.2)[0]
 
-        for line in range(traces):
+    for k in outliers:
+        rawPicks_all[k-2:k+2] = median_filter(rawPicks_all[k-2:k+2], 5)
 
-            window = slice(int(line*shots_all/traces),int((line+1)*shots_all/traces))
+    for line in range(traces):
 
-            rawPicks = rawPicks_all[window].copy()    
+        window = slice(int(line*shots_all/traces),int((line+1)*shots_all/traces))
 
-            rawPicks[int(fw):-int(fw)] = median_filter(rawPicks[int(fw):-int(fw)], fw)
+        rawPicks = rawPicks_all[window].copy()    
 
-            output_picks[window] = savgol_filter(rawPicks, fw, 2)     
+        output_picks[window] = savgol_filter(rawPicks, fw, 2)     
 
-        print(f"File {pick_folder}obsData_{shots_all}_samples_shot_{node+1}.bin was written successfully.")
-        output_picks.astype("float32", order = "F").tofile(f"{pick_folder}obsData_{shots_all}_samples_shot_{node+1}.bin")
+    print(f"File {pick_folder}obsData_{shots_all}_samples_shot_{node+1}.bin was written successfully.")
+    output_picks.astype("float32", order = "F").tofile(f"{pick_folder}obsData_{shots_all}_samples_shot_{node+1}.bin")
 
-    stop = timeit.default_timer()
-    print('Run time: ', stop - start)  
+stop = timeit.default_timer()
+print('Run time: ', stop - start)  
 
 # Quality control 
 
-check_data = eval(catch_parameter(parameters,"check_data"))
+tloc = np.linspace(0, nt-1, 11, dtype = int)
+tlab = np.around(tloc * dt, decimals = 1)
 
-if check_data: 
+xloc = np.linspace(0, traces-1, 11, dtype = int)
+xlab = np.linspace(0, traces, 11, dtype = int)
 
-    tlag = float(catch_parameter(parameters,"tlag"))
-    tcut = float(catch_parameter(parameters,"tcut"))
+gather = 100
 
-    updated_nt = int(tcut/dt)+1
+seismic = readBinaryMatrix(nt, shots_all, f"{data_folder}seismogram_{nt}x{shots_all}_shot_{gather+1}.bin") 
+input_picks = readBinaryArray(shots_all, f"{pick_folder}rawPicks_shot_{gather+1}_{shots_all}_samples.bin")
+output_picks = readBinaryArray(shots_all, f"{pick_folder}obsData_{shots_all}_samples_shot_{gather+1}.bin")
 
-    times = slice(int(tlag/dt), int((tlag+tcut)/dt))
+scale = 0.001 * np.std(seismic)
 
-    tloc = np.linspace(0, updated_nt-1, 11, dtype = int)
-    tlab = np.around(tloc * dt, decimals = 1)
+fig, ax =  plt.subplots(1,1, figsize = (15, 5))
 
-    xloc = np.linspace(0, traces-1, 11, dtype = int)
-    xlab = np.linspace(0, traces, 11, dtype = int)
+ax.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
+ax.plot(input_picks/dt, "o")
+ax.plot(output_picks/dt, "o")
+ax.set_title(f"Picked seismogram for node {gather+1}", fontsize= 18)
+ax.set_ylabel("Time [s]", fontsize = 15)
+ax.set_xlabel("Trace index", fontsize = 15)
+ax.set_yticks(tloc)
+ax.set_yticklabels(tlab)
+ax.set_xlim([0, shots_all])
 
-    igather = int(catch_parameter(parameters,"igather"))
-    fgather = int(catch_parameter(parameters,"fgather"))
-    dgather = int(catch_parameter(parameters,"dgather"))
-
-    gathers = np.arange(igather, fgather+dgather, dgather, dtype = int)
-
-    for gather in gathers:
-        seismic_all = readBinaryMatrix(nt, shots_all, f"{data_folder}seismogram_{nt}x{shots_all}_shot_{gather}.bin") 
-        rawPicks_all = readBinaryArray(shots_all, f"{pick_folder}rawPicks_shot_{gather}_{shots_all}_samples.bin")
-        output_picks = readBinaryArray(shots_all, f"{pick_folder}obsData_{shots_all}_samples_shot_{gather}.bin")
-
-        seismic = seismic_all[times, :]    
-
-        scale = 0.5 * np.std(seismic)
-
-        plt.figure(1, figsize = (15, 5))
-        plt.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
-        plt.plot(rawPicks_all/dt, "o")
-        plt.plot(output_picks/dt, "o")
-        plt.title(f"Picked seismogram for node {gather}", fontsize= 18)
-        plt.ylabel("Time [s]", fontsize = 15)
-        plt.xlabel("Trace index", fontsize = 15)
-        plt.yticks(tloc,tlab)
-        plt.xlim([0, shots_all])
-        plt.tight_layout()
-        plt.show()
-
+plt.tight_layout()
+plt.show()

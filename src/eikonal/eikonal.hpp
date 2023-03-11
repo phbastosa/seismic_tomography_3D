@@ -16,16 +16,7 @@ class Eikonal
 {   
 protected:
 
-    int nx, ny, nz;
-    int nxx, nyy, nzz;
-    int nPoints, nPointsB;
-    int total_nodes;
-
-    float dx, dy, dz;
-
-    float * slowness;
-    float * travel_time;    
-    float * first_arrival;
+    int nxx, nyy, nzz, nPointsB;
 
     bool reciprocity;
     bool export_time_volume;  
@@ -34,18 +25,27 @@ protected:
     std::string time_volume_folder;          
     std::string first_arrival_folder;
 
-    Geometry * shots;
-    Geometry * nodes; 
-
     virtual void expand_model() = 0;
     virtual void reduce_model() = 0;
 
 public:
 
+    float dx, dy, dz;
+    int nx, ny, nz, nPoints;    
+
+    float * slowness;
+    float * travel_time;    
+    float * first_arrival;
+
+    Geometry * shots;
+    Geometry * nodes; 
+
+    std::string name;
     std::string parameters;
 
     int shot_id;
     int total_shots;
+    int total_nodes;
 
     virtual void set_parameters() = 0;
     virtual void prepare_volumes() = 0;

@@ -10,11 +10,26 @@ private:
     int tkOrder;   
     float lambda; 
 
-    std::vector< int > iM;          // To store initially the rows of sparse G matrix 
-    std::vector< int > jM;          // To store initially the cols of sparse G matrix
-    std::vector<float> vM;          // To store initially the values of sparse G matrix
+    float * x;             // A x = B
+    float * illumination;
+
+    float dx_tomo;
+    float dy_tomo;
+    float dz_tomo;
+
+    float nx_tomo;  
+    float ny_tomo;  
+    float nz_tomo;  
+
+    std::vector< int > iG; 
+    std::vector< int > jG;
+    std::vector<float> vG;
 
     void info_message();
+    void ray_tracing();
+    void sparse_cgls();
+    void resizing();
+
 
 public:    
 

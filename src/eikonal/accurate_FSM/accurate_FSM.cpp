@@ -73,6 +73,8 @@ void Accurate_FSM::reduce_model()
 
 void Accurate_FSM::set_parameters()
 {
+    name = "fsm";
+
     nx = std::stoi(catch_parameter("x_samples", parameters));
     ny = std::stoi(catch_parameter("y_samples", parameters));
     nz = std::stoi(catch_parameter("z_samples", parameters));
@@ -533,7 +535,7 @@ void Accurate_FSM::info_message()
 void Accurate_FSM::write_time_volume()
 {
     if (export_time_volume)        
-        write_binary_float(time_volume_folder + "fsm_eikonal_nz" + std::to_string(nz) + "_nx" + std::to_string(nx) + "_ny" + std::to_string(ny) + "_shot_" + std::to_string(shot_id+1) + ".bin", travel_time, nPoints);
+        write_binary_float(time_volume_folder + name + "_eikonal_nz" + std::to_string(nz) + "_nx" + std::to_string(nx) + "_ny" + std::to_string(ny) + "_shot_" + std::to_string(shot_id+1) + ".bin", travel_time, nPoints);
 }
 
 void Accurate_FSM::write_first_arrival()
@@ -568,7 +570,7 @@ void Accurate_FSM::write_first_arrival()
             first_arrival[r] = trilinear(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);        
         }
 
-        write_binary_float(first_arrival_folder + "fsm_times_nr" + std::to_string(total_nodes) + "_shot_" + std::to_string(shot_id+1) + ".bin", first_arrival, total_nodes);
+        write_binary_float(first_arrival_folder + name + "_times_nr" + std::to_string(total_nodes) + "_shot_" + std::to_string(shot_id+1) + ".bin", first_arrival, total_nodes);
     }
 }
 
