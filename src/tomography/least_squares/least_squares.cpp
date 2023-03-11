@@ -7,8 +7,6 @@
 # include "../../eikonal/block_FIM/block_FIM.hpp"
 # include "../../eikonal/accurate_FSM/accurate_FSM.hpp"
 
-
-
 void Least_squares::info_message()
 {
     eikonal->info_message();
