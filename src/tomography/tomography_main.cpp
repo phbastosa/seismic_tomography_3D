@@ -22,14 +22,14 @@ int main(int argc, char **argv)
 
         tomography->import_cal_data();
 
-        tomography->converged();
+        if (tomography->converged()) break;
 
+        tomography->optimization();
 
+        tomography->model_update();
     }
 
-
-
-
+    tomography->export_convergency();
 
     auto tf = std::chrono::system_clock::now();
 

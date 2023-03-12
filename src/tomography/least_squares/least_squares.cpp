@@ -1,4 +1,5 @@
 # include <cmath>
+# include <fstream>
 # include <iostream>
 # include <algorithm>
 
@@ -43,7 +44,7 @@ void Least_squares::set_parameters()
 
     max_iteration = std::stoi(catch_parameter("max_iteration", parameters));
     lambda = std::stof(catch_parameter("tk_param", parameters));
-    tkOrder = std::stof(catch_parameter("tk_order", parameters));
+    tk_order = std::stof(catch_parameter("tk_order", parameters));
 
     smooth = str2bool(catch_parameter("smooth", parameters)); 
     window = std::stoi(catch_parameter("filter_samples", parameters));
@@ -53,9 +54,9 @@ void Least_squares::set_parameters()
     dy_tomo = std::stof(catch_parameter("dy_tomo", parameters));
     dz_tomo = std::stof(catch_parameter("dz_tomo", parameters));
 
-    nz_tomo = (int)(static_cast<float>(eikonal->nz-1) * eikonal->dz / dz_tomo) + 1;    
-    nx_tomo = (int)(static_cast<float>(eikonal->nx-1) * eikonal->dx / dx_tomo) + 1;    
-    ny_tomo = (int)(static_cast<float>(eikonal->ny-1) * eikonal->dy / dy_tomo) + 1;   
+    nz_tomo = (int)((eikonal->nz-1) * eikonal->dz / dz_tomo) + 1;    
+    nx_tomo = (int)((eikonal->nx-1) * eikonal->dx / dx_tomo) + 1;    
+    ny_tomo = (int)((eikonal->ny-1) * eikonal->dy / dy_tomo) + 1;   
     
     n_model = nx_tomo * ny_tomo * nz_tomo;
 
@@ -67,10 +68,9 @@ void Least_squares::set_parameters()
     iteration = 0;
 
     residuo.reserve(max_iteration);
-
-    x = new float[n_model]();
     dobs = new float[n_data]();
     dcal = new float[n_data]();    
+    xdm = new float[n_model]();
     dm = new float[eikonal->nPoints]();
     illumination = new float[eikonal->nPoints]();
 }
@@ -79,7 +79,7 @@ void Least_squares::import_obs_data()
 {
     int ptr = 0; 
     
-    float * data = new float[eikonal->total_nodes];
+    float * data = new float[eikonal->total_nodes]();
 
     for (int shot = 0; shot < eikonal->total_shots; shot++)
     {
@@ -90,6 +90,8 @@ void Least_squares::import_obs_data()
 
         ptr += eikonal->total_nodes;        
     }
+
+    delete[] data;
 }
 
 void Least_squares::forward_modeling()
@@ -97,7 +99,7 @@ void Least_squares::forward_modeling()
     for (int k = 0; k < eikonal->nPoints; k++) 
         illumination[k] = 0.0f;
 
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < eikonal->total_shots; i++)
     {
         eikonal->shot_id = i;
         
@@ -109,7 +111,7 @@ void Least_squares::forward_modeling()
         ray_tracing();
     }
 
-    write_binary_float("illumination_iteration_" + std::to_string(iteration) + ".bin", illumination, eikonal->nPoints);
+    write_binary_float("illumination_iteration_" + std::to_string(iteration+1) + ".bin", illumination, eikonal->nPoints);
 }
 
 void Least_squares::ray_tracing()
@@ -205,7 +207,7 @@ void Least_squares::import_cal_data()
     
     float * data = new float[eikonal->total_nodes]();
 
-    for (int shot = 0; shot < 1; shot++)
+    for (int shot = 0; shot < eikonal->total_shots; shot++)
     {
         read_binary_float(cal_data_folder + eikonal->name + "_times_nr" + std::to_string(eikonal->total_nodes) + "_shot_" + std::to_string(shot+1) + ".bin", data, eikonal->total_nodes);
 
@@ -214,6 +216,8 @@ void Least_squares::import_cal_data()
 
         ptr += eikonal->total_nodes;        
     }
+
+    delete[] data;
 }
 
 bool Least_squares::converged()
@@ -238,128 +242,250 @@ bool Least_squares::converged()
 
 void Least_squares::optimization()
 {
-//     std::cout<<"Solving linear system using Tikhonov regularization with order "+ std::to_string(tkOrder) + "\n\n";
+    std::cout<<"Solving linear system using Tikhonov regularization with order "+ std::to_string(tk_order) + "\n\n";
 
-//     sparseMatrix L = Utils::getDerivativeMatrix(mTomo.nPoints, tkOrder);
+    M = n_model;                                  
+    N = n_data + n_model - tk_order;                    
+    NNZ = vG.size() + (tk_order + 1) * (n_model - tk_order);
+
+    iA = new int[NNZ]();
+    jA = new int[NNZ]();
+    vA = new float[NNZ]();
+
+    B = new float[N]();
     
-//     int N = shots.all*eikonal->total_nodes + L.n; // Data dimension
-//     int M = mTomo.nPoints;             // Model dimension
-//     int NNZ = vM.size() + L.nnz;       // Non zero elements
+    for (int index = 0; index < n_data; index++) 
+        B[index] = dobs[index] - dcal[index];
 
-//     int * iA = new int[NNZ]();
-//     int * jA = new int[NNZ]();
-//     float * vA = new float[NNZ]();
+    for (int index = 0; index < vG.size(); index++)
+    {
+        iA[index] = iG[index];
+        jA[index] = jG[index];
+        vA[index] = vG[index];
+    }
 
-//     for (int index = 0; index < vM.size(); index++)
-//     {
-//         iA[index] = iM[index];
-//         jA[index] = jM[index];
-//         vA[index] = vM[index];
-//     }
+    std::vector< int >().swap(iG);
+    std::vector< int >().swap(jG);
+    std::vector<float>().swap(vG);
 
-//     for (int index = NNZ - L.nnz; index < NNZ; index++) 
-//     {
-//         iA[index] = shots.all*eikonal->total_nodes + L.i[index - (NNZ - L.nnz)];
-//         jA[index] = L.j[index - (NNZ - L.nnz)];
-//         vA[index] = lambda * L.v[index - (NNZ - L.nnz)];        
-//     }
+    tk_reg_matrix();
+    sparse_cgls();
 
-//     L.erase();
-//     std::vector<  int  >().swap(iM);
-//     std::vector<  int  >().swap(jM);
-//     std::vector< float >().swap(vM);
+    delete[] B;
+    delete[] iA;
+    delete[] jA;
+    delete[] vA;
+}
 
-//     float * x = new float[M]();
-//     float * B = new float[N]();
+void Least_squares::tk_reg_matrix()
+{
+    int elements = tk_order + 1;
+		
+    int n = n_model - tk_order;
+    int nnz = elements * n;	
+    
+    int * iL = new int[nnz]();
+    int * jL = new int[nnz]();
+    float * vL = new float[nnz]();
 
-//     for (int index = 0; index < eikonal->total_nodes*shots.all; index++) 
-//         B[index] = dobs[index] - dcal[index];
+    if (tk_order == 0)
+	{
+		for (int index = 0; index < nnz; index++)
+		{
+			iL[index] = index;
+			jL[index] = index;
+			vL[index] = 1.0f;
+		}
+	} 
+    else
+    {
+        int * df = new int[elements]();	
+        int * df1 = new int[elements + 1]();
+        int * df2 = new int[elements + 1]();
+        
+        df[0] = -1; df[1] = 1;
+        
+        for (int index = 1; index < tk_order; index++)
+        {
+            for (int k = 0; k < elements; k++)
+            {
+                df2[k] = df[k];
+                df1[k + 1] = df[k];
 
-//     sparse_cgls_gpu(iA, jA, vA, B, x, N, M, NNZ, 10, 1e-6f);
+                df[k] = df1[k] - df2[k]; 
+            }		 
+        }
+        
+        for (int index = 0; index < n; index++)
+        {
+            for (int k = 0; k < elements; k++)
+            {
+                iL[elements*index + k] = index;	
+                jL[elements*index + k] = index + k;
+                vL[elements*index + k] = df[k];
+            }	
+        }
 
-//     std::swap(dm,x);
+        delete[] df;
+        delete[] df1;
+        delete[] df2;
+    }
 
-//     delete[] x;
-//     delete[] B;
-//     delete[] iA;
-//     delete[] jA;
-//     delete[] vA;
+    for (int index = NNZ - nnz; index < NNZ; index++) 
+    {
+        iA[index] = n_data + iL[index - (NNZ - nnz)];
+        jA[index] = jL[index - (NNZ - nnz)];
+        vA[index] = lambda * vL[index - (NNZ - nnz)];        
+    }
+
+    delete[] iL;
+    delete[] jL;
+    delete[] vL;
+}
+
+void Least_squares::sparse_cgls()
+{
+    float a, b, qTq, rTr, rd;
+    int cg_max_iteration = 10;
+
+    float * s = new float[N]();
+    float * q = new float[N]();
+    float * r = new float[M]();
+    float * p = new float[M]();
+
+    // s = d - G * x, where d = dobs - dcal and x = slowness variation
+    for (int i = 0; i < N; i++) 
+        s[i] = B[i]; 
+
+    // r = G' * s    
+    for (int i = 0; i < NNZ; i++) 
+        r[jA[i]] += vA[i] * s[iA[i]];        
+
+    // p = r and x = 0;
+    for (int i = 0; i < M; i++) 
+    {
+        p[i] = r[i]; 
+        xdm[i] = 0.0f;
+    }
+
+    // q = G * p
+    for (int i = 0; i < NNZ; i++) 
+        q[iA[i]] += vA[i] * p[jA[i]];        
+
+    for (int i = 0; i < cg_max_iteration; i++)
+    {
+        qTq = 0.0f;
+        for (int k = 0; k < N; k++)           // q inner product
+            qTq += q[k] * q[k];               // qTq = q' * q
+
+        rTr = 0.0f;
+        for (int k = 0; k < M; k++)           // r inner product
+            rTr += r[k] * r[k];               // rTr = r' * r 
+
+        a = rTr / qTq;                        // a = (r' * r) / (q' * q)                    
+
+        for (int k = 0; k < M; k++)           // model atualization
+            xdm[k] += a * p[k];               // x = x + a * p
+
+        for (int k = 0; k < N; k++)           // s atualization  
+            s[k] -= a * q[k];                 // s = s - a * q 
+
+        rd = 0.0f;
+        for (int k = 0; k < M; k++)           // r inner product for division 
+            rd += r[k] * r[k];                // rd = r' * r
+
+        for (int k = 0; k < M; k++)           // Zeroing r 
+            r[k] = 0.0f;                      // r = 0, for multiplication
+        
+        for (int k = 0; k < NNZ; k++)         // r atualization 
+            r[jA[k]] += vA[k] * s[iA[k]];     // r = G' * s    
+
+        rTr = 0.0f;                
+        for (int k = 0; k < M; k++)           // r inner product
+            rTr += r[k] * r[k];               // rTr = r' * r
+
+        b = rTr / rd;                         // b = (r' * r) / rd
+
+        for (int k = 0; k < M; k++)          
+            p[k] = r[k] + b * p[k];           // p = r + b * p 
+
+        for (int k = 0; k < N; k++) 
+            q[k] = 0.0f;                      // q = 0, for multiplication
+
+        for (int k = 0; k < NNZ; k++) 
+            q[iA[k]] += vA[k] * p[jA[k]];     // q = G * p   
+    }
 }
 
 void Least_squares::model_update()
 {
-    // for (int index = 0; index < ; index++)
-    // {
-    //     int k = (int) (index / (nx*nz));         // y direction
-    //     int j = (int) (index - k*nx*nz) / nz;    // x direction
-    //     int i = (int) (index - j*nz - k*nx*nz);  // z direction
+    for (int index = 0; index < eikonal->nPoints; index++)
+    {
+        int k = (int) (index / (eikonal->nx*eikonal->nz));        
+        int j = (int) (index - k*eikonal->nx*eikonal->nz) / eikonal->nz;    
+        int i = (int) (index - j*eikonal->nz - k*eikonal->nx*eikonal->nz);  
 
-    //     float x = j*dx; 
-    //     float y = k*dy; 
-    //     float z = i*dz; 
+        float x = j*eikonal->dx; 
+        float y = k*eikonal->dy; 
+        float z = i*eikonal->dz; 
 
-    //     float x0 = floorf(x/mTomo.dx)*mTomo.dx;
-    //     float y0 = floorf(y/mTomo.dy)*mTomo.dy;
-    //     float z0 = floorf(z/mTomo.dz)*mTomo.dz;
+        float x0 = floorf(x/dx_tomo)*dx_tomo;
+        float y0 = floorf(y/dy_tomo)*dy_tomo;
+        float z0 = floorf(z/dz_tomo)*dz_tomo;
 
-    //     float x1 = floorf(x/mTomo.dx)*mTomo.dx + mTomo.dx;
-    //     float y1 = floorf(y/mTomo.dy)*mTomo.dy + mTomo.dy;
-    //     float z1 = floorf(z/mTomo.dz)*mTomo.dz + mTomo.dz;
+        float x1 = floorf(x/dx_tomo)*dx_tomo + dx_tomo;
+        float y1 = floorf(y/dy_tomo)*dy_tomo + dy_tomo;
+        float z1 = floorf(z/dz_tomo)*dz_tomo + dz_tomo;
 
-    //     if ((i >= 0) && (i < nz - 1) && (j >= 0) && (j < nx - 1) && (k >= 0) && (k < ny - 1))
-    //     {
-    //         int idz = ((int)(z/mTomo.dz));
-    //         int idx = ((int)(x/mTomo.dx));
-    //         int idy = ((int)(y/mTomo.dy));
+        if ((i >= 0) && (i < eikonal->nz - 1) && (j >= 0) && (j < eikonal->nx - 1) && (k >= 0) && (k < eikonal->ny - 1))
+        {
+            int idz = ((int)(z/dz_tomo));
+            int idx = ((int)(x/dx_tomo));
+            int idy = ((int)(y/dy_tomo));
 
-    //         int indS = idz + idx*mTomo.nz + idy*mTomo.nx*mTomo.nz;
+            int ind_m = (int)(idz + idx*nz_tomo + idy*nx_tomo*nz_tomo);
 
-    //         float c000 = dm[indS];                  
-    //         float c001 = dm[indS + 1];
-    //         float c100 = dm[indS + mTomo.nz];
-    //         float c101 = dm[indS + 1 + mTomo.nz];
-    //         float c010 = dm[indS + mTomo.nx*mTomo.nz];
-    //         float c011 = dm[indS + 1 + mTomo.nx*mTomo.nz];
-    //         float c110 = dm[indS + mTomo.nz + mTomo.nx*mTomo.nz];
-    //         float c111 = dm[indS + 1 + mTomo.nz + mTomo.nx*mTomo.nz];  
+            float c000 = xdm[ind_m];                  
+            float c001 = xdm[ind_m + 1];
+            float c100 = xdm[ind_m + nz_tomo];
+            float c101 = xdm[ind_m + 1 + nz_tomo];
+            float c010 = xdm[ind_m + nx_tomo*nz_tomo];
+            float c011 = xdm[ind_m + 1 + nx_tomo*nz_tomo];
+            float c110 = xdm[ind_m + nz_tomo + nx_tomo*nz_tomo];
+            float c111 = xdm[ind_m + 1 + nz_tomo + nx_tomo*nz_tomo];  
 
-    //         float ds_ijk = triLinearInterpolation(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);
+            float dm_ijk = trilinear(c000,c001,c100,c101,c010,c011,c110,c111,x0,x1,y0,y1,z0,z1,x,y,z);
 
-    //         dS[(i + nb) + (j + nb)*eikonal->nz + (k + nb)*eikonal->nx*eikonal->nz] = ds_ijk;            
-    //     }
-    // }
+            dm[i + j*eikonal->nz + k*eikonal->nx*eikonal->nz] = dm_ijk;            
+        }
+    }
 
-    // if (smooth) 
-    // {
-    //     dS = gaussianFilterSmoothing(dS, eikonal->nx, nyy, eikonal->nz, standardDeviation, filterSamples);
-    // }
+    float * update = new float[eikonal->nPoints]();
 
-    // for (int index = 0; index < nPointsB; index++)
-    // {
-    //     V[index] = 1.0f / ((1.0f / V[index]) + dS[index]);
-    // }
+    if (smooth) 
+    {
+        gaussian(dm, update, eikonal->nx,eikonal->ny,eikonal->nz, window, stdv);
+        std::swap(dm, update);
+    }
 
-    // float * mm = reduce(V);
+    for (int index = 0; index < eikonal->nPoints; index++)
+    {
+        eikonal->slowness[index] += dm[index];
+        update[index] = 1.0f / eikonal->slowness[index];
+    }
     
-    // writeBinaryFloat(estimatedPath + "estimatedModel_iteration_" + std::to_string(iteration) + ".bin", mm, nPoints);    
+    write_binary_float(estimated_model_folder + "estimated_model_iteration_" + std::to_string(iteration) + ".bin", update, eikonal->nPoints);    
 
-    // delete[] mm;
-    // delete[] dS;
+    delete[] update;
 }
 
 void Least_squares::export_convergency()
 {
-//     std::ofstream resFile(residuoPath + "convergency.txt", std::ios::out);
+    std::ofstream resFile(convergency_folder + "convergency.txt", std::ios::out);
     
-//     for (int r = 0; r < residuo.size(); r++) resFile<<residuo[r]<<"\n";
+    for (int r = 0; r < residuo.size(); r++) resFile<<residuo[r]<<"\n";
 
-//     resFile.close();
-}
-
-void Least_squares::export_estimated_model()
-{
-
-
+    resFile.close();
 }
 
 

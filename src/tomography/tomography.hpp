@@ -6,6 +6,8 @@
 
 # include "../eikonal/eikonal.hpp"
 
+# include "../utils/smoothing/gaussian.hpp"
+
 class Tomography 
 {
 protected:
@@ -51,7 +53,6 @@ public:
     virtual void model_update() = 0;
 
     virtual void export_convergency() = 0;
-    virtual void export_estimated_model() = 0;    
 };
 
 # endif

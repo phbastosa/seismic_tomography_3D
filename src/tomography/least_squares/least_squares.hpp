@@ -7,29 +7,36 @@ class Least_squares : public Tomography
 {
 private:
     
-    int tkOrder;   
+    int tk_order;   
     float lambda; 
 
-    float * x;             // A x = B
     float * illumination;
 
     float dx_tomo;
     float dy_tomo;
     float dz_tomo;
 
-    float nx_tomo;  
-    float ny_tomo;  
-    float nz_tomo;  
+    int nx_tomo;  
+    int ny_tomo;  
+    int nz_tomo;  
 
     std::vector< int > iG; 
     std::vector< int > jG;
     std::vector<float> vG;
 
+    int * iA;
+    int * jA;
+    float * vA;
+    float * B;
+    float * xdm;             // A x = B
+
+    int M, N, NNZ;
+
     void info_message();
     void ray_tracing();
-    void sparse_cgls();
-    void resizing();
 
+    void tk_reg_matrix();
+    void sparse_cgls();
 
 public:    
 
@@ -45,7 +52,6 @@ public:
     void model_update();
 
     void export_convergency();
-    void export_estimated_model();    
 };
 
 # endif
