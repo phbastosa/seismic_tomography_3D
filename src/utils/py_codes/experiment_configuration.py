@@ -215,7 +215,7 @@ for j in range(nx):
 
         initModel[int(base/dz):,j,k] = v[-1]
         initModel[:int(wb/dz), j, k] = v[0]
-        initModel[int(wb/dz):int(base/dz), j, k] = v0 + dv*np.arange((int(base/dz)-int(wb/dz)))
+        initModel[int(wb/dz):int(base/dz), j, k] = v0 + 2.5*dv*np.arange((int(base/dz)-int(wb/dz)))
         
 #----------------------------------------------------------------------------
 
@@ -233,7 +233,8 @@ nodes[:, 1] = node_y
 nodes[:, 2] = node_z
 
 model.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/trueModel_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
-initModel.flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/initModel_{nz}x{nx}x{ny}_{dx:.0f}m.bin")
+model[::2,::2,::2].flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/trueModel_{nz//2 + 1}x{nx//2 + 1}x{ny//2 + 1}_{2*dx:.0f}m.bin")
+initModel[::2,::2,::2].flatten("F").astype("float32", order = "F").tofile(f"../../../inputs/models/initModel_{nz//2 + 1}x{nx//2 + 1}x{ny//2 + 1}_{2*dx:.0f}m.bin")
 
 slices = np.array([int(600/dz), int(2500/dy), int(3300/dx)], dtype = int) # xy, zx, zy
 subplots = np.array([1, 1], dtype = int)

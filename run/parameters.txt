@@ -2,15 +2,15 @@
 # Model paramenters ---------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------
  
-x_samples = 701           
-y_samples = 501           
-z_samples = 101           
+x_samples = 351           
+y_samples = 251           
+z_samples = 51           
 
-x_spacing = 10          # in meters [m] 
-y_spacing = 10          # in meters [m]  
-z_spacing = 10          # in meters [m]  
+x_spacing = 20          # in meters [m] 
+y_spacing = 20          # in meters [m]  
+z_spacing = 20          # in meters [m]  
 
-vp_file = "../inputs/models/initModel_101x701x501_10m.bin"   
+vp_file = "../inputs/models/initModel_51x351x251_20m.bin"   
 
 #---------------------------------------------------------------------------------------------------
 # Geometry parameters ------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ nodes_offsets = [500, 1000, 1500]    # array <float>
 
 eikonal_type = 1    # Eikonal Type flag <int>          
 
-export_time_volume = True    # Travel times volume flag <bool> 
+export_time_volume = False    # Travel times volume flag <bool> 
 export_first_arrival = True   # First arrivals flag <bool> 
 
 time_volume_folder = "../outputs/travel_times/"          # Travel time volume folder <string>
@@ -98,23 +98,23 @@ tomography_type = 0
 
 max_iteration = 5                      
 
-dx_tomo = 100    # in meters <float> 
-dy_tomo = 100    # in meters <float>
-dz_tomo = 50     # in meters <float>
+dx_tomo = 200    # in meters <float> 
+dy_tomo = 200    # in meters <float>
+dz_tomo = 100    # in meters <float>
 
 # Regularization
 
 tk_order = 2       # Tikhonov regularization order <int>
-tk_param = 1e5     # Regularization parameter <float>
+tk_param = 2e5     # Regularization parameter <float>
 
 # Smoothing model per iteration 
 
 smooth = True              # Flag to smooth recovered model <bool>
-filter_samples = 11        # Samples in filter, must to be an odd number! <int>
+filter_samples = 5         # Samples in filter, must to be an odd number! <int>
 standard_deviation = 2.0   # For gaussian filter case to control smoothing <float>
 
 # Folders location
 
 dobs_folder = "../inputs/picks/"                          # Folder to write calculated data
-convergency_folder = "../outputs/convergency/"            # Folder to write convergency line to residuous norm
-estimated_models_folder = "../outputs/recoveredModels/"   # Folder to write estimated models per iteration 
+convergency_folder = "../outputs/convergence/"            # Folder to write convergency line to residuous norm
+estimated_models_folder = "../outputs/recovered_models/"   # Folder to write estimated models per iteration 

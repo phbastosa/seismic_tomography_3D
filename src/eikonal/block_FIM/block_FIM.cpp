@@ -172,7 +172,7 @@ void Block_FIM::prepare_volumes()
     
     memoryStruct_.delta_h = dx;
 
-	memoryStruct_.nIter = 10;
+	memoryStruct_.nIter = 100;
 	memoryStruct_.blknum = static_cast<uint>(blknum);
     memoryStruct_.volsize = static_cast<uint>(volsize);
 	memoryStruct_.blksize = static_cast<uint>(blksize);

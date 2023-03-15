@@ -8,6 +8,64 @@
 # include "../../eikonal/block_FIM/block_FIM.hpp"
 # include "../../eikonal/accurate_FSM/accurate_FSM.hpp"
 
+void Least_squares::expand_fdm()
+{
+    int nxx = eikonal->nx + 2;
+    int nyy = eikonal->ny + 2;
+    int nzz = eikonal->nz + 2;
+
+    // Centering
+    for (int z = 1; z < nzz - 1; z++)
+    {
+        for (int y = 1; y < nyy - 1; y++)
+        {
+            for (int x = 1; x < nxx - 1; x++)
+            {
+                T[z + x*nzz + y*nxx*nzz] = eikonal->travel_time[(z - 1) + (x - 1)*eikonal->nz + (y - 1)*eikonal->nx*eikonal->nz];
+            }
+        }
+    }
+
+    // Z direction
+    for (int z = 0; z < 1; z++)
+    {
+        for (int y = 1; y < nyy - 1; y++)
+        {
+            for (int x = 1; x < nxx - 1; x++)
+            {
+                T[z + x*nzz + y*nxx*nzz] = eikonal->travel_time[0 + (x - 1)*eikonal->nz + (y - 1)*eikonal->nx*eikonal->nz];
+                T[(nzz - z - 1) + x*nzz + y*nxx*nzz] = eikonal->travel_time[(eikonal->nz - 1) + (x - 1)*eikonal->nz + (y - 1)*eikonal->nx*eikonal->nz];
+            }
+        }
+    }
+
+    // X direction
+    for (int x = 0; x < 1; x++)
+    {
+        for (int z = 0; z < nzz; z++)
+        {
+            for (int y = 1; y < nyy - 1; y++)
+            {
+                T[z + x*nzz + y*nxx*nzz] = T[z + 1*nzz + y*nxx*nzz];
+                T[z + (nxx - x - 1)*nzz + y*nxx*nzz] = T[z + (nxx - 1 - 1)*nzz + y*nxx*nzz];
+            }
+        }
+    }
+
+    // Y direction
+    for (int y = 0; y < 1; y++)
+    {
+        for (int z = 0; z < nzz; z++)
+        {
+            for (int x = 0; x < nxx; x++)
+            {
+                T[z + x*nzz + y*nxx*nzz] = T[z + x*nzz + 1*nxx*nzz];
+                T[z + x*nzz + (nyy - y - 1)*nxx*nzz] = T[z + x*nzz + (nyy - 1 - 1)*nxx*nzz];
+            }
+        }
+    }
+}
+
 void Least_squares::info_message()
 {
     eikonal->info_message();
@@ -19,26 +77,35 @@ void Least_squares::info_message()
     else
         std::cout<<"------- Computing iteration "<<iteration+1<<" of "<<max_iteration<<" ------------\n\n";
 
-    if (iteration > 0) std::cout<<"Previous iteration residuo: "<<residuo.back()<<"\n\n";
+    if (iteration > 0) std::cout<<"Previous iteration residuo: "<<residuo[iteration-1]<<"\n\n";
 }
 
 void Least_squares::set_parameters()
 {
     int type = std::stoi(catch_parameter("eikonal_type", parameters));    
 
-    Eikonal * eikonal_types[] = 
+    switch (type)
     {
-        new Classic(),
-        new Block_FIM(),
-        new Accurate_FSM()
-    };
-
-    eikonal = eikonal_types[type];
+    case 0:
+        eikonal = new Classic();
+        break;
     
+    case 1:
+        eikonal = new Block_FIM();
+        break;
+
+    case 2:
+        eikonal = new Accurate_FSM();
+        break;    
+    
+    default:
+        eikonal = new Accurate_FSM();
+        break;
+    }
+
     eikonal->parameters = parameters;
 
     eikonal->set_parameters();
-    eikonal->prepare_volumes();
 
     n_data = eikonal->total_shots * eikonal->total_nodes;
 
@@ -67,7 +134,6 @@ void Least_squares::set_parameters()
 
     iteration = 0;
 
-    residuo.reserve(max_iteration);
     dobs = new float[n_data]();
     dcal = new float[n_data]();    
     xdm = new float[n_model]();
@@ -99,6 +165,10 @@ void Least_squares::forward_modeling()
     for (int k = 0; k < eikonal->nPoints; k++) 
         illumination[k] = 0.0f;
 
+    eikonal->prepare_volumes();
+
+    T = new float[(eikonal->nx + 2)*(eikonal->ny+2)*(eikonal->nz+2)]();
+
     for (int i = 0; i < eikonal->total_shots; i++)
     {
         eikonal->shot_id = i;
@@ -108,22 +178,30 @@ void Least_squares::forward_modeling()
         eikonal->eikonal_equation();
         eikonal->write_first_arrival();
         
+        expand_fdm();
         ray_tracing();
     }
 
-    write_binary_float("illumination_iteration_" + std::to_string(iteration+1) + ".bin", illumination, eikonal->nPoints);
+    delete[] T; 
+
+    write_binary_float("../outputs/illumination/" + eikonal->name + "_illumination_iteration_" + std::to_string(iteration) + ".bin", illumination, eikonal->nPoints);
+
+    eikonal->destroy_volumes();
 }
 
 void Least_squares::ray_tracing()
 {
+    int nxx = eikonal->nx + 2;
+    int nzz = eikonal->nz + 2;
+
     int sIdz = (int)(eikonal->shots->z[eikonal->shot_id] / dz_tomo);
     int sIdx = (int)(eikonal->shots->x[eikonal->shot_id] / dx_tomo);
     int sIdy = (int)(eikonal->shots->y[eikonal->shot_id] / dy_tomo);
 
     int sId = sIdz + sIdx*nz_tomo + sIdy*nx_tomo*nz_tomo;     
 
-    float rayStep = 0.2f * (eikonal->dz) / 3.0f;
-    
+    float rayStep = 0.2f * eikonal->dz;
+
     for (int ray_id = 0; ray_id < eikonal->total_nodes; ray_id++)
     {
         float zi = eikonal->nodes->z[ray_id];
@@ -134,13 +212,13 @@ void Least_squares::ray_tracing()
 
         while (true)
         {
-            int i = (int)(zi / eikonal->dz);
-            int j = (int)(xi / eikonal->dx);
-            int k = (int)(yi / eikonal->dy);
+            int i = (int)(zi / eikonal->dz) + 1;
+            int j = (int)(xi / eikonal->dx) + 1;
+            int k = (int)(yi / eikonal->dy) + 1;
 
-            float dTz = (eikonal->travel_time[(i+1) + j*eikonal->nz + k*eikonal->nx*eikonal->nz] - eikonal->travel_time[(i-1) + j*eikonal->nz + k*eikonal->nx*eikonal->nz]) / (2.0f*eikonal->dz);    
-            float dTx = (eikonal->travel_time[i + (j+1)*eikonal->nz + k*eikonal->nx*eikonal->nz] - eikonal->travel_time[i + (j-1)*eikonal->nz + k*eikonal->nx*eikonal->nz]) / (2.0f*eikonal->dx);    
-            float dTy = (eikonal->travel_time[i + j*eikonal->nz + (k+1)*eikonal->nx*eikonal->nz] - eikonal->travel_time[i + j*eikonal->nz + (k-1)*eikonal->nx*eikonal->nz]) / (2.0f*eikonal->dy);
+            float dTz = (T[(i+1) + j*nzz + k*nxx*nzz] - T[(i-1) + j*nzz + k*nxx*nzz]) / (2.0f*eikonal->dz);    
+            float dTx = (T[i + (j+1)*nzz + k*nxx*nzz] - T[i + (j-1)*nzz + k*nxx*nzz]) / (2.0f*eikonal->dx);    
+            float dTy = (T[i + j*nzz + (k+1)*nxx*nzz] - T[i + j*nzz + (k-1)*nxx*nzz]) / (2.0f*eikonal->dy);
 
             float norm = sqrtf(dTx*dTx + dTy*dTy + dTz*dTz);
 
@@ -226,7 +304,7 @@ bool Least_squares::converged()
     for (int i = 0; i < n_data; i++)
         r += powf(dobs[i] - dcal[i], 2.0f);
 
-    residuo.emplace_back(sqrtf(r));
+    residuo.push_back(sqrtf(r));
     
     if (iteration >= max_iteration)
     {
@@ -437,11 +515,13 @@ void Least_squares::model_update()
         float y1 = floorf(y/dy_tomo)*dy_tomo + dy_tomo;
         float z1 = floorf(z/dz_tomo)*dz_tomo + dz_tomo;
 
-        if ((i >= 0) && (i < eikonal->nz - 1) && (j >= 0) && (j < eikonal->nx - 1) && (k >= 0) && (k < eikonal->ny - 1))
+        dm[index] = 0.0f;
+
+        if ((i >= 0) && (i < eikonal->nz) && (j >= 25) && (j < eikonal->nx - 26) && (k >= 25) && (k < eikonal->ny - 26))
         {
-            int idz = ((int)(z/dz_tomo));
-            int idx = ((int)(x/dx_tomo));
-            int idy = ((int)(y/dy_tomo));
+            int idz = (int)(z / dz_tomo);
+            int idx = (int)(x / dx_tomo);
+            int idy = (int)(y / dy_tomo);
 
             int ind_m = (int)(idz + idx*nz_tomo + idy*nx_tomo*nz_tomo);
 
@@ -464,17 +544,27 @@ void Least_squares::model_update()
 
     if (smooth) 
     {
-        gaussian(dm, update, eikonal->nx,eikonal->ny,eikonal->nz, window, stdv);
-        std::swap(dm, update);
+        gaussian(dm, update, eikonal->nx, eikonal->ny, eikonal->nz, window, stdv);
+        
+        for (int index = 0; index < eikonal->nPoints; index++)
+            dm[index] = update[index];
     }
 
     for (int index = 0; index < eikonal->nPoints; index++)
     {
-        eikonal->slowness[index] += dm[index];
+        int k = (int) (index / (eikonal->nx*eikonal->nz));        
+        int j = (int) (index - k*eikonal->nx*eikonal->nz) / eikonal->nz;    
+        int i = (int) (index - j*eikonal->nz - k*eikonal->nx*eikonal->nz);  
+
+        if ((i >= 0) && (i < eikonal->nz) && (j >= 25) && (j < eikonal->nx - 26) && (k >= 25) && (k < eikonal->ny - 26))
+        {
+            eikonal->slowness[index] += dm[index];
+        }
+
         update[index] = 1.0f / eikonal->slowness[index];
     }
     
-    write_binary_float(estimated_model_folder + "estimated_model_iteration_" + std::to_string(iteration) + ".bin", update, eikonal->nPoints);    
+    write_binary_float(estimated_model_folder + eikonal->name + "_model_iteration_" + std::to_string(iteration) + ".bin", update, eikonal->nPoints);    
 
     delete[] update;
 }

@@ -16,8 +16,6 @@ class Eikonal
 {   
 protected:
 
-    int nxx, nyy, nzz, nPointsB;
-
     bool reciprocity;
     bool export_time_volume;  
     bool export_first_arrival;
@@ -32,7 +30,8 @@ public:
 
     float dx, dy, dz;
     int nx, ny, nz, nPoints;    
-
+    int nxx, nyy, nzz, nPointsB;
+    
     float * slowness;
     float * travel_time;    
     float * first_arrival;

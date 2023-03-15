@@ -20,7 +20,7 @@ adjoint_state=""
 least_squares="../src/tomography/least_squares/least_squares.cpp"
 tomography_main="../src/tomography/tomography_main.cpp"
 
-flags="-acc -fast -ta=tesla,cc60"
+flags="-acc -fast -ta=tesla,cc60 -std=c++17"
 
 USER_MESSAGE="
 Usage:

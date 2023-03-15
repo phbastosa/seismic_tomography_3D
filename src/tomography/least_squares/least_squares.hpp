@@ -10,6 +10,7 @@ private:
     int tk_order;   
     float lambda; 
 
+    float * T;
     float * illumination;
 
     float dx_tomo;
@@ -35,6 +36,7 @@ private:
     void info_message();
     void ray_tracing();
 
+    void expand_fdm();
     void tk_reg_matrix();
     void sparse_cgls();
 

@@ -12,7 +12,6 @@ class Tomography
 {
 protected:
     
-    int iteration;                  
     int max_iteration;             
 
     int window;        
@@ -39,6 +38,7 @@ protected:
 
 public:    
 
+    int iteration;                  
     std::string parameters;
 
     virtual void set_parameters() = 0;
