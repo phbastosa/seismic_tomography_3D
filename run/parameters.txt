@@ -77,7 +77,7 @@ nodes_offsets = [500, 1000, 1500]    # array <float>
 # 1 - Jeong & Whitaker (2008); 
 # 2 - Noble, Gesret and Belayouni (2014); 
 
-eikonal_type = 1    # Eikonal Type flag <int>          
+eikonal_type = 2    # Eikonal Type flag <int>          
 
 export_time_volume = False    # Travel times volume flag <bool> 
 export_first_arrival = True   # First arrivals flag <bool> 
@@ -98,14 +98,14 @@ tomography_type = 0
 
 max_iteration = 5                      
 
-dx_tomo = 200    # in meters <float> 
-dy_tomo = 200    # in meters <float>
+dx_tomo = 300    # in meters <float> 
+dy_tomo = 300    # in meters <float>
 dz_tomo = 100    # in meters <float>
 
 # Regularization
 
 tk_order = 2       # Tikhonov regularization order <int>
-tk_param = 2e5     # Regularization parameter <float>
+tk_param = 1e5     # Regularization parameter <float>
 
 # Smoothing model per iteration 
 

@@ -517,7 +517,7 @@ void Least_squares::model_update()
 
         dm[index] = 0.0f;
 
-        if ((i >= 0) && (i < eikonal->nz) && (j >= 25) && (j < eikonal->nx - 26) && (k >= 25) && (k < eikonal->ny - 26))
+        if ((i >= 11) && (i < eikonal->nz - 2) && (j >= 15) && (j < eikonal->nx - 16) && (k >= 15) && (k < eikonal->ny - 16))
         {
             int idz = (int)(z / dz_tomo);
             int idx = (int)(x / dx_tomo);
@@ -556,7 +556,7 @@ void Least_squares::model_update()
         int j = (int) (index - k*eikonal->nx*eikonal->nz) / eikonal->nz;    
         int i = (int) (index - j*eikonal->nz - k*eikonal->nx*eikonal->nz);  
 
-        if ((i >= 0) && (i < eikonal->nz) && (j >= 25) && (j < eikonal->nx - 26) && (k >= 25) && (k < eikonal->ny - 26))
+        if ((i >= 11) && (i < eikonal->nz - 2) && (j >= 15) && (j < eikonal->nx - 15) && (k >= 15) && (k < eikonal->ny - 15))
         {
             eikonal->slowness[index] += dm[index];
         }
@@ -571,7 +571,7 @@ void Least_squares::model_update()
 
 void Least_squares::export_convergency()
 {
-    std::ofstream resFile(convergency_folder + "convergency.txt", std::ios::out);
+    std::ofstream resFile(convergency_folder + eikonal->name + "_convergency.txt", std::ios::out);
     
     for (int r = 0; r < residuo.size(); r++) resFile<<residuo[r]<<"\n";
 

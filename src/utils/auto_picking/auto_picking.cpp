@@ -70,7 +70,7 @@ int main(int argc, char**argv)
                 
                 if (S[k] > amp_cut)
                 {
-                    picks_all[trace] = k * dt;            
+                    picks_all[trace] = k * dt + 0.045f;            
                     break;
                 }
             }    

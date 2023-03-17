@@ -22,33 +22,34 @@ dt = 0.001
 
 fw = 11
 
-start = timeit.default_timer()
+gather_outlier = [27,110]
 
-for node in range(nodes_all): 
+# start = timeit.default_timer()
 
-    rawPicks_all = readBinaryArray(shots_all,f"{pick_folder}rawPicks_shot_{node+1}_{shots_all}_samples.bin")
-    output_picks = np.zeros(shots_all)
+# for node in range(nodes_all): 
 
-    diff = rawPicks_all[1:] - rawPicks_all[:-1]  
+#     rawPicks_all = readBinaryArray(shots_all,f"{pick_folder}rawPicks_shot_{node+1}_{shots_all}_samples.bin")
+#     output_picks = np.zeros(shots_all)
 
-    outliers = np.where(diff > 0.2)[0]
+#     if node in gather_outlier:
+#         diff = rawPicks_all[1:] - rawPicks_all[:-1]  
+#         outliers = np.where(diff > 1.0)[0]
+#         for k in outliers:
+#             rawPicks_all[k-2:k+2] = median_filter(rawPicks_all[k-2:k+2], 5)
 
-    for k in outliers:
-        rawPicks_all[k-2:k+2] = median_filter(rawPicks_all[k-2:k+2], 5)
+#     for line in range(traces):
 
-    for line in range(traces):
+#         window = slice(int(line*shots_all/traces),int((line+1)*shots_all/traces))
 
-        window = slice(int(line*shots_all/traces),int((line+1)*shots_all/traces))
+#         rawPicks = rawPicks_all[window].copy()    
 
-        rawPicks = rawPicks_all[window].copy()    
+#         output_picks[window] = savgol_filter(rawPicks, fw, 2)     
 
-        output_picks[window] = savgol_filter(rawPicks, fw, 2)     
+#     print(f"File {pick_folder}obsData_{shots_all}_samples_shot_{node+1}.bin was written successfully.")
+#     output_picks.astype("float32", order = "F").tofile(f"{pick_folder}obsData_{shots_all}_samples_shot_{node+1}.bin")
 
-    print(f"File {pick_folder}obsData_{shots_all}_samples_shot_{node+1}.bin was written successfully.")
-    output_picks.astype("float32", order = "F").tofile(f"{pick_folder}obsData_{shots_all}_samples_shot_{node+1}.bin")
-
-stop = timeit.default_timer()
-print('Run time: ', stop - start)  
+# stop = timeit.default_timer()
+# print('Run time: ', stop - start)  
 
 # Quality control 
 
@@ -58,25 +59,33 @@ tlab = np.around(tloc * dt, decimals = 1)
 xloc = np.linspace(0, traces-1, 11, dtype = int)
 xlab = np.linspace(0, traces, 11, dtype = int)
 
-gather = 100
+gather = 1 # 1 - 176
+group  = 10 # 1 - 140
 
-seismic = readBinaryMatrix(nt, shots_all, f"{data_folder}seismogram_{nt}x{shots_all}_shot_{gather+1}.bin") 
-input_picks = readBinaryArray(shots_all, f"{pick_folder}rawPicks_shot_{gather+1}_{shots_all}_samples.bin")
-output_picks = readBinaryArray(shots_all, f"{pick_folder}obsData_{shots_all}_samples_shot_{gather+1}.bin")
+seismic = readBinaryMatrix(nt, shots_all, f"{data_folder}seismogram_{nt}x{shots_all}_shot_{gather}.bin") 
+input_picks = readBinaryArray(shots_all, f"{pick_folder}rawPicks_shot_{gather}_{shots_all}_samples.bin")
+output_picks = readBinaryArray(shots_all, f"{pick_folder}obsData_{shots_all}_samples_shot_{gather}.bin")
 
-scale = 0.001 * np.std(seismic)
+scale = 5.0 * np.std(seismic)
 
-fig, ax =  plt.subplots(1,1, figsize = (15, 5))
+fig, ax =  plt.subplots(1,1, figsize = (20, 7))
 
-ax.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
-ax.plot(input_picks/dt, "o")
-ax.plot(output_picks/dt, "o")
-ax.set_title(f"Picked seismogram for node {gather+1}", fontsize= 18)
-ax.set_ylabel("Time [s]", fontsize = 15)
-ax.set_xlabel("Trace index", fontsize = 15)
+ax.imshow(seismic[:,(group-1)*100:group*100], aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
+ax.plot(input_picks[(group-1)*100:group*100]/dt, "o")
+ax.plot(output_picks[(group-1)*100:group*100]/dt, "o")
+
+# ax.imshow(seismic, aspect = "auto", cmap = "Greys", vmin = -scale, vmax = scale)
+# ax.plot(input_picks/dt, "o")
+# ax.plot(output_picks/dt, "o")
+
+ax.set_title(f"Sismograma {gather} - linha {group} de {traces}", fontsize = 18)
+ax.set_ylabel("Tempo [s]", fontsize = 15)
+ax.set_xlabel("Índice do traço", fontsize = 15)
 ax.set_yticks(tloc)
 ax.set_yticklabels(tlab)
-ax.set_xlim([0, shots_all])
+
+ax.set_xticks(np.linspace(0,99, 7, dtype = int))
+ax.set_xticklabels(np.linspace((group-1)*100,group*100, 7, dtype = int))
 
 plt.tight_layout()
 plt.show()
