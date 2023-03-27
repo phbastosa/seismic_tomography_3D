@@ -13,8 +13,8 @@ dx = 20
 dy = 20
 dz = 20
 
-types = ["pod", "fim", "fsm"]
-iterations = [1, 2, 3, 4, 5]
+types = ["high_pod", "high_fim", "high_fsm"]
+iterations = [5, 10]
 
 vp_location = "../../../outputs/recovered_models/"
 geometry_folder = "../../../inputs/geometry/"
@@ -29,19 +29,22 @@ dh = np.array([dx, dy, dz])
 for it in iterations:
     for type in types:
         vp = readBinaryVolume(nz, nx, ny, vp_location + f"{type}_model_iteration_{it}.bin")
-        vp = 1 / gaussian_filter(1 / vp, 1.0)
+        vp = 1 / gaussian_filter(1 / vp, 2.0)
         check_model(vp, dh, slices, subplots)
         # check_geometry(vp, shots, nodes, dh, slices, subplots)
         plt.savefig(f"figures/{type}_model_iteration_{it}.png", dpi = 200)
 
 labels = ["Podvin & Lecomte (1991)", "Jeong & Whitaker (2008)", "Noble, Gesret and Belayouni (2014)"] 
 
+types = ["pod", "fim", "fsm"]
+
 plt.figure(2, figsize = (15, 5))
 for k, type in enumerate(types):
     convergency = np.loadtxt(f"../../../outputs/convergence/{type}_convergency.txt")
     plt.plot(convergency, "o-", label = labels[k])
 
-plt.xlim([-0.1,5.1])
+plt.xticks(np.linspace(0,15,16, dtype=int),np.linspace(0,15,16, dtype=int))
+plt.xlim([-0.1,15.1])
 plt.title("Convergência", fontsize = 18)
 plt.xlabel("Número de iterações", fontsize = 15)
 plt.ylabel("Norma 2 da função objetivo", fontsize = 15)

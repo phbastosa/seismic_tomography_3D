@@ -192,21 +192,24 @@ def check_model(models, dh, slices, subplots):
 
 def check_geometry(models, shots, nodes, dh, slices, subplots):
     
-    vmin = 1500
-    vmax = 3500
-
     if np.sum(subplots) == 2:
         modelShape = np.array(np.shape(models))
         maxModelDistance = np.max(np.shape(models))
         minModelDistance = np.min(np.shape(models))
-        
+
+        vmin = np.min(models)
+        vmax = np.max(models)
+
     else:
         modelShape = np.array(np.shape(models[0]))
         maxModelDistance = np.max(np.shape(models[0]))
         minModelDistance = np.min(np.shape(models[0]))
-        
+
+        vmin = np.min(models[0])
+        vmax = np.max(models[0])
+
     nz, nx, ny = modelShape
-    [z, x, y] = 4 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
+    [z, x, y] = 2.5 * (minModelDistance / maxModelDistance) * modelShape / maxModelDistance
 
     px = 1/plt.rcParams['figure.dpi']  
     ticks = np.array([3,7,7], dtype = int)
